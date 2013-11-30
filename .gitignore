@@ -1,0 +1,6 @@
+*.pyc
+/README
+/_virtualenv
+/*.egg-info
+/.tox
+/MANIFEST
