@@ -27,11 +27,13 @@ def _create_reader(numbering):
             .find_child_or_null("w:rStyle") \
             .attributes.get("w:val")
         is_bold = properties.find_child("w:b")
+        is_italic = properties.find_child("w:i")
         
         return documents.run(
             children=_read_xml_elements(element.children),
             style_name=style_name,
             is_bold=is_bold,
+            is_italic=is_italic,
         )
 
 

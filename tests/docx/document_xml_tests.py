@@ -91,6 +91,16 @@ class ReadXmlElementTests(object):
         run = self._read_run_with_properties([xml_element("w:b")])
         assert_equal(True, run.is_bold)
         
+    @istest
+    def run_is_not_italic_if_italic_element_is_not_present(self):
+        run = self._read_run_with_properties([])
+        assert_equal(False, run.is_italic)
+    
+    @istest
+    def run_is_italic_if_italic_element_is_present(self):
+        run = self._read_run_with_properties([xml_element("w:i")])
+        assert_equal(True, run.is_italic)
+        
     def _read_run_with_properties(self, properties):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
