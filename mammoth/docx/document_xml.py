@@ -22,7 +22,7 @@ def _create_reader(numbering):
 
     @handler("w:r")
     def run(element):
-        return documents.Run(_read_xml_elements(element.children))
+        return documents.run(_read_xml_elements(element.children))
 
 
     @handler("w:p")

@@ -17,7 +17,7 @@ class ReadXmlElementTests(object):
     def can_read_text_within_run(self):
         element = _run_element_with_text("Hello!")
         assert_equal(
-            documents.Run([documents.Text("Hello!")]),
+            documents.run([documents.Text("Hello!")]),
             read_document_xml_element(element)
         )
     
@@ -25,7 +25,7 @@ class ReadXmlElementTests(object):
     def can_read_text_within_paragraph(self):
         element = _paragraph_element_with_text("Hello!")
         assert_equal(
-            documents.paragraph([documents.Run([documents.Text("Hello!")])]),
+            documents.paragraph([documents.run([documents.Text("Hello!")])]),
             read_document_xml_element(element)
         )
     
@@ -33,7 +33,7 @@ class ReadXmlElementTests(object):
     def can_read_text_within_document(self):
         element = _document_element_with_text("Hello!")
         assert_equal(
-            documents.Document([documents.paragraph([documents.Run([documents.Text("Hello!")])])]),
+            documents.Document([documents.paragraph([documents.run([documents.Text("Hello!")])])]),
             read_document_xml_element(element)
         )
         
@@ -70,6 +70,11 @@ class ReadXmlElementTests(object):
         assert_equal("1", paragraph.numbering.level_index)
         assert_equal(True, paragraph.numbering.is_ordered)
         
+    @istest
+    def run_has_no_style_if_it_has_no_properties(self):
+        element = xml_element("w:r")
+        assert_equal(None, read_document_xml_element(element).style_name)
+        
     
     @istest
     def unrecognised_elements_are_ignored(self):
@@ -80,7 +85,7 @@ class ReadXmlElementTests(object):
     def unrecognised_children_are_ignored(self):
         element = xml_element("w:r", {}, [_text_element("Hello!"), xml_element("w:huh", {}, [])])
         assert_equal(
-            documents.Run([documents.Text("Hello!")]),
+            documents.run([documents.Text("Hello!")]),
             read_document_xml_element(element)
         )
 
