@@ -1,5 +1,6 @@
 from .. import documents
 from .. import results
+from .. import lists
 from .xmlparser import node_types
 
 
@@ -105,7 +106,7 @@ def _create_reader(numbering):
 
     def _read_xml_elements(elements):
         return results.combine(map(read, elements)) \
-            .map(lambda values: filter(None, values))
+            .map(lambda values: lists.filter(None, values))
     
     return read
 
