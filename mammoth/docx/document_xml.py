@@ -1,10 +1,11 @@
 from .. import documents
+from .. import results
 from .xmlparser import node_types
 
 
 def read_document_xml_element(element, numbering=None):
     reader = _create_reader(numbering)
-    return reader(element)
+    return results.Result(reader(element), [])
 
 def _create_reader(numbering):
     _handlers = {}

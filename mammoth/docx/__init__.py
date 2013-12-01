@@ -14,5 +14,5 @@ def read(fileobj):
     zip_file = zipfile.ZipFile(fileobj)
     document_fileobj = zip_file.open("word/document.xml")
     document_xml = parse_xml(document_fileobj, _namespaces)
-    return Result(read_document_xml_element(document_xml), [])
+    return read_document_xml_element(document_xml)
 
