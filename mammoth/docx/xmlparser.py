@@ -9,6 +9,9 @@ class XmlElement(XmlElementBase):
             if child.name == name:
                 return child
         return _null_xml_element
+    
+    def find_children(self, name):
+        return filter(lambda child: child.name == name, self.children)
 
 
 class NullXmlElement(object):
