@@ -44,18 +44,23 @@ class ReadXmlElementTests(object):
         )
     
     @istest
-    def can_read_text_within_paragraph(self):
-        element = _paragraph_element_with_text("Hello!")
-        assert_equal(
-            documents.Paragraph([documents.Run([documents.Text("Hello!")])]),
-            docx.read_xml_element(element)
-        )
-    
-    @istest
     def can_read_text_within_document(self):
         element = _document_element_with_text("Hello!")
         assert_equal(
             documents.Document([documents.Paragraph([documents.Run([documents.Text("Hello!")])])]),
+            docx.read_xml_element(element)
+        )
+    
+    @istest
+    def unrecognised_elements_are_ignored(self):
+        element = xml_element("w:huh", {}, [])
+        assert_equal(None, docx.read_xml_element(element))
+    
+    @istest
+    def unrecognised_children_are_ignored(self):
+        element = xml_element("w:r", {}, [_text_element("Hello!"), xml_element("w:huh", {}, [])])
+        assert_equal(
+            documents.Run([documents.Text("Hello!")]),
             docx.read_xml_element(element)
         )
 
