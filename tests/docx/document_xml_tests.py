@@ -78,10 +78,23 @@ class ReadXmlElementTests(object):
     @istest
     def run_has_style_name_read_from_run_properties_if_present(self):
         style_xml = xml_element("w:rStyle", {"w:val": "Emphasis"})
-        properties_xml = xml_element("w:rPr", {}, [style_xml])
-        run_xml = xml_element("w:r", {}, [properties_xml])
-        run = read_document_xml_element(run_xml)
+        run = self._read_run_with_properties([style_xml])
         assert_equal("Emphasis", run.style_name)
+        
+    @istest
+    def run_is_not_bold_if_bold_element_is_not_present(self):
+        run = self._read_run_with_properties([])
+        assert_equal(False, run.is_bold)
+    
+    @istest
+    def run_is_bold_if_bold_element_is_present(self):
+        run = self._read_run_with_properties([xml_element("w:b")])
+        assert_equal(True, run.is_bold)
+        
+    def _read_run_with_properties(self, properties):
+        properties_xml = xml_element("w:rPr", {}, properties)
+        run_xml = xml_element("w:r", {}, [properties_xml])
+        return read_document_xml_element(run_xml)
         
     
     @istest

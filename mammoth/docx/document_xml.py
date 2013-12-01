@@ -26,7 +26,13 @@ def _create_reader(numbering):
         style_name = properties \
             .find_child_or_null("w:rStyle") \
             .attributes.get("w:val")
-        return documents.run(_read_xml_elements(element.children), style_name)
+        is_bold = properties.find_child("w:b")
+        
+        return documents.run(
+            children=_read_xml_elements(element.children),
+            style_name=style_name,
+            is_bold=is_bold,
+        )
 
 
     @handler("w:p")
