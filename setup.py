@@ -14,7 +14,7 @@ setup(
     author='Michael Williamson',
     author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/python-mammoth',
-    packages=['mammoth'],
+    packages=['mammoth', 'mammoth.docx'],
     keywords="docx word office clean html",
 )
 

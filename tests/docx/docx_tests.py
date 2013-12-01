@@ -1,8 +1,8 @@
 from nose.tools import istest, assert_equal
 
 from mammoth import docx, documents
-from mammoth.xmlparser import element as xml_element, text as xml_text
-from .testing import test_path
+from mammoth.docx.xmlparser import element as xml_element, text as xml_text
+from ..testing import test_path
 
 @istest
 class ReadTests(object):

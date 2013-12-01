@@ -2,7 +2,7 @@ import io
 
 from nose.tools import istest, assert_equal
 
-from mammoth.xmlparser import parse_xml, element as xml_element, text as xml_text
+from mammoth.docx.xmlparser import parse_xml, element as xml_element, text as xml_text
 
 
 @istest
