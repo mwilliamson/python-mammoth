@@ -10,6 +10,16 @@ element = XmlElement
 text = XmlText
 
 
+class node_types(object):
+    element = 1
+    text = 3
+
+
+XmlElement.node_type = node_types.element
+XmlText.node_type = node_types.text
+
+
+
 def parse_xml(fileobj, namespace_mapping=None):
     if namespace_mapping is None:
         namespace_prefixes = {}
