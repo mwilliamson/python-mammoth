@@ -160,6 +160,38 @@ class ReadXmlElementTests(object):
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
             assert_equal(image_bytes, image_file.read())
+        
+    @istest
+    @funk.with_context
+    def can_read_anchored_pictures(self, context):
+        drawing_element = _create_anchored_image(
+            relationship_id="rId5",
+            description="It's a hat",
+        )
+        
+        image_bytes = b"Not an image at all!"
+        
+        relationships = Relationships({
+            "rId5": Relationship(target="media/hat.png")
+        })
+        
+        docx_file = context.mock()
+        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
+        
+        content_types = context.mock()
+        funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
+        
+        image = _read_and_get_document_xml_element(
+            drawing_element,
+            content_types=content_types,
+            relationships=relationships,
+            docx_file=docx_file,
+        )[0]
+        assert_equal(documents.Image, type(image))
+        assert_equal("It's a hat", image.alt_text)
+        assert_equal("image/png", image.content_type)
+        with image.open() as image_file:
+            assert_equal(image_bytes, image_file.read())
     
     @istest
     def ignored_elements_are_ignored_without_message(self):
@@ -214,16 +246,26 @@ def _text_element(value):
 
 def _create_inline_image(description, relationship_id):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:inline", {}, [
-            xml_element("wp:docPr", {"descr": description}),
-            xml_element("a:graphic", {}, [
-                xml_element("a:graphicData", {}, [
-                    xml_element("pic:pic", {}, [
-                        xml_element("pic:blipFill", {}, [
-                            xml_element("a:blip", {"r:embed": relationship_id})
-                        ])
+        xml_element("wp:inline", {}, _create_image_elements(description, relationship_id))
+    ])
+
+
+def _create_anchored_image(description, relationship_id):
+    return xml_element("w:drawing", {}, [
+        xml_element("wp:anchor", {}, _create_image_elements(description, relationship_id))
+    ])
+
+    
+def _create_image_elements(description, relationship_id):
+    return [
+        xml_element("wp:docPr", {"descr": description}),
+        xml_element("a:graphic", {}, [
+            xml_element("a:graphicData", {}, [
+                xml_element("pic:pic", {}, [
+                    xml_element("pic:blipFill", {}, [
+                        xml_element("a:blip", {"r:embed": relationship_id})
                     ])
                 ])
             ])
         ])
-    ])
+    ]

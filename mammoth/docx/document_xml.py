@@ -29,6 +29,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
     def handler(name):
         def add(func):
             _handlers[name] = func
+            return func
             
         return add
 
@@ -106,6 +107,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
         return _read_xml_elements(element.children)
     
     @handler("wp:inline")
+    @handler("wp:anchor")
     def inline(element):
         alt_text = element.find_child_or_null("wp:docPr").attributes.get("descr")
         blips = element.find_children("a:graphic") \
