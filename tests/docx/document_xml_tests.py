@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from mammoth import documents
+from mammoth import documents, results
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.numbering_xml import Numbering, NumberingLevel
@@ -117,7 +117,15 @@ class ReadXmlElementTests(object):
     def ignored_elements_are_ignored_without_message(self):
         element = xml_element("w:bookmarkStart")
         result = read_document_xml_element(element)
+        assert_equal(None, result.value)
         assert_equal([], result.messages)
+    
+    @istest
+    def unrecognised_elements_emit_warning(self):
+        element = xml_element("w:huh", {}, [])
+        result = read_document_xml_element(element)
+        expected_warning = results.warning("An unrecognised element was ignored: w:huh")
+        assert_equal([expected_warning], result.messages)
     
     @istest
     def unrecognised_elements_are_ignored(self):
