@@ -1,8 +1,5 @@
-import zipfile
-
 from .. import documents
-from ..results import Result
-from .xmlparser import parse_xml, node_types
+from .xmlparser import node_types
 
 
 _handlers = {}

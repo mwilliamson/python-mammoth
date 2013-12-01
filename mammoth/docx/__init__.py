@@ -1,8 +1,7 @@
 import zipfile
 
-from .. import documents
 from ..results import Result
-from .xmlparser import parse_xml, node_types
+from .xmlparser import parse_xml
 from .document_xml import read_document_xml_element
 
 

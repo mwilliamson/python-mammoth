@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from mammoth import docx, documents
+from mammoth import documents
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
 
