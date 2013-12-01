@@ -66,8 +66,12 @@ def _create_reader(numbering):
     @handler("w:document")
     def document(element):
         body_element = _find_child(element, "w:body")
-        return documents.Document(_read_xml_elements(body_element.children))
+        return documents.document(_read_xml_elements(body_element.children))
     
+    
+    @handler("w:tab")
+    def tab(element):
+        return documents.tab()
     
     def read(element):
         handler = _handlers.get(element.name)

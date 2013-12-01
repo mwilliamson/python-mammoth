@@ -69,7 +69,7 @@ class ReadXmlElementTests(object):
         
         assert_equal("1", paragraph.numbering.level_index)
         assert_equal(True, paragraph.numbering.is_ordered)
-        
+    
     @istest
     def run_has_no_style_if_it_has_no_properties(self):
         element = xml_element("w:r")
@@ -100,12 +100,18 @@ class ReadXmlElementTests(object):
     def run_is_italic_if_italic_element_is_present(self):
         run = self._read_run_with_properties([xml_element("w:i")])
         assert_equal(True, run.is_italic)
-        
+    
     def _read_run_with_properties(self, properties):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
         return read_document_xml_element(run_xml)
-        
+
+
+    @istest
+    def can_read_tab_element(self):
+        element = xml_element("w:tab")
+        tab = read_document_xml_element(element)
+        assert_equal(documents.tab(), tab)
     
     @istest
     def unrecognised_elements_are_ignored(self):
