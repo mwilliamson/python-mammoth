@@ -130,6 +130,28 @@ class ReadXmlElementTests(object):
         )
         
     @istest
+    def hyperlink_is_read_if_it_has_a_relationship_id(self):
+        relationships = Relationships({
+            "r42": Relationship(target="http://example.com")
+        })
+        run_element = xml_element("w:r")
+        element = xml_element("w:hyperlink", {"r:id": "r42"}, [run_element])
+        assert_equal(
+            documents.hyperlink("http://example.com", [documents.run([])]),
+            _read_and_get_document_xml_element(element, relationships=relationships)
+        )
+        
+    @istest
+    def hyperlink_is_ignored_if_it_does_not_have_a_relationship_id(self):
+        run_element = xml_element("w:r")
+        element = xml_element("w:hyperlink", {}, [run_element])
+        assert_equal(
+            [documents.run([])],
+            _read_and_get_document_xml_element(element)
+        )
+        
+        
+    @istest
     @funk.with_context
     def can_read_inline_pictures(self, context):
         drawing_element = _create_inline_image(

@@ -96,10 +96,22 @@ def _create_reader(numbering, content_types, relationships, docx_file):
     @handler("w:tab")
     def tab(element):
         return results.success(documents.tab())
-        
+    
+    
     @handler("w:ins")
     def ins(element):
         return _read_xml_elements(element.children)
+    
+    
+    @handler("w:hyperlink")
+    def hyperlink(element):
+        relationship_id = element.attributes.get("r:id")
+        children_result = _read_xml_elements(element.children)
+        if relationship_id is None:
+            return children_result
+        else:
+            href = relationships[relationship_id].target
+            return children_result.map(lambda children: documents.hyperlink(href, children))
     
     
     @handler("w:drawing")

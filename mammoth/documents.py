@@ -4,7 +4,7 @@ Document = collections.namedtuple("Document", ["children"])
 Paragraph = collections.namedtuple("Paragraph", ["children", "style_name", "numbering"])
 Run = collections.namedtuple("Run", ["children", "style_name", "is_bold", "is_italic"])
 Text = collections.namedtuple("Text", ["value"])
-
+Hyperlink = collections.namedtuple("Hyperlink", ["href", "children"])
 
 class Tab(object):
     pass
@@ -34,3 +34,4 @@ def tab():
 
 
 image = Image
+hyperlink = Hyperlink
