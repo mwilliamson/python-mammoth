@@ -75,6 +75,14 @@ class ReadXmlElementTests(object):
         element = xml_element("w:r")
         assert_equal(None, read_document_xml_element(element).style_name)
         
+    @istest
+    def run_has_style_name_read_from_run_properties_if_present(self):
+        style_xml = xml_element("w:rStyle", {"w:val": "Emphasis"})
+        properties_xml = xml_element("w:rPr", {}, [style_xml])
+        run_xml = xml_element("w:r", {}, [properties_xml])
+        run = read_document_xml_element(run_xml)
+        assert_equal("Emphasis", run.style_name)
+        
     
     @istest
     def unrecognised_elements_are_ignored(self):

@@ -22,7 +22,11 @@ def _create_reader(numbering):
 
     @handler("w:r")
     def run(element):
-        return documents.run(_read_xml_elements(element.children))
+        properties = element.find_child_or_null("w:rPr")
+        style_name = properties \
+            .find_child_or_null("w:rStyle") \
+            .attributes.get("w:val")
+        return documents.run(_read_xml_elements(element.children), style_name)
 
 
     @handler("w:p")
