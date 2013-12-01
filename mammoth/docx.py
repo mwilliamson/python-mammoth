@@ -47,17 +47,24 @@ def run(element):
 
 @handler("w:p")
 def paragraph(element):
-    return documents.paragraph(_read_xml_elements(element.children))
+    properties = _find_child(element, "w:pPr")
+    if properties is None:
+        style_name = None
+    else:
+        style_name = _find_child(properties, "w:pStyle").attributes.get("w:val")
+    
+    children = _read_xml_elements(element.children)
+    return documents.paragraph(children, style_name)
 
 
 @handler("w:body")
-def paragraph(element):
+def body(element):
     return _read_xml_elements(element.children)
 
 
 @handler("w:document")
-def paragraph(element):
-    body_element = _find(lambda child: child.name == "w:body", element.children)
+def document(element):
+    body_element = _find_child(element, "w:body")
     return documents.Document(_read_xml_elements(body_element.children))
 
 
@@ -65,6 +72,10 @@ def _find(predicate, iterable):
     for item in iterable:
         if predicate(item):
             return item
+
+
+def _find_child(element, name):
+    return _find(lambda child: child.name == name, element.children)
 
 
 def _read_xml_elements(elements):

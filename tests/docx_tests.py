@@ -55,6 +55,14 @@ class ReadXmlElementTests(object):
     def paragraph_has_no_style_if_it_has_no_properties(self):
         element = xml_element("w:p")
         assert_equal(None, docx.read_xml_element(element).style_name)
+        
+    @istest
+    def paragraph_has_style_name_read_from_paragraph_properties_if_present(self):
+        style_xml = xml_element("w:pStyle", {"w:val": "Heading1"})
+        properties_xml = xml_element("w:pPr", {}, [style_xml])
+        paragraph_xml = xml_element("w:p", {}, [properties_xml])
+        paragraph = docx.read_xml_element(paragraph_xml)
+        assert_equal("Heading1", paragraph.style_name)
     
     @istest
     def unrecognised_elements_are_ignored(self):
