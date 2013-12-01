@@ -59,5 +59,11 @@ def namespace_of_attributes_is_mapped_to_prefix():
     assert_equal("Hello!", xml.attributes["x:val"])
 
 
+@istest
+def whitespace_between_xml_declaration_and_root_tag_is_ignored():
+    xml = _parse_xml_string(b'<?xml version="1.0" ?>\n<body/>')
+    assert_equal("body", xml.name)
+
+
 def _parse_xml_string(string, namespace_mapping=None):
     return parse_xml(io.BytesIO(string), namespace_mapping)
