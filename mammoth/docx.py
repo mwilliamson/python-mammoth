@@ -47,11 +47,10 @@ def run(element):
 
 @handler("w:p")
 def paragraph(element):
-    properties = _find_child(element, "w:pPr")
-    if properties is None:
-        style_name = None
-    else:
-        style_name = _find_child(properties, "w:pStyle").attributes.get("w:val")
+    properties = element.find_child_or_null("w:pPr")
+    style_name = properties \
+        .find_child_or_null("w:pStyle") \
+        .attributes.get("w:val")
     
     children = _read_xml_elements(element.children)
     return documents.paragraph(children, style_name)

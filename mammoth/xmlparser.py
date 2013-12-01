@@ -2,7 +2,25 @@ import collections
 import xml.sax
 
 
-XmlElement = collections.namedtuple("XmlElement", ["name", "attributes", "children"])
+XmlElementBase = collections.namedtuple("XmlElement", ["name", "attributes", "children"])
+class XmlElement(XmlElementBase):
+    def find_child_or_null(self, name):
+        for child in self.children:
+            if child.name == name:
+                return child
+        return _null_xml_element
+
+
+class NullXmlElement(object):
+    attributes = {}
+    
+    def find_child_or_null(self, name):
+        return self
+
+
+_null_xml_element = NullXmlElement()
+
+
 XmlText = collections.namedtuple("XmlText", ["value"])
 
 
