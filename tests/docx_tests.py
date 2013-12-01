@@ -11,7 +11,7 @@ class ReadTests(object):
         with open(test_path("single-paragraph.docx")) as fileobj:
             result = docx.read(fileobj=fileobj)
             expected_document = documents.Document([
-                documents.Paragraph([
+                documents.paragraph([
                     documents.Run([
                         documents.Text("Walking on imported air")
                     ])
@@ -39,7 +39,7 @@ class ReadXmlElementTests(object):
     def can_read_text_within_paragraph(self):
         element = _paragraph_element_with_text("Hello!")
         assert_equal(
-            documents.Paragraph([documents.Run([documents.Text("Hello!")])]),
+            documents.paragraph([documents.Run([documents.Text("Hello!")])]),
             docx.read_xml_element(element)
         )
     
@@ -47,9 +47,14 @@ class ReadXmlElementTests(object):
     def can_read_text_within_document(self):
         element = _document_element_with_text("Hello!")
         assert_equal(
-            documents.Document([documents.Paragraph([documents.Run([documents.Text("Hello!")])])]),
+            documents.Document([documents.paragraph([documents.Run([documents.Text("Hello!")])])]),
             docx.read_xml_element(element)
         )
+        
+    @istest
+    def paragraph_has_no_style_if_it_has_no_properties(self):
+        element = xml_element("w:p")
+        assert_equal(None, docx.read_xml_element(element).style_name)
     
     @istest
     def unrecognised_elements_are_ignored(self):

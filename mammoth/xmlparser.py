@@ -6,7 +6,9 @@ XmlElement = collections.namedtuple("XmlElement", ["name", "attributes", "childr
 XmlText = collections.namedtuple("XmlText", ["value"])
 
 
-element = XmlElement
+def element(name, attributes=None, children=None):
+    return XmlElement(name, attributes or {}, children or [])
+
 text = XmlText
 
 

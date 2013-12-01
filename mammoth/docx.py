@@ -47,7 +47,7 @@ def run(element):
 
 @handler("w:p")
 def paragraph(element):
-    return documents.Paragraph(_read_xml_elements(element.children))
+    return documents.paragraph(_read_xml_elements(element.children))
 
 
 @handler("w:body")
