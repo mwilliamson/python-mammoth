@@ -112,6 +112,18 @@ class ReadXmlElementTests(object):
         element = xml_element("w:tab")
         tab = _read_and_get_document_xml_element(element)
         assert_equal(documents.tab(), tab)
+        
+    @istest
+    def children_of_w_ins_are_converted_normally(self):
+        element = xml_element("w:p", {}, [
+            xml_element("w:ins", {}, [
+                xml_element("w:r")
+            ])
+        ])
+        assert_equal(
+            documents.paragraph([documents.run([])]),
+            _read_and_get_document_xml_element(element)
+        )
     
     @istest
     def ignored_elements_are_ignored_without_message(self):

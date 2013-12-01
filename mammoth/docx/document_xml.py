@@ -91,6 +91,10 @@ def _create_reader(numbering):
     @handler("w:tab")
     def tab(element):
         return results.success(documents.tab())
+        
+    @handler("w:ins")
+    def ins(element):
+        return _read_xml_elements(element.children)
     
     def read(element):
         handler = _handlers.get(element.name)
@@ -106,7 +110,7 @@ def _create_reader(numbering):
 
     def _read_xml_elements(elements):
         return results.combine(map(read, elements)) \
-            .map(lambda values: lists.filter(None, values))
+            .map(lambda values: lists.collect(values))
     
     return read
 

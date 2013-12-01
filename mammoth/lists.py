@@ -1,11 +1,15 @@
 import sys
 
 
-__all__ = ["filter"]
+def collect(values):
+    result = []
+    _collect(values, result)
+    return result
 
-if sys.version_info[0] == 2:
-    filter = filter
-else:
-    import builtins
-    def filter(*args, **kwargs):
-        return list(builtins.filter(*args, **kwargs))
+
+def _collect(values, result):
+    for value in values:
+        if isinstance(value, list):
+            _collect(value, result)
+        elif value is not None:
+            result.append(value)
