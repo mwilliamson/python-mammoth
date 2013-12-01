@@ -1,14 +1,16 @@
+import os
+
 from .. import documents
 from .. import results
 from .. import lists
 from .xmlparser import node_types
 
 
-def read_document_xml_element(element, numbering=None):
-    reader = _create_reader(numbering)
+def read_document_xml_element(element, numbering=None, content_types=None, relationships=None, docx_file=None):
+    reader = _create_reader(numbering=numbering, content_types=content_types, relationships=relationships, docx_file=docx_file)
     return reader(element)
 
-def _create_reader(numbering):
+def _create_reader(numbering, content_types, relationships, docx_file):
     _handlers = {}
     _ignored_elements = set([
         "w:bookmarkStart",
@@ -19,7 +21,9 @@ def _create_reader(numbering):
         "w:commentRangeStart",
         "w:commentRangeEnd",
         "w:commentReference",
-        "w:del"
+        "w:del",
+        "w:pPr",
+        "w:rPr",
     ])
 
     def handler(name):
@@ -95,6 +99,35 @@ def _create_reader(numbering):
     @handler("w:ins")
     def ins(element):
         return _read_xml_elements(element.children)
+    
+    
+    @handler("w:drawing")
+    def drawing(element):
+        return _read_xml_elements(element.children)
+    
+    @handler("wp:inline")
+    def inline(element):
+        alt_text = element.find_child_or_null("wp:docPr").attributes.get("descr")
+        blips = element.find_children("a:graphic") \
+            .find_children("a:graphicData") \
+            .find_children("pic:pic") \
+            .find_children("pic:blipFill") \
+            .find_children("a:blip")
+        return _read_blips(blips, alt_text)
+    
+    def _read_blips(blips, alt_text):
+        return results.combine(map(lambda blip: _read_blip(blip, alt_text), blips))
+    
+    def _read_blip(element, alt_text):
+        relationship_id = element.attributes["r:embed"]
+        image_path = os.path.join("word", relationships[relationship_id].target)
+        content_type = content_types.find_content_type(image_path)
+        
+        def open_image():
+            return docx_file.open(image_path)
+        
+        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
+        return results.success(image)
     
     def read(element):
         handler = _handlers.get(element.name)

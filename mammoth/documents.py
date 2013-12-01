@@ -4,8 +4,17 @@ Document = collections.namedtuple("Document", ["children"])
 Paragraph = collections.namedtuple("Paragraph", ["children", "style_name", "numbering"])
 Run = collections.namedtuple("Run", ["children", "style_name", "is_bold", "is_italic"])
 Text = collections.namedtuple("Text", ["value"])
+
+
 class Tab(object):
     pass
+
+
+class Image(object):
+    def __init__(self, alt_text, content_type, open):
+        self.alt_text = alt_text
+        self.content_type = content_type
+        self.open = open
 
 
 document = Document
@@ -17,6 +26,11 @@ def run(children, style_name=None, is_bold=None, is_italic=None):
     return Run(children, style_name, bool(is_bold), bool(is_italic))
 
 text = Text
+
 _tab = Tab()
+
 def tab():
     return _tab
+
+
+image = Image

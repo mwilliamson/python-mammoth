@@ -1,9 +1,13 @@
+import io
+
 from nose.tools import istest, assert_equal
+import funk
 
 from mammoth import documents, results
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.numbering_xml import Numbering, NumberingLevel
+from mammoth.docx.relationships_xml import Relationships, Relationship
 
 
 @istest
@@ -124,6 +128,38 @@ class ReadXmlElementTests(object):
             documents.paragraph([documents.run([])]),
             _read_and_get_document_xml_element(element)
         )
+        
+    @istest
+    @funk.with_context
+    def can_read_inline_pictures(self, context):
+        drawing_element = _create_inline_image(
+            relationship_id="rId5",
+            description="It's a hat",
+        )
+        
+        image_bytes = b"Not an image at all!"
+        
+        relationships = Relationships({
+            "rId5": Relationship(target="media/hat.png")
+        })
+        
+        docx_file = context.mock()
+        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
+        
+        content_types = context.mock()
+        funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
+        
+        image = _read_and_get_document_xml_element(
+            drawing_element,
+            content_types=content_types,
+            relationships=relationships,
+            docx_file=docx_file,
+        )[0]
+        assert_equal(documents.Image, type(image))
+        assert_equal("It's a hat", image.alt_text)
+        assert_equal("image/png", image.content_type)
+        with image.open() as image_file:
+            assert_equal(image_bytes, image_file.read())
     
     @istest
     def ignored_elements_are_ignored_without_message(self):
@@ -142,18 +178,20 @@ class ReadXmlElementTests(object):
     @istest
     def unrecognised_elements_are_ignored(self):
         element = xml_element("w:huh", {}, [])
-        assert_equal(None, _read_and_get_document_xml_element(element))
+        assert_equal(None, read_document_xml_element(element).value)
     
     @istest
     def unrecognised_children_are_ignored(self):
         element = xml_element("w:r", {}, [_text_element("Hello!"), xml_element("w:huh", {}, [])])
         assert_equal(
             documents.run([documents.Text("Hello!")]),
-            _read_and_get_document_xml_element(element)
+            read_document_xml_element(element).value
         )
 
 def _read_and_get_document_xml_element(*args, **kwargs):
-    return read_document_xml_element(*args, **kwargs).value
+    result = read_document_xml_element(*args, **kwargs)
+    assert_equal([], result.messages)
+    return result.value
 
 
 def _document_element_with_text(text):
@@ -173,3 +211,19 @@ def _run_element_with_text(text):
 def _text_element(value):
     return xml_element("w:t", {}, [xml_text(value)])
     
+
+def _create_inline_image(description, relationship_id):
+    return xml_element("w:drawing", {}, [
+        xml_element("wp:inline", {}, [
+            xml_element("wp:docPr", {"descr": description}),
+            xml_element("a:graphic", {}, [
+                xml_element("a:graphicData", {}, [
+                    xml_element("pic:pic", {}, [
+                        xml_element("pic:blipFill", {}, [
+                            xml_element("a:blip", {"r:embed": relationship_id})
+                        ])
+                    ])
+                ])
+            ])
+        ])
+    ])

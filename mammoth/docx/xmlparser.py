@@ -14,7 +14,22 @@ class XmlElement(XmlElementBase):
         
     
     def find_children(self, name):
-        return filter(lambda child: child.name == name, self.children)
+        return XmlElementList(filter(lambda child: child.name == name, self.children))
+
+
+class XmlElementList(object):
+    def __init__(self, elements):
+        self._elements = elements
+        
+    def __iter__(self):
+        return iter(self._elements)
+    
+    def find_children(self, name):
+        children = []
+        for element in self._elements:
+            for child in element.find_children(name):
+                children.append(child)
+        return XmlElementList(children)
 
 
 class NullXmlElement(object):
