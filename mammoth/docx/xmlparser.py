@@ -5,10 +5,13 @@ import xml.sax
 XmlElementBase = collections.namedtuple("XmlElement", ["name", "attributes", "children"])
 class XmlElement(XmlElementBase):
     def find_child_or_null(self, name):
+        return self.find_child(name) or _null_xml_element
+    
+    def find_child(self, name):
         for child in self.children:
             if child.name == name:
                 return child
-        return _null_xml_element
+        
     
     def find_children(self, name):
         return filter(lambda child: child.name == name, self.children)
@@ -19,6 +22,9 @@ class NullXmlElement(object):
     
     def find_child_or_null(self, name):
         return self
+    
+    def find_child(self, name):
+        return None
 
 
 _null_xml_element = NullXmlElement()

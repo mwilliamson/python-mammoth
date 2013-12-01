@@ -3,6 +3,7 @@ from nose.tools import istest, assert_equal
 from mammoth import documents
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
+from mammoth.docx.numbering_xml import Numbering, NumberingLevel
 
 
 @istest
@@ -48,6 +49,27 @@ class ReadXmlElementTests(object):
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         paragraph = read_document_xml_element(paragraph_xml)
         assert_equal("Heading1", paragraph.style_name)
+        
+    @istest
+    def paragraph_has_no_numbering_if_it_has_no_numbering_properties(self):
+        element = xml_element("w:p")
+        assert_equal(None, read_document_xml_element(element).numbering)
+        
+    @istest
+    def paragraph_has_numbering_properties_from_paragraph_properties_if_present(self):
+        numbering_properties_xml = xml_element("w:numPr", {}, [
+            xml_element("w:ilvl", {"w:val": "1"}),
+            xml_element("w:numId", {"w:val": "42"}),
+        ])
+        properties_xml = xml_element("w:pPr", {}, [numbering_properties_xml])
+        paragraph_xml = xml_element("w:p", {}, [properties_xml])
+        
+        numbering = Numbering({"42": {"1": NumberingLevel("1", True)}})
+        paragraph = read_document_xml_element(paragraph_xml, numbering=numbering)
+        
+        assert_equal("1", paragraph.numbering.level_index)
+        assert_equal(True, paragraph.numbering.is_ordered)
+        
     
     @istest
     def unrecognised_elements_are_ignored(self):

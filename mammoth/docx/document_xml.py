@@ -2,54 +2,73 @@ from .. import documents
 from .xmlparser import node_types
 
 
-_handlers = {}
+def read_document_xml_element(element, numbering=None):
+    reader = _create_reader(numbering)
+    return reader(element)
+
+def _create_reader(numbering):
+    _handlers = {}
+
+    def handler(name):
+        def add(func):
+            _handlers[name] = func
+            
+        return add
+
+    @handler("w:t")
+    def text(element):
+        return documents.Text(_inner_text(element))
 
 
-def handler(name):
-    def add(func):
-        _handlers[name] = func
+    @handler("w:r")
+    def run(element):
+        return documents.Run(_read_xml_elements(element.children))
+
+
+    @handler("w:p")
+    def paragraph(element):
+        properties = element.find_child_or_null("w:pPr")
+        style_name = properties \
+            .find_child_or_null("w:pStyle") \
+            .attributes.get("w:val")
+        numbering_properties = properties.find_child("w:numPr")
+        if numbering_properties is None:
+            numbering = None
+        else:
+            numbering = _read_numbering_properties(numbering_properties)
         
-    return add
+        children = _read_xml_elements(element.children)
+        return documents.paragraph(children, style_name, numbering)
+
+    def _read_numbering_properties(element):
+        num_id = element.find_child("w:numId").attributes["w:val"]
+        level_index = element.find_child("w:ilvl").attributes["w:val"]
+        return numbering.find_level(num_id, level_index)
 
 
-def read_document_xml_element(element):
-    handler = _handlers.get(element.name)
-    if handler is None:
-        return None
-    else:
-        return handler(element)
+    @handler("w:body")
+    def body(element):
+        return _read_xml_elements(element.children)
 
 
-@handler("w:t")
-def text(element):
-    return documents.Text(_inner_text(element))
-
-
-@handler("w:r")
-def run(element):
-    return documents.Run(_read_xml_elements(element.children))
-
-
-@handler("w:p")
-def paragraph(element):
-    properties = element.find_child_or_null("w:pPr")
-    style_name = properties \
-        .find_child_or_null("w:pStyle") \
-        .attributes.get("w:val")
+    @handler("w:document")
+    def document(element):
+        body_element = _find_child(element, "w:body")
+        return documents.Document(_read_xml_elements(body_element.children))
     
-    children = _read_xml_elements(element.children)
-    return documents.paragraph(children, style_name)
+    
+    def read(element):
+        handler = _handlers.get(element.name)
+        if handler is None:
+            return None
+        else:
+            return handler(element)
+        
 
-
-@handler("w:body")
-def body(element):
-    return _read_xml_elements(element.children)
-
-
-@handler("w:document")
-def document(element):
-    body_element = _find_child(element, "w:body")
-    return documents.Document(_read_xml_elements(body_element.children))
+    def _read_xml_elements(elements):
+        return filter(None, map(read, elements))
+    
+    return read
 
 
 def _find(predicate, iterable):
@@ -60,10 +79,6 @@ def _find(predicate, iterable):
 
 def _find_child(element, name):
     return _find(lambda child: child.name == name, element.children)
-
-
-def _read_xml_elements(elements):
-    return filter(None, map(read_document_xml_element, elements))
 
 
 def _inner_text(node):
