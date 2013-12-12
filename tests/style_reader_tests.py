@@ -77,3 +77,19 @@ class ReadDocumentMatcherTests(object):
             document_matchers.paragraph(style_name="Heading1"),
             read_document_matcher("p.Heading1")
         )
+    
+    
+    @istest
+    def reads_plain_run(self):
+        assert_equal(
+            document_matchers.run(),
+            read_document_matcher("r")
+        )
+    
+    
+    @istest
+    def reads_run_with_style_name(self):
+        assert_equal(
+            document_matchers.run(style_name="Emphasis"),
+            read_document_matcher("r.Emphasis")
+        )
