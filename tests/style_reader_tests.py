@@ -1,7 +1,7 @@
 from nose.tools import istest, assert_equal
 
-from mammoth import html_paths
-from mammoth.style_reader import read_html_path
+from mammoth import html_paths, document_matchers
+from mammoth.style_reader import read_html_path, read_document_matcher
 
 
 @istest
@@ -58,4 +58,14 @@ class ReadHtmlPathTests(object):
         assert_equal(
             html_paths.path([html_paths.element(["p"], fresh=True)]),
             read_html_path("p:fresh")
+        )
+
+
+@istest
+class ReadDocumentMatcherTests(object):
+    @istest
+    def reads_plain_paragraph(self):
+        assert_equal(
+            document_matchers.paragraph(),
+            read_document_matcher("p")
         )
