@@ -1,6 +1,6 @@
 from parsimonious.grammar import Grammar
 
-from . import html_paths
+from .. import html_paths
 
 
 def read_html_path(string):
@@ -76,3 +76,4 @@ identifier = ~"[A-Z0-9]*"i
 whitespace = ~"\s"*
 
 """)
+
