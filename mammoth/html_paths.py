@@ -5,9 +5,9 @@ def path(elements):
     return HtmlPath(elements)
 
 
-def element(name):
-    return HtmlPathElement(name)
+def element(names):
+    return HtmlPathElement(names)
 
 
 HtmlPath = collections.namedtuple("HtmlPath", ["elements"])
-HtmlPathElement = collections.namedtuple("HtmlPathElement", ["name"])
+HtmlPathElement = collections.namedtuple("HtmlPathElement", ["names"])

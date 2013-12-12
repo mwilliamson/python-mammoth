@@ -16,5 +16,8 @@ setup(
     url='http://github.com/mwilliamson/python-mammoth',
     packages=['mammoth', 'mammoth.docx'],
     keywords="docx word office clean html",
+    install_requires=[
+        "parsimonious>=0.5,<0.6",
+    ]
 )
 
