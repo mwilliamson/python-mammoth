@@ -69,3 +69,11 @@ class ReadDocumentMatcherTests(object):
             document_matchers.paragraph(),
             read_document_matcher("p")
         )
+    
+    
+    @istest
+    def reads_paragraph_with_style_name(self):
+        assert_equal(
+            document_matchers.paragraph(style_name="Heading1"),
+            read_document_matcher("p.Heading1")
+        )
