@@ -20,7 +20,8 @@ def _read_path_node(path_node):
 def _read_element_node(node):
     tag_names = _read_tag_names_node(node.children[0])
     class_names = _read_class_names_node(node.children[1])
-    return html_paths.element(tag_names, class_names=class_names)
+    fresh = _read_fresh_node(node.children[2])
+    return html_paths.element(tag_names, class_names=class_names, fresh=fresh)
 
 
 def _read_tag_names_node(node):
@@ -41,6 +42,10 @@ def _read_class_name_node(node):
     return node.children[1].text
 
 
+def _read_fresh_node(node):
+    return len(node.children) > 0
+
+
 def _repeated_children_with_separator(node, has_whitespace):
     yield node.children[0]
     
@@ -58,11 +63,13 @@ _grammar = Grammar(r"""
 
 path = element whitespace* (">" whitespace* element)*
 
-element = tag_names class_name*
+element = tag_names class_name* fresh?
+
+tag_names = identifier ("|" identifier)*
 
 class_name = "." identifier
 
-tag_names = identifier ("|" identifier)*
+fresh = ":fresh"
 
 identifier = ~"[A-Z0-9]*"i
 

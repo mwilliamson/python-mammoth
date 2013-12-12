@@ -46,8 +46,16 @@ class ReadHtmlPathTests(object):
 
     
     @istest
-    def can_read__multiple_classes_on_element(self):
+    def can_read_multiple_classes_on_element(self):
         assert_equal(
             html_paths.path([html_paths.element(["p"], class_names=["tip", "help"])]),
             read_html_path("p.tip.help")
+        )
+
+    
+    @istest
+    def can_read_when_element_must_be_fresh(self):
+        assert_equal(
+            html_paths.path([html_paths.element(["p"], fresh=True)]),
+            read_html_path("p:fresh")
         )
