@@ -35,3 +35,19 @@ class ReadHtmlPathTests(object):
             html_paths.path([html_paths.element(["ul"]), html_paths.element(["li"])]),
             read_html_path("ul > li")
         )
+
+    
+    @istest
+    def can_read_class_on_element(self):
+        assert_equal(
+            html_paths.path([html_paths.element(["p"], class_names=["tip"])]),
+            read_html_path("p.tip")
+        )
+
+    
+    @istest
+    def can_read__multiple_classes_on_element(self):
+        assert_equal(
+            html_paths.path([html_paths.element(["p"], class_names=["tip", "help"])]),
+            read_html_path("p.tip.help")
+        )
