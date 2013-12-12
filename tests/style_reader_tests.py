@@ -27,3 +27,11 @@ class ReadHtmlPathTests(object):
             html_paths.path([html_paths.element(["ul", "ol", "p"])]),
             read_html_path("ul|ol|p")
         )
+
+    
+    @istest
+    def can_read_nested_elements(self):
+        assert_equal(
+            html_paths.path([html_paths.element(["ul"]), html_paths.element(["li"])]),
+            read_html_path("ul > li")
+        )
