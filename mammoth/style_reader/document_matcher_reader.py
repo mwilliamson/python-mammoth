@@ -33,8 +33,8 @@ def _read_style_node(style_node):
 def _read_list_node(list_node):
     if list_node.children:
         return documents.NumberingLevel(
-            int(list_node.children[0].children[1].text),
-            is_ordered=True,
+            int(list_node.children[0].children[3].text),
+            is_ordered=list_node.children[0].children[1].text == "ordered-list",
         )
     else:
         return None
@@ -51,6 +51,8 @@ style_name = "." style_identifier
 
 style_identifier = ~"[A-Z0-9]*"i
 
-list = ":ordered-list(" ~"[0-9]+" ")"
+list = ":" list_type "(" ~"[0-9]+" ")"
+
+list_type = "ordered-list" / "unordered-list"
 """)
 

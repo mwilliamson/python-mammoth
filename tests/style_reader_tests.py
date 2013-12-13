@@ -88,6 +88,14 @@ class ReadDocumentMatcherTests(object):
     
     
     @istest
+    def reads_paragraph_unordered_list(self):
+        assert_equal(
+            document_matchers.paragraph(numbering=documents.NumberingLevel(2, is_ordered=False)),
+            read_document_matcher("p:unordered-list(2)")
+        )
+    
+    
+    @istest
     def reads_plain_run(self):
         assert_equal(
             document_matchers.run(),
