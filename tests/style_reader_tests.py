@@ -1,7 +1,7 @@
 from nose.tools import istest, assert_equal
 
-from mammoth import html_paths, document_matchers, documents
-from mammoth.style_reader import read_html_path, read_document_matcher
+from mammoth import html_paths, document_matchers, documents, styles
+from mammoth.style_reader import read_html_path, read_document_matcher, read_style
 
 
 @istest
@@ -109,3 +109,11 @@ class ReadDocumentMatcherTests(object):
             document_matchers.run(style_name="Emphasis"),
             read_document_matcher("r.Emphasis")
         )
+
+
+@istest
+def document_matcher_is_mapped_to_html_path_using_fat_arrow():
+    assert_equal(
+        styles.style(document_matchers.paragraph(), html_paths.path([html_paths.element(["h1"])])),
+        read_style("p => h1")
+    )

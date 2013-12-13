@@ -5,6 +5,10 @@ from .. import document_matchers, documents
 
 def read_document_matcher(string):
     root_node = _grammar.parse(string)
+    return read_document_matcher_node(root_node)
+
+
+def read_document_matcher_node(root_node):
     element_node = root_node.children[0]
     if element_node.expr_name == "paragraph":
         return _read_paragraph_node(element_node)
@@ -39,9 +43,8 @@ def _read_list_node(list_node):
     else:
         return None
 
-
-_grammar = Grammar(r"""
-matcher = paragraph / run
+grammar_text = r"""
+document_matcher = paragraph / run
 
 paragraph = "p" style_name? list?
 
@@ -54,5 +57,6 @@ style_identifier = ~"[A-Z0-9]*"i
 list = ":" list_type "(" ~"[0-9]+" ")"
 
 list_type = "ordered-list" / "unordered-list"
-""")
+"""
+_grammar = Grammar(grammar_text)
 

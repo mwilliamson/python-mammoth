@@ -5,11 +5,10 @@ from .. import html_paths
 
 def read_html_path(string):
     path_node = _grammar.parse(string)
-    return _read_path_node(path_node)
-    
+    return read_html_path_node(path_node)
 
 
-def _read_path_node(path_node):
+def read_html_path_node(path_node):
     elements = [
         _read_element_node(child)
         for child in _repeated_children_with_separator(path_node, has_whitespace=True)
@@ -59,9 +58,9 @@ def _repeated_children_with_separator(node, has_whitespace):
         yield child.children[sequence_node_index]
 
 
-_grammar = Grammar(r"""
+grammar_text = r"""
 
-path = element whitespace* (">" whitespace* element)*
+html_path = element whitespace* (">" whitespace* element)*
 
 element = tag_names class_name* fresh?
 
@@ -75,5 +74,7 @@ identifier = ~"[A-Z0-9]*"i
 
 whitespace = ~"\s"*
 
-""")
+"""
+
+_grammar = Grammar(grammar_text)
 
