@@ -1,3 +1,6 @@
+from ..documents import NumberingLevel
+
+
 def read_numbering_xml_element(element):
     abstract_nums = _read_abstract_nums(element)
     nums = _read_nums(element, abstract_nums)
@@ -54,9 +57,3 @@ class Numbering(object):
             return None
         else:
             return num[level]
-
-
-class NumberingLevel(object):
-    def __init__(self, level_index, is_ordered):
-        self.level_index = level_index
-        self.is_ordered = is_ordered

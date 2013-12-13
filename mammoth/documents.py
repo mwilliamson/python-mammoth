@@ -35,3 +35,9 @@ def tab():
 
 image = Image
 hyperlink = Hyperlink
+
+
+class NumberingLevel(object):
+    def __init__(self, level_index, is_ordered):
+        self.level_index = level_index
+        self.is_ordered = is_ordered

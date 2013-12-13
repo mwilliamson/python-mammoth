@@ -6,7 +6,7 @@ import funk
 from mammoth import documents, results
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
-from mammoth.docx.numbering_xml import Numbering, NumberingLevel
+from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 
 
@@ -68,7 +68,7 @@ class ReadXmlElementTests(object):
         properties_xml = xml_element("w:pPr", {}, [numbering_properties_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        numbering = Numbering({"42": {"1": NumberingLevel("1", True)}})
+        numbering = Numbering({"42": {"1": documents.NumberingLevel("1", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
         
         assert_equal("1", paragraph.numbering.level_index)
