@@ -14,7 +14,7 @@ setup(
     author='Michael Williamson',
     author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/python-mammoth',
-    packages=['mammoth', 'mammoth.docx'],
+    packages=['mammoth', 'mammoth.docx', 'mammoth.style_reader'],
     keywords="docx word office clean html",
     install_requires=[
         "parsimonious>=0.5,<0.6",
