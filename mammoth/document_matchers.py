@@ -1,11 +1,11 @@
 import collections
 
 
-def paragraph(style_name=None):
-    return ParagraphMatcher(style_name)
+def paragraph(style_name=None, numbering=None):
+    return ParagraphMatcher(style_name, numbering)
 
 
-ParagraphMatcher = collections.namedtuple("ParagraphMatcher", ["style_name"])
+ParagraphMatcher = collections.namedtuple("ParagraphMatcher", ["style_name", "numbering"])
 
 
 def run(style_name=None):

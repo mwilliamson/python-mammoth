@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from mammoth import html_paths, document_matchers
+from mammoth import html_paths, document_matchers, documents
 from mammoth.style_reader import read_html_path, read_document_matcher
 
 
@@ -76,6 +76,14 @@ class ReadDocumentMatcherTests(object):
         assert_equal(
             document_matchers.paragraph(style_name="Heading1"),
             read_document_matcher("p.Heading1")
+        )
+    
+    
+    @istest
+    def reads_paragraph_ordered_list(self):
+        assert_equal(
+            document_matchers.paragraph(numbering=documents.NumberingLevel(2, is_ordered=True)),
+            read_document_matcher("p:ordered-list(2)")
         )
     
     
