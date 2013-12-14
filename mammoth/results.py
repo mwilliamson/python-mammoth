@@ -9,9 +9,9 @@ class Result(object):
     def map(self, func):
         return Result(func(self.value), self.messages)
     
-    #~ def bind(self, func):
-        #~ result = func(self.value)
-        #~ return Result(result.value, self.messages + result.messages)
+    def bind(self, func):
+        result = func(self.value)
+        return Result(result.value, self.messages + result.messages)
 
 
 Message = collections.namedtuple("Message", ["type", "message"])
