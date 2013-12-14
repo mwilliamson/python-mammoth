@@ -66,3 +66,20 @@ def _generate_attribute_string(attributes):
             ' {0}="{1}"'.format(key, _escape_html(value))
             for key, value in attributes.iteritems()
         )
+
+
+def satisfy_html_path(generator, path):
+    first_unsatisfied_index = _find_first_unsatisfied_index(generator, path)
+    while len(generator._stack) > first_unsatisfied_index:
+        generator.end()
+    
+    for element in path.elements[first_unsatisfied_index:]:
+        generator.start(element.names[0])
+    
+
+def _find_first_unsatisfied_index(generator, path):
+    for index, (generated_element, path_element) in enumerate(zip(generator._stack, path.elements)):
+        if generated_element.name not in path_element.names:
+            return index
+    
+    return len(generator._stack)
