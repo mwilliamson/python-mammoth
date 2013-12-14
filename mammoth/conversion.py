@@ -9,11 +9,12 @@ def convert_document_element_to_html(element, styles=None):
     converter = DocumentConverter(styles)
     converter.convert_element_to_html(element, html_generator)
     html_generator.end_all()
-    return results.success(html_generator.html_string())
+    return results.Result(html_generator.html_string(), converter.messages)
 
 
 class DocumentConverter(object):
     def __init__(self, styles):
+        self.messages = []
         self._styles = styles
         self._converters = {
             documents.Document: self._convert_document,
@@ -57,5 +58,8 @@ class DocumentConverter(object):
                     document_matcher.style_name is None or
                     document_matcher.style_name == paragraph.style_name):
                 return style.html_path
-                
+        
+        if paragraph.style_name is not None:
+            self.messages.append(results.warning("Unrecognised paragraph style: {0}".format(paragraph.style_name)))
+        
         return html_paths.path([html_paths.element("p")])

@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from mammoth import documents, style_reader
+from mammoth import documents, style_reader, results
 from mammoth.conversion import convert_document_element_to_html
 
 
@@ -54,6 +54,24 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)
+    
+
+@istest
+def warning_is_emitted_if_paragraph_style_is_unrecognised():
+    result = convert_document_element_to_html(
+        documents.paragraph(style_name="TipsParagraph", children=[
+            _run_with_text("Tip")
+        ]),
+    )
+    assert_equal([results.warning("Unrecognised paragraph style: TipsParagraph")], result.messages)
+    
+
+@istest
+def no_warning_if_there_is_no_style_for_plain_paragraphs():
+    result = convert_document_element_to_html(
+        documents.paragraph(children=[_run_with_text("Tip")]),
+    )
+    assert_equal([], result.messages)
 
 
 def _run_with_text(text):
