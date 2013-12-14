@@ -51,3 +51,9 @@ def elements_with_empty_string_text_are_not_generator():
     generator.end_all()
     assert_equal("", generator.html_string())
     
+
+@istest
+def self_closing_tag_can_have_attributes():
+    generator = HtmlGenerator()
+    generator.self_closing("br", {"data-blah": "42"})
+    assert_equal('<br data-blah="42" />', generator.html_string())

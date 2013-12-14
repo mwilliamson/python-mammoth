@@ -23,8 +23,9 @@ class HtmlGenerator(object):
         while self._stack:
             self.end()
     
-    def self_closing(self, name):
-        self._fragments.append("<{0} />".format(name))
+    def self_closing(self, name, attributes=None):
+        attribute_string = _generate_attribute_string(attributes)
+        self._fragments.append("<{0}{1} />".format(name, attribute_string))
     
     def _write_all(self):
         for element in self._stack:
@@ -47,3 +48,13 @@ class _Element(object):
 
 def _escape_html(text):
     return cgi.escape(text, quote=True)
+
+
+def _generate_attribute_string(attributes):
+    if attributes is None:
+        return ""
+    else:
+        return "".join(
+            ' {0}="{1}"'.format(key, value)
+            for key, value in attributes.iteritems()
+        )
