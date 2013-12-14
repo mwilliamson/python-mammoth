@@ -55,6 +55,6 @@ def _generate_attribute_string(attributes):
         return ""
     else:
         return "".join(
-            ' {0}="{1}"'.format(key, value)
+            ' {0}="{1}"'.format(key, _escape_html(value))
             for key, value in attributes.iteritems()
         )

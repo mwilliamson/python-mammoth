@@ -57,3 +57,10 @@ def self_closing_tag_can_have_attributes():
     generator = HtmlGenerator()
     generator.self_closing("br", {"data-blah": "42"})
     assert_equal('<br data-blah="42" />', generator.html_string())
+
+
+@istest
+def attribute_values_are_escaped():
+    generator = HtmlGenerator()
+    generator.self_closing("br", {"data-blah": "<"})
+    assert_equal('<br data-blah="&lt;" />', generator.html_string())
