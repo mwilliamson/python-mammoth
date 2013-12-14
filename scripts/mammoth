@@ -10,9 +10,15 @@ import mammoth
 def main():
     args = _parse_args()
     
+    if args.styles is None:
+        styles = None
+    else:
+        with open(args.styles) as styles_fileobj:
+            styles = styles_fileobj.read()
+    
     with _open_output(args.output) as output:
         with open(args.path, "rb") as docx_fileobj:
-            result = mammoth.convert_to_html(docx_fileobj)
+            result = mammoth.convert_to_html(docx_fileobj, styles=styles)
             for message in result.messages:
                 sys.stderr.write(message.message)
                 sys.stderr.write("\n")
@@ -35,6 +41,7 @@ def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("path")
     parser.add_argument("output", nargs="?")
+    parser.add_argument("--styles", required=False)
     return parser.parse_args()
 
 
