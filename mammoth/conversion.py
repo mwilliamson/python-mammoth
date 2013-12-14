@@ -53,7 +53,9 @@ class DocumentConverter(object):
     def _find_html_path_for_paragraph(self, paragraph):
         for style in self._styles:
             document_matcher = style.document_matcher
-            if document_matcher.element_type == "paragraph" and document_matcher.style_name == paragraph.style_name:
+            if document_matcher.element_type == "paragraph" and (
+                    document_matcher.style_name is None or
+                    document_matcher.style_name == paragraph.style_name):
                 return style.html_path
                 
         return html_paths.path([html_paths.element("p")])

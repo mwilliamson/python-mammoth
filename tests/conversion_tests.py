@@ -33,5 +33,28 @@ def paragraphs_are_converted_by_satisfying_matching_paths():
     assert_equal('<p class="tip">Tip</p>', result.value)
 
 
+@istest
+def default_paragraph_style_is_used_if_no_matching_style_is_found():
+    result = convert_document_element_to_html(
+        documents.paragraph(style_name="TipsParagraph", children=[
+            _run_with_text("Tip")
+        ]),
+    )
+    assert_equal('<p>Tip</p>', result.value)
+
+
+@istest
+def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
+    result = convert_document_element_to_html(
+        documents.paragraph(style_name="TipsParagraph", children=[
+            _run_with_text("Tip")
+        ]),
+        styles=[
+            style_reader.read_style("p => p.tip")
+        ]
+    )
+    assert_equal('<p class="tip">Tip</p>', result.value)
+
+
 def _run_with_text(text):
     return documents.run(children=[documents.text(text)])
