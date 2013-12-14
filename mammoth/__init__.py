@@ -2,15 +2,20 @@ from .results import Result
 from . import docx, conversion, style_reader, lists
 
 
-def convert_to_html(fileobj):
+def convert_to_html(fileobj, styles=None):
+    if styles is None:
+        styles = _default_styles
+    
     return docx.read(fileobj).bind(lambda document: 
-        conversion.convert_document_element_to_html(document, styles=_create_default_styles())
+        conversion.convert_document_element_to_html(document, styles=_read_styles(styles))
     )
 
 
-def _create_default_styles():
-    lines = filter(None, map(lambda line: line.strip(), _default_styles.split("\n")))
+def _read_styles(style_text):
+    lines = filter(None, map(lambda line: line.strip(), style_text.split("\n")))
     return lists.map(style_reader.read_style, lines)
+    
+
 
 _default_styles = """
 p.Heading1 => h1:fresh
