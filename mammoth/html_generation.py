@@ -74,7 +74,10 @@ def satisfy_html_path(generator, path):
         generator.end()
     
     for element in path.elements[first_unsatisfied_index:]:
-        generator.start(element.names[0])
+        attributes = {}
+        if element.class_names:
+            attributes["class"] = " ".join(element.class_names)
+        generator.start(element.names[0], attributes=attributes)
     
 
 def _find_first_unsatisfied_index(generator, path):

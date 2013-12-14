@@ -138,3 +138,12 @@ class SatisfyPathTests(object):
         satisfy_html_path(generator, path)
         generator.text("there")
         assert_equal('<blockquote><p>Hello</p><p>there', generator.html_string())
+    
+    
+    @istest
+    def attributes_are_generated_when_satisfying_elements(self):
+        generator = HtmlGenerator()
+        path = html_paths.path([html_paths.element(["p"], class_names=["tip"])])
+        satisfy_html_path(generator, path)
+        generator.text("Hello")
+        assert_equal('<p class="tip">Hello', generator.html_string())
