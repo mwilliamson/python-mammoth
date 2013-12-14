@@ -1,3 +1,6 @@
+import base64
+import io
+
 from . import documents, results, html_paths
 from .html_generation import HtmlGenerator, satisfy_html_path
 
@@ -23,6 +26,7 @@ class DocumentConverter(object):
             documents.Text: self._convert_text,
             documents.Hyperlink: self._convert_hyperlink,
             documents.Tab: self._convert_tab,
+            documents.Image: self._convert_image,
         }
 
 
@@ -66,6 +70,17 @@ class DocumentConverter(object):
     
     def _convert_tab(self, tab, html_generator):
         html_generator.text("\t")
+    
+    
+    def _convert_image(self, image, html_generator):
+        with image.open() as image_bytes:
+            output = io.BytesIO()
+            base64.encode(image_bytes, output)
+            encoded_src = output.getvalue().rstrip("\n")
+            
+        html_generator.self_closing("img", {
+            "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
+        })
 
 
     def _convert_elements_to_html(self, elements, html_generator):

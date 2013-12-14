@@ -1,3 +1,5 @@
+import io
+
 from nose.tools import istest, assert_equal
 
 from mammoth import documents, style_reader, results
@@ -113,6 +115,13 @@ def docx_hyperlink_is_converted_to_anchor_tag():
 def docx_tab_is_converted_to_tab_in_html():
     result = convert_document_element_to_html(documents.tab())
     assert_equal('\t', result.value)
+
+
+@istest
+def images_are_converted_to_img_tags_with_data_uri():
+    image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO("abc"))
+    result = convert_document_element_to_html(image)
+    assert_equal('<img src="data:image/png;base64,YWJj" />', result.value)
 
 
 def _run_with_text(text):
