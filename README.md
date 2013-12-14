@@ -33,7 +33,7 @@ For instance:
 
     mammoth document.docx output.html --styles=custom-styles
     
-Where custom-styles looks something like:
+Where `custom-styles` looks something like:
 
     p.AsideHeading => div.aside > h2:fresh
     p.AsideText => div.aside > p:fresh
