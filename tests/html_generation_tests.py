@@ -14,3 +14,13 @@ def html_escapes_text():
     generator = HtmlGenerator()
     generator.text("<")
     assert_equal("&lt;", generator.html_string())
+
+
+@istest
+def all_elements_are_closed_by_end_all():
+    generator = HtmlGenerator()
+    generator.start("p")
+    generator.start("span")
+    generator.text("Hello!")
+    generator.end_all()
+    assert_equal("<p><span>Hello!</span></p>", generator.html_string())
