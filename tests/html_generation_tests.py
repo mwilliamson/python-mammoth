@@ -64,3 +64,12 @@ def attribute_values_are_escaped():
     generator = HtmlGenerator()
     generator.self_closing("br", {"data-blah": "<"})
     assert_equal('<br data-blah="&lt;" />', generator.html_string())
+
+
+@istest
+def opening_tag_can_have_attributes():
+    generator = HtmlGenerator()
+    generator.start("p", {"data-blah": "42"})
+    generator.text("Hello!")
+    generator.end()
+    assert_equal('<p data-blah="42">Hello!</p>', generator.html_string())
