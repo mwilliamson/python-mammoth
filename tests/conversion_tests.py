@@ -131,5 +131,16 @@ def images_have_alt_tags_if_available():
     assert_equal('<img src="data:image/png;base64,YWJj" alt="It\'s a hat" />', result.value)
 
 
+@istest
+def can_define_custom_conversion_for_images():
+    def convert_image(image, html_generator):
+        with image.open() as image_file:
+            html_generator.self_closing("img", {"alt": image_file.read()})
+        
+    image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO("abc"))
+    result = convert_document_element_to_html(image, convert_image=convert_image)
+    assert_equal('<img alt="abc" />', result.value)
+
+
 def _run_with_text(text):
     return documents.run(children=[documents.text(text)])

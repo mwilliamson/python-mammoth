@@ -5,18 +5,18 @@ from . import documents, results, html_paths
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
-def convert_document_element_to_html(element, styles=None):
+def convert_document_element_to_html(element, styles=None, convert_image=None):
     if styles is None:
         styles = []
     html_generator = HtmlGenerator()
-    converter = DocumentConverter(styles)
-    converter.convert_element_to_html(element, html_generator)
+    converter = DocumentConverter(styles, convert_image=convert_image)
+    converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
     return results.Result(html_generator.html_string(), converter.messages)
 
 
 class DocumentConverter(object):
-    def __init__(self, styles):
+    def __init__(self, styles, convert_image):
         self.messages = []
         self._styles = styles
         self._converters = {
@@ -26,7 +26,7 @@ class DocumentConverter(object):
             documents.Text: self._convert_text,
             documents.Hyperlink: self._convert_hyperlink,
             documents.Tab: self._convert_tab,
-            documents.Image: self._convert_image,
+            documents.Image: convert_image or self._convert_image,
         }
 
 
