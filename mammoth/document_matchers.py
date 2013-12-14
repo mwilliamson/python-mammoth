@@ -14,3 +14,4 @@ def run(style_name=None):
 
 
 RunMatcher = collections.namedtuple("RunMatcher", ["style_name"])
+RunMatcher.element_type = "run"

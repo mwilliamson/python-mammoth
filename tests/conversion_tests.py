@@ -72,6 +72,33 @@ def no_warning_if_there_is_no_style_for_plain_paragraphs():
         documents.paragraph(children=[_run_with_text("Tip")]),
     )
     assert_equal([], result.messages)
+    
+
+@istest
+def bold_runs_are_wrapped_in_strong_tags():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_bold=True),
+    )
+    assert_equal("<strong>Hello</strong>", result.value)
+    
+
+@istest
+def italic_runs_are_wrapped_in_emphasis_tags():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_italic=True),
+    )
+    assert_equal("<em>Hello</em>", result.value)
+    
+
+@istest
+def runs_are_converted_by_satisfying_matching_paths():
+    result = convert_document_element_to_html(
+        documents.run(style_name="TipsRun", children=[documents.Text("Tip")]),
+        styles=[
+            style_reader.read_style("r.TipsRun => span.tip")
+        ]
+    )
+    assert_equal('<span class="tip">Tip</span>', result.value)
 
 
 def _run_with_text(text):

@@ -39,7 +39,17 @@ class DocumentConverter(object):
 
 
     def _convert_run(self, run, html_generator):
-        self._convert_elements_to_html(run.children, html_generator)
+        run_generator = HtmlGenerator()
+        html_path = self._find_html_path_for_run(run)
+        if html_path:
+            satisfy_html_path(run_generator, html_path)
+        if run.is_bold:
+            run_generator.start("strong")
+        if run.is_italic:
+            run_generator.start("em")
+        self._convert_elements_to_html(run.children, run_generator)
+        run_generator.end_all()
+        html_generator.append(run_generator)
 
 
     def _convert_text(self, text, html_generator):
@@ -52,14 +62,23 @@ class DocumentConverter(object):
 
 
     def _find_html_path_for_paragraph(self, paragraph):
+        default = html_paths.path([html_paths.element("p")])
+        return self._find_html_path(paragraph, "paragraph", default)
+    
+    def _find_html_path_for_run(self, run):
+        return self._find_html_path(run, "run", default=None)
+        
+    
+    def _find_html_path(self, element, element_type, default):
         for style in self._styles:
             document_matcher = style.document_matcher
-            if document_matcher.element_type == "paragraph" and (
+            if document_matcher.element_type == element_type and (
                     document_matcher.style_name is None or
-                    document_matcher.style_name == paragraph.style_name):
+                    document_matcher.style_name == element.style_name):
                 return style.html_path
         
-        if paragraph.style_name is not None:
-            self.messages.append(results.warning("Unrecognised paragraph style: {0}".format(paragraph.style_name)))
+        if element.style_name is not None:
+            self.messages.append(results.warning("Unrecognised {0} style: {1}".format(element_type, element.style_name)))
         
-        return html_paths.path([html_paths.element("p")])
+        return default
+        
