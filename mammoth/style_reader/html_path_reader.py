@@ -49,18 +49,18 @@ def _repeated_children_with_separator(node, has_whitespace):
     yield node.children[0]
     
     if has_whitespace:
-        sequence_node_index = 2
+        sequence_node_index = 3
     else:
         sequence_node_index = 1
     
-    sequence_node = node.children[sequence_node_index]
+    sequence_node = node.children[1]
     for child in sequence_node.children:
         yield child.children[sequence_node_index]
 
 
 grammar_text = r"""
 
-html_path = element whitespace* (">" whitespace* element)*
+html_path = element (whitespace* ">" whitespace* element)*
 
 element = tag_names class_name* fresh?
 

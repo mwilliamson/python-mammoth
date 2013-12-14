@@ -11,3 +11,20 @@ def docx_containing_one_paragraph_is_converted_to_single_p_element():
         result = mammoth.convert_to_html(fileobj=fileobj)
         assert_equal("<p>Walking on imported air</p>", result.value)
         assert_equal([], result.messages)
+
+
+@istest
+def inline_images_are_included_in_output():
+    with open(test_path("tiny-picture.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAO\nvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
+        assert_equal([], result.messages)
+        
+
+@istest
+def simple_list_is_converted_to_list_elements():
+    with open(test_path("simple-list.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal([], result.messages)
+        assert_equal("<ul><li>Apple</li><li>Banana</li></ul>", result.value)
+        

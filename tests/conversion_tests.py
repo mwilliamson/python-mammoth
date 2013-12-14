@@ -81,7 +81,7 @@ def bulleted_paragraphs_are_converted_using_matching_styles():
     result = convert_document_element_to_html(
         documents.paragraph(children=[
             _run_with_text("Hello")
-        ], numbering=documents.numbering_level(level_index=1, is_ordered=False)),
+        ], numbering=documents.numbering_level(level_index=0, is_ordered=False)),
         styles=[
             style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
         ]

@@ -37,7 +37,7 @@ def _read_style_node(style_node):
 def _read_list_node(list_node):
     if list_node.children:
         return documents.numbering_level(
-            int(list_node.children[0].children[3].text),
+            int(list_node.children[0].children[3].text) - 1,
             is_ordered=list_node.children[0].children[1].text == "ordered-list",
         )
     else:

@@ -82,7 +82,7 @@ class ReadDocumentMatcherTests(object):
     @istest
     def reads_paragraph_ordered_list(self):
         assert_equal(
-            document_matchers.paragraph(numbering=documents.numbering_level(2, is_ordered=True)),
+            document_matchers.paragraph(numbering=documents.numbering_level(1, is_ordered=True)),
             read_document_matcher("p:ordered-list(2)")
         )
     
@@ -90,7 +90,7 @@ class ReadDocumentMatcherTests(object):
     @istest
     def reads_paragraph_unordered_list(self):
         assert_equal(
-            document_matchers.paragraph(numbering=documents.numbering_level(2, is_ordered=False)),
+            document_matchers.paragraph(numbering=documents.numbering_level(1, is_ordered=False)),
             read_document_matcher("p:unordered-list(2)")
         )
     
