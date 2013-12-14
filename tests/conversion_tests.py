@@ -101,5 +101,13 @@ def runs_are_converted_by_satisfying_matching_paths():
     assert_equal('<span class="tip">Tip</span>', result.value)
 
 
+@istest
+def docx_hyperlink_is_converted_to_anchor_tag():
+    result = convert_document_element_to_html(
+        documents.hyperlink(href="http://example.com", children=[documents.Text("Hello")]),
+    )
+    assert_equal('<a href="http://example.com">Hello</a>', result.value)
+    
+
 def _run_with_text(text):
     return documents.run(children=[documents.text(text)])

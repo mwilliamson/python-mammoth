@@ -21,6 +21,7 @@ class DocumentConverter(object):
             documents.Paragraph: self._convert_paragraph,
             documents.Run: self._convert_run,
             documents.Text: self._convert_text,
+            documents.Hyperlink: self._convert_hyperlink,
         }
 
 
@@ -54,6 +55,12 @@ class DocumentConverter(object):
 
     def _convert_text(self, text, html_generator):
         html_generator.text(text.value)
+    
+    
+    def _convert_hyperlink(self, hyperlink, html_generator):
+        html_generator.start("a", {"href": hyperlink.href})
+        self._convert_elements_to_html(hyperlink.children, html_generator)
+        html_generator.end()
 
 
     def _convert_elements_to_html(self, elements, html_generator):
