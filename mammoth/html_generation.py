@@ -49,6 +49,9 @@ class HtmlGenerator(object):
 
 class _Element(object):
     def __init__(self, name, attributes):
+        if attributes is None:
+            attributes = {}
+        
         self.name = name
         self.attributes = attributes
         self.written = False
@@ -76,13 +79,25 @@ def satisfy_html_path(generator, path):
     for element in path.elements[first_unsatisfied_index:]:
         attributes = {}
         if element.class_names:
-            attributes["class"] = " ".join(element.class_names)
+            attributes["class"] = _generate_class_attribute(element)
         generator.start(element.names[0], attributes=attributes)
     
 
 def _find_first_unsatisfied_index(generator, path):
     for index, (generated_element, path_element) in enumerate(zip(generator._stack, path.elements)):
-        if generated_element.name not in path_element.names or path_element.fresh:
+        if not _is_element_match(generated_element, path_element):
             return index
     
     return len(generator._stack)
+
+
+def _is_element_match(generated_element, path_element):
+    return (
+        not path_element.fresh and
+        generated_element.name in path_element.names and
+        generated_element.attributes.get("class", "") == _generate_class_attribute(path_element)
+    )
+
+
+def _generate_class_attribute(path_element):
+    return " ".join(path_element.class_names)

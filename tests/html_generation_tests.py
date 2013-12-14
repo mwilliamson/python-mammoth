@@ -147,3 +147,25 @@ class SatisfyPathTests(object):
         satisfy_html_path(generator, path)
         generator.text("Hello")
         assert_equal('<p class="tip">Hello', generator.html_string())
+    
+    
+    @istest
+    def elements_do_not_match_if_class_names_do_not_match(self):
+        generator = HtmlGenerator()
+        generator.start("p", {"class": "help"})
+        generator.text("Help")
+        path = html_paths.path([html_paths.element(["p"], class_names=["tip"])])
+        satisfy_html_path(generator, path)
+        generator.text("Tip")
+        assert_equal('<p class="help">Help</p><p class="tip">Tip', generator.html_string())
+    
+    
+    @istest
+    def class_names_match_if_they_are_the_same(self):
+        generator = HtmlGenerator()
+        generator.start("p", {"class": "tip"})
+        generator.text("Help")
+        path = html_paths.path([html_paths.element(["p"], class_names=["tip"])])
+        satisfy_html_path(generator, path)
+        generator.text("Tip")
+        assert_equal('<p class="tip">HelpTip', generator.html_string())
