@@ -7,19 +7,29 @@ class HtmlGenerator(object):
         self._fragments = []
     
     def text(self, text):
+        self._write_all()
         self._fragments.append(_escape_html(text))
     
     def start(self, name):
         self._stack.append(_Element(name))
-        self._fragments.append("<{0}>".format(name))
 
     def end(self):
         element = self._stack.pop()
-        self._fragments.append("</{0}>".format(element.name))
+        if element.written:
+            self._fragments.append("</{0}>".format(element.name))
     
     def end_all(self):
         while self._stack:
             self.end()
+    
+    def _write_all(self):
+        for element in self._stack:
+            if not element.written:
+                element.written = True
+                self._write_element(element)
+    
+    def _write_element(self, element):
+        self._fragments.append("<{0}>".format(element.name))
     
     def html_string(self):
         return "".join(self._fragments)
@@ -28,6 +38,7 @@ class HtmlGenerator(object):
 class _Element(object):
     def __init__(self, name):
         self.name = name
+        self.written = False
 
 
 def _escape_html(text):

@@ -24,3 +24,13 @@ def all_elements_are_closed_by_end_all():
     generator.text("Hello!")
     generator.end_all()
     assert_equal("<p><span>Hello!</span></p>", generator.html_string())
+
+
+@istest
+def elements_with_no_text_are_not_generator():
+    generator = HtmlGenerator()
+    generator.start("p")
+    generator.start("span")
+    generator.end_all()
+    assert_equal("", generator.html_string())
+    
