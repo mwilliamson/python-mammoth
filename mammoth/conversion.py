@@ -77,10 +77,14 @@ class DocumentConverter(object):
             output = io.BytesIO()
             base64.encode(image_bytes, output)
             encoded_src = output.getvalue().rstrip("\n")
-            
-        html_generator.self_closing("img", {
+        
+        attributes = {
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
-        })
+        }
+        if image.alt_text:
+            attributes["alt"] = image.alt_text
+            
+        html_generator.self_closing("img", attributes)
 
 
     def _convert_elements_to_html(self, elements, html_generator):

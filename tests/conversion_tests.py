@@ -124,5 +124,12 @@ def images_are_converted_to_img_tags_with_data_uri():
     assert_equal('<img src="data:image/png;base64,YWJj" />', result.value)
 
 
+@istest
+def images_have_alt_tags_if_available():
+    image = documents.image(alt_text="It's a hat", content_type="image/png", open=lambda: io.BytesIO("abc"))
+    result = convert_document_element_to_html(image)
+    assert_equal('<img src="data:image/png;base64,YWJj" alt="It\'s a hat" />', result.value)
+
+
 def _run_with_text(text):
     return documents.run(children=[documents.text(text)])
