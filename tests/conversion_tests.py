@@ -74,6 +74,32 @@ def no_warning_if_there_is_no_style_for_plain_paragraphs():
         documents.paragraph(children=[_run_with_text("Tip")]),
     )
     assert_equal([], result.messages)
+
+
+@istest
+def bulleted_paragraphs_are_converted_using_matching_styles():
+    result = convert_document_element_to_html(
+        documents.paragraph(children=[
+            _run_with_text("Hello")
+        ], numbering=documents.numbering_level(level_index=1, is_ordered=False)),
+        styles=[
+            style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
+        ]
+    )
+    assert_equal('<ul><li>Hello</li></ul>', result.value)
+
+
+@istest
+def bulleted_styles_dont_match_plain_paragraph():
+    result = convert_document_element_to_html(
+        documents.paragraph(children=[
+            _run_with_text("Hello")
+        ]),
+        styles=[
+            style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
+        ]
+    )
+    assert_equal('<p>Hello</p>', result.value)
     
 
 @istest

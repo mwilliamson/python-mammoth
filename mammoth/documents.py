@@ -37,4 +37,7 @@ image = Image
 hyperlink = Hyperlink
 
 
-NumberingLevel = collections.namedtuple("NumberingLevel", ["level_index", "is_ordered"])
+def numbering_level(level_index, is_ordered):
+    return _NumberingLevel(str(level_index), bool(is_ordered))
+
+_NumberingLevel = collections.namedtuple("NumberingLevel", ["level_index", "is_ordered"])

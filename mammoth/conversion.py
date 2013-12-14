@@ -103,9 +103,7 @@ class DocumentConverter(object):
     def _find_html_path(self, element, element_type, default):
         for style in self._styles:
             document_matcher = style.document_matcher
-            if document_matcher.element_type == element_type and (
-                    document_matcher.style_name is None or
-                    document_matcher.style_name == element.style_name):
+            if _document_matcher_matches(document_matcher, element, element_type):
                 return style.html_path
         
         if element.style_name is not None:
@@ -113,3 +111,15 @@ class DocumentConverter(object):
         
         return default
         
+
+def _document_matcher_matches(matcher, element, element_type):
+    return (
+        matcher.element_type == element_type and (
+            matcher.style_name is None or
+            matcher.style_name == element.style_name
+        ) and (
+            element_type != "paragraph" or
+            matcher.numbering is None or
+            matcher.numbering == element.numbering
+        )
+    )

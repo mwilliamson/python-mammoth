@@ -68,7 +68,7 @@ class ReadXmlElementTests(object):
         properties_xml = xml_element("w:pPr", {}, [numbering_properties_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        numbering = Numbering({"42": {"1": documents.NumberingLevel("1", True)}})
+        numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
         
         assert_equal("1", paragraph.numbering.level_index)
