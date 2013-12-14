@@ -1,5 +1,5 @@
 from .results import Result
-from . import docx, conversion, style_reader
+from . import docx, conversion, style_reader, lists
 
 
 def convert_to_html(fileobj):
@@ -10,7 +10,7 @@ def convert_to_html(fileobj):
 
 def _create_default_styles():
     lines = filter(None, map(lambda line: line.strip(), _default_styles.split("\n")))
-    return map(style_reader.read_style, lines)
+    return lists.map(style_reader.read_style, lines)
 
 _default_styles = """
 p.Heading1 => h1:fresh

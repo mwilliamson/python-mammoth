@@ -13,3 +13,11 @@ def _collect(values, result):
             _collect(value, result)
         elif value is not None:
             result.append(value)
+
+
+if sys.version_info[0] == 2:
+    map = map
+else:
+    import builtins
+    def map(*args, **kwargs):
+        return list(builtins.map(*args, **kwargs))
