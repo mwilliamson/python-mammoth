@@ -23,6 +23,9 @@ class HtmlGenerator(object):
         while self._stack:
             self.end()
     
+    def self_closing(self, name):
+        self._fragments.append("<{0} />".format(name))
+    
     def _write_all(self):
         for element in self._stack:
             if not element.written:

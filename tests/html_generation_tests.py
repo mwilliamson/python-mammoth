@@ -17,6 +17,13 @@ def html_escapes_text():
 
 
 @istest
+def self_closing_tag_is_self_closing():
+    generator = HtmlGenerator()
+    generator.self_closing("br")
+    assert_equal("<br />", generator.html_string())
+
+
+@istest
 def all_elements_are_closed_by_end_all():
     generator = HtmlGenerator()
     generator.start("p")
