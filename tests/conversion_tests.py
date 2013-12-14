@@ -4,6 +4,7 @@ from nose.tools import istest, assert_equal
 
 from mammoth import documents, style_reader, results
 from mammoth.conversion import convert_document_element_to_html
+from mammoth.docx.xmlparser import parse_xml
 
 
 @istest
@@ -154,14 +155,15 @@ def images_are_converted_to_img_tags_with_data_uri():
 def images_have_alt_tags_if_available():
     image = documents.image(alt_text="It's a hat", content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
-    assert_equal('<img src="data:image/png;base64,YWJj" alt="It\'s a hat" />', result.value)
+    image_html = parse_xml(io.StringIO(result.value))
+    assert_equal('It\'s a hat', image_html.attributes["alt"])
 
 
 @istest
 def can_define_custom_conversion_for_images():
     def convert_image(image, html_generator):
         with image.open() as image_file:
-            html_generator.self_closing("img", {"alt": image_file.read()})
+            html_generator.self_closing("img", {"alt": image_file.read().decode("ascii")})
         
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)

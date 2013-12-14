@@ -45,7 +45,7 @@ class HtmlGenerator(object):
                 self._fragments.append(fragment)
     
     def html_string(self):
-        return "".join(self._fragments)
+        return u"".join(self._fragments)
 
 
 class _Element(object):
