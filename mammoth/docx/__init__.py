@@ -1,4 +1,5 @@
 import zipfile
+import contextlib
 
 from ..results import Result
 from .xmlparser import parse_xml
@@ -21,19 +22,19 @@ _namespaces = [
 def read(fileobj):
     zip_file = zipfile.ZipFile(fileobj)
     
-    with zip_file.open("[Content_Types].xml") as content_types_fileobj:
+    with _open_entry(zip_file, "[Content_Types].xml") as content_types_fileobj:
         content_types = read_content_types_xml_element(_parse_docx_xml(content_types_fileobj))
     
-    with zip_file.open("word/_rels/document.xml.rels") as relationships_fileobj:
+    with _open_entry(zip_file, "word/_rels/document.xml.rels") as relationships_fileobj:
         relationships = read_relationships_xml_element(_parse_docx_xml(relationships_fileobj))
     
     if _has_entry(zip_file, "word/numbering.xml"):
-        with zip_file.open("word/numbering.xml") as numbering_fileobj:
+        with _open_entry(zip_file, "word/numbering.xml") as numbering_fileobj:
             numbering = read_numbering_xml_element(_parse_docx_xml(numbering_fileobj))
     else:
         numbering = Numbering({})
     
-    with zip_file.open("word/document.xml") as document_fileobj:
+    with _open_entry(zip_file, "word/document.xml") as document_fileobj:
         document_xml = _parse_docx_xml(document_fileobj)
         return read_document_xml_element(
             document_xml,
@@ -46,6 +47,15 @@ def read(fileobj):
 
 def _parse_docx_xml(fileobj):
     return parse_xml(fileobj, _namespaces)
+
+
+@contextlib.contextmanager
+def _open_entry(zip_file, name):
+    entry = zip_file.open(name)
+    try:
+        yield entry
+    finally:
+        entry.close()
 
 
 def _has_entry(zip_file, name):
