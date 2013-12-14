@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import argparse
+import contextlib
+import sys
+
+import mammoth
+
+
+def main():
+    args = _parse_args()
+    
+    with _open_output(args.output) as output:
+        with open(args.path, "rb") as docx_fileobj:
+            result = mammoth.convert_to_html(docx_fileobj)
+            for message in result.messages:
+                sys.stderr.write(message.message)
+                sys.stderr.write("\n")
+            output.write(result.value)
+
+
+@contextlib.contextmanager
+def _open_output(name):
+    if name is None:
+        try:
+            yield sys.stdout
+        finally:
+            sys.stdout.flush()
+    else:
+        with open(name, "w") as output:
+            yield output
+
+
+def _parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path")
+    parser.add_argument("output", nargs="?")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    main()
