@@ -34,3 +34,13 @@ def elements_with_no_text_are_not_generator():
     generator.end_all()
     assert_equal("", generator.html_string())
     
+
+@istest
+def elements_with_empty_string_text_are_not_generator():
+    generator = HtmlGenerator()
+    generator.start("p")
+    generator.start("span")
+    generator.text("")
+    generator.end_all()
+    assert_equal("", generator.html_string())
+    

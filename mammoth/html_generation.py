@@ -7,8 +7,9 @@ class HtmlGenerator(object):
         self._fragments = []
     
     def text(self, text):
-        self._write_all()
-        self._fragments.append(_escape_html(text))
+        if text:
+            self._write_all()
+            self._fragments.append(_escape_html(text))
     
     def start(self, name):
         self._stack.append(_Element(name))
