@@ -45,7 +45,7 @@ class HtmlGenerator(object):
                 self._fragments.append(fragment)
     
     def html_string(self):
-        return u"".join(self._fragments)
+        return u("").join(self._fragments)
 
 
 class _Element(object):
@@ -106,5 +106,9 @@ def _generate_class_attribute(path_element):
 
 if sys.version_info[0] == 2:
     _iteritems = lambda x: x.iteritems()
+    u = lambda value: unicode(value, "unicode_escape")
+    
 else:
     _iteritems = lambda x: x.items()
+    u = lambda value: value
+
