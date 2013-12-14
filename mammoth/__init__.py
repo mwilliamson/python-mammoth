@@ -13,5 +13,18 @@ def _create_default_styles():
     return map(style_reader.read_style, lines)
 
 _default_styles = """
+p.Heading1 => h1:fresh
+p.Heading2 => h2:fresh
+p.Heading3 => h3:fresh
+p.Heading4 => h4:fresh
 p:unordered-list(1) => ul > li:fresh
+p:unordered-list(2) => ul|ol > li > ul > li:fresh
+p:unordered-list(3) => ul|ol > li > ul|ol > li > ul > li:fresh
+p:unordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh
+p:unordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh
+p:ordered-list(1) => ol > li:fresh
+p:ordered-list(2) => ul|ol > li > ol > li:fresh
+p:ordered-list(3) => ul|ol > li > ul|ol > li > ol > li:fresh
+p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
+p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
 """
