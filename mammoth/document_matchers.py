@@ -6,6 +6,7 @@ def paragraph(style_name=None, numbering=None):
 
 
 ParagraphMatcher = collections.namedtuple("ParagraphMatcher", ["style_name", "numbering"])
+ParagraphMatcher.element_type = "paragraph"
 
 
 def run(style_name=None):
