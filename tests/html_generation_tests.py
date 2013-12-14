@@ -73,3 +73,21 @@ def opening_tag_can_have_attributes():
     generator.text("Hello!")
     generator.end()
     assert_equal('<p data-blah="42">Hello!</p>', generator.html_string())
+
+
+@istest
+def appending_another_html_generator_does_nothing_if_empty():
+    generator = HtmlGenerator()
+    generator.start("p")
+    generator.append(HtmlGenerator())
+    assert_equal('', generator.html_string())
+
+
+@istest
+def appending_another_html_generator_writes_out_elements_if_other_generator_is_not_empty():
+    generator = HtmlGenerator()
+    generator.start("p")
+    other = HtmlGenerator()
+    other.text("Hello!")
+    generator.append(other)
+    assert_equal('<p>Hello!', generator.html_string())

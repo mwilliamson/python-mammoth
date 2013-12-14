@@ -37,6 +37,12 @@ class HtmlGenerator(object):
         attribute_string = _generate_attribute_string(element.attributes)
         self._fragments.append("<{0}{1}>".format(element.name, attribute_string))
     
+    def append(self, other):
+        if other._fragments:
+            self._write_all()
+            for fragment in other._fragments:
+                self._fragments.append(fragment)
+    
     def html_string(self):
         return "".join(self._fragments)
 
