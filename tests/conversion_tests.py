@@ -145,14 +145,14 @@ def docx_tab_is_converted_to_tab_in_html():
 
 @istest
 def images_are_converted_to_img_tags_with_data_uri():
-    image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO("abc"))
+    image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
     assert_equal('<img src="data:image/png;base64,YWJj" />', result.value)
 
 
 @istest
 def images_have_alt_tags_if_available():
-    image = documents.image(alt_text="It's a hat", content_type="image/png", open=lambda: io.BytesIO("abc"))
+    image = documents.image(alt_text="It's a hat", content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
     assert_equal('<img src="data:image/png;base64,YWJj" alt="It\'s a hat" />', result.value)
 
@@ -163,7 +163,7 @@ def can_define_custom_conversion_for_images():
         with image.open() as image_file:
             html_generator.self_closing("img", {"alt": image_file.read()})
         
-    image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO("abc"))
+    image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)
     assert_equal('<img alt="abc" />', result.value)
 

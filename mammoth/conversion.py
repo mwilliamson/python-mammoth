@@ -74,9 +74,7 @@ class DocumentConverter(object):
     
     def _convert_image(self, image, html_generator):
         with image.open() as image_bytes:
-            output = io.BytesIO()
-            base64.encode(image_bytes, output)
-            encoded_src = output.getvalue().rstrip("\n")
+            encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
         
         attributes = {
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)

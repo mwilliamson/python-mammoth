@@ -1,4 +1,5 @@
 import cgi
+import sys
 
 
 class HtmlGenerator(object):
@@ -67,7 +68,7 @@ def _generate_attribute_string(attributes):
     else:
         return "".join(
             ' {0}="{1}"'.format(key, _escape_html(value))
-            for key, value in attributes.iteritems()
+            for key, value in _iteritems(attributes)
         )
 
 
@@ -101,3 +102,9 @@ def _is_element_match(generated_element, path_element):
 
 def _generate_class_attribute(path_element):
     return " ".join(path_element.class_names)
+
+
+if sys.version_info[0] == 2:
+    _iteritems = lambda x: x.iteritems()
+else:
+    _iteritems = lambda x: x.items()
