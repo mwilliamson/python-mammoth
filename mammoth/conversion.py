@@ -22,6 +22,7 @@ class DocumentConverter(object):
             documents.Run: self._convert_run,
             documents.Text: self._convert_text,
             documents.Hyperlink: self._convert_hyperlink,
+            documents.Tab: self._convert_tab,
         }
 
 
@@ -61,6 +62,10 @@ class DocumentConverter(object):
         html_generator.start("a", {"href": hyperlink.href})
         self._convert_elements_to_html(hyperlink.children, html_generator)
         html_generator.end()
+    
+    
+    def _convert_tab(self, tab, html_generator):
+        html_generator.text("\t")
 
 
     def _convert_elements_to_html(self, elements, html_generator):
