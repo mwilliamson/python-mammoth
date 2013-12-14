@@ -126,3 +126,15 @@ class SatisfyPathTests(object):
         satisfy_html_path(generator, path)
         generator.text("there")
         assert_equal('<blockquote><span>Hello</span><p>there', generator.html_string())
+    
+    
+    @istest
+    def fresh_element_matches_nothing(self):
+        generator = HtmlGenerator()
+        generator.start("blockquote")
+        generator.start("p")
+        generator.text("Hello")
+        path = html_paths.path([html_paths.element(["blockquote"]), html_paths.element(["p"], fresh=True)])
+        satisfy_html_path(generator, path)
+        generator.text("there")
+        assert_equal('<blockquote><p>Hello</p><p>there', generator.html_string())

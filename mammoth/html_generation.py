@@ -79,7 +79,7 @@ def satisfy_html_path(generator, path):
 
 def _find_first_unsatisfied_index(generator, path):
     for index, (generated_element, path_element) in enumerate(zip(generator._stack, path.elements)):
-        if generated_element.name not in path_element.names:
+        if generated_element.name not in path_element.names or path_element.fresh:
             return index
     
     return len(generator._stack)
