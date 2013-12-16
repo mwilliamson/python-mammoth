@@ -94,7 +94,7 @@ class DocumentConverter(object):
 
 
     def _find_html_path_for_paragraph(self, paragraph):
-        default = html_paths.path([html_paths.element("p")])
+        default = html_paths.path([html_paths.element("p", fresh=True)])
         return self._find_html_path(paragraph, "paragraph", default)
     
     def _find_html_path_for_run(self, run):

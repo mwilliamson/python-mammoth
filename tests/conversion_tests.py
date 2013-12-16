@@ -16,6 +16,17 @@ def plain_paragraph_is_converted_to_plain_paragraph():
 
 
 @istest
+def multiple_paragraphs_are_converted_to_multiple_paragraphs():
+    result = convert_document_element_to_html(
+        documents.document([
+            documents.paragraph(children=[_run_with_text("Hello")]),
+            documents.paragraph(children=[_run_with_text("there")]),
+        ])
+    )
+    assert_equal('<p>Hello</p><p>there</p>', result.value)
+
+
+@istest
 def empty_paragraphs_are_ignored():
     result = convert_document_element_to_html(
         documents.paragraph(children=[_run_with_text("")])
