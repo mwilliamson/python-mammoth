@@ -22,7 +22,7 @@ def main():
             for message in result.messages:
                 sys.stderr.write(message.message)
                 sys.stderr.write("\n")
-            output.write(result.value)
+            output.write(result.value.encode("utf8"))
 
 
 @contextlib.contextmanager
