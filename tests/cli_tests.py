@@ -27,4 +27,11 @@ def html_is_written_to_file_if_output_file_is_set():
         assert_equal(b"", result.output)
         with open(output_path) as output_file:
             assert_equal("<p>Walking on imported air</p>", output_file.read())
+
+
+@istest
+def inline_images_are_included_in_output_if_writing_to_single_file():
+    docx_path = test_path("tiny-picture.docx")
+    result = _local.run(["mammoth", docx_path])
+    assert_equal(b"""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.output)
     
