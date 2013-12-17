@@ -22,19 +22,31 @@ def main():
             for message in result.messages:
                 sys.stderr.write(message.message)
                 sys.stderr.write("\n")
-            output.write(result.value.encode("utf8"))
+            output.write(result.value)
 
 
 @contextlib.contextmanager
 def _open_output(name):
     if name is None:
         try:
-            yield sys.stdout
+            yield Output(sys.stdout)
         finally:
             sys.stdout.flush()
     else:
         with open(name, "w") as output:
-            yield output
+            yield Output(output)
+
+
+class Output(object):
+    def __init__(self, fileobj):
+        self._fileobj = fileobj
+    
+    def write(self, value):
+        if sys.version_info[0] <= 2: 
+            self._fileobj.write(value.encode("utf8"))
+        else:
+            self._fileobj.write(value)
+            
 
 
 def _parse_args():
