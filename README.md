@@ -35,7 +35,7 @@ If an output directory is specified by `--output-dir`,
 the images are written to separate files instead.
 For instance:
 
-    mammoth document.docx --output=output-dir
+    mammoth document.docx --output-dir=output-dir
 
 #### Styles
 
