@@ -1,4 +1,5 @@
 import os
+import contextlib
 
 from .. import documents
 from .. import results
@@ -138,7 +139,11 @@ def _create_reader(numbering, content_types, relationships, docx_file):
         content_type = content_types.find_content_type(image_path)
         
         def open_image():
-            return docx_file.open(image_path)
+            image_file = docx_file.open(image_path)
+            if hasattr(image_file, "__exit__"):
+                return image_file
+            else:
+                return contextlib.closing(image_file)
         
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
         return results.success(image)

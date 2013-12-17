@@ -3,6 +3,8 @@
 import argparse
 import contextlib
 import sys
+import os
+import shutil
 
 import mammoth
 
@@ -16,13 +18,44 @@ def main():
         with open(args.styles) as styles_fileobj:
             styles = styles_fileobj.read()
     
-    with _open_output(args.output) as output:
-        with open(args.path, "rb") as docx_fileobj:
-            result = mammoth.convert_to_html(docx_fileobj, styles=styles)
-            for message in result.messages:
-                sys.stderr.write(message.message)
-                sys.stderr.write("\n")
+    with open(args.path, "rb") as docx_fileobj:
+        if args.output_dir is None:
+            convert_image = None
+            output_path = args.output
+        else:
+            convert_image = ImageWriter(args.output_dir)
+            output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
+            output_path = os.path.join(args.output_dir, output_filename)
+        
+        result = mammoth.convert_to_html(docx_fileobj, styles=styles, convert_image=convert_image)
+        for message in result.messages:
+            sys.stderr.write(message.message)
+            sys.stderr.write("\n")
+        
+        with _open_output(output_path) as output:
             output.write(result.value)
+
+
+class ImageWriter(object):
+    def __init__(self, output_dir):
+        self._output_dir = output_dir
+        self._image_number = 1
+        
+    def __call__(self, element, html_generator):
+        
+        extension = element.content_type.partition("/")[2]
+        image_filename = "{0}.{1}".format(self._image_number, extension)
+        with open(os.path.join(self._output_dir, image_filename), "wb") as image_dest:
+            with element.open() as image_source:
+                shutil.copyfileobj(image_source, image_dest)
+        
+        attributes = {"src": image_filename}
+        if element.alt_text is not None:
+            attributes["alt"] = element.alt_text
+        
+        html_generator.self_closing("img", attributes)
+        
+        self._image_number += 1
 
 
 @contextlib.contextmanager
@@ -52,7 +85,11 @@ class Output(object):
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("path")
-    parser.add_argument("output", nargs="?")
+    
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument("output", nargs="?")
+    output_group.add_argument("--output-dir", nargs="?")
+    
     parser.add_argument("--styles", required=False)
     return parser.parse_args()
 

@@ -2,12 +2,12 @@ from .results import Result
 from . import docx, conversion, style_reader, lists
 
 
-def convert_to_html(fileobj, styles=None):
+def convert_to_html(fileobj, styles=None, convert_image=None):
     if styles is None:
         styles = _default_styles
     
     return docx.read(fileobj).bind(lambda document: 
-        conversion.convert_document_element_to_html(document, styles=_read_styles(styles))
+        conversion.convert_document_element_to_html(document, styles=_read_styles(styles), convert_image=convert_image)
     )
 
 
