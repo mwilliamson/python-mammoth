@@ -28,6 +28,17 @@ For instance:
 
 If no output file is specified, output is written to stdout instead.
 
+#### Images
+
+By default, images are included inline in the output HTML.
+If an output directory is specified by `--output-dir`,
+the images are written to separate files instead.
+For instance:
+
+    mammoth document.docx --output=output-dir
+
+#### Styles
+
 Custom styles can be read from a file using `--styles`.
 For instance:
 
