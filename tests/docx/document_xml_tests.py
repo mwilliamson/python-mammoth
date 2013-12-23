@@ -130,6 +130,18 @@ class ReadXmlElementTests(object):
         )
         
     @istest
+    def children_of_w_smart_tag_are_converted_normally(self):
+        element = xml_element("w:p", {}, [
+            xml_element("w:smartTag", {}, [
+                xml_element("w:r")
+            ])
+        ])
+        assert_equal(
+            documents.paragraph([documents.run([])]),
+            _read_and_get_document_xml_element(element)
+        )
+        
+    @istest
     def hyperlink_is_read_if_it_has_a_relationship_id(self):
         relationships = Relationships({
             "r42": Relationship(target="http://example.com")

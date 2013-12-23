@@ -100,7 +100,9 @@ def _create_reader(numbering, content_types, relationships, docx_file):
     
     
     @handler("w:ins")
-    def ins(element):
+    @handler("w:smartTag")
+    @handler("w:drawing")
+    def read_child_elements(element):
         return _read_xml_elements(element.children)
     
     
@@ -113,11 +115,6 @@ def _create_reader(numbering, content_types, relationships, docx_file):
         else:
             href = relationships[relationship_id].target
             return children_result.map(lambda children: documents.hyperlink(href, children))
-    
-    
-    @handler("w:drawing")
-    def drawing(element):
-        return _read_xml_elements(element.children)
     
     @handler("wp:inline")
     @handler("wp:anchor")
