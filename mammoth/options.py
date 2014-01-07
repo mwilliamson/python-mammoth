@@ -2,12 +2,9 @@ from . import style_reader, lists
 
 
 def read_options(options):
-    if options.get("style_map") is None:
-        style_map = _default_style_map
-    else:
-        style_map = _read_style_map(style_map)
+    custom_style_map = _read_style_map(options.get("style_map") or "")
     
-    options["style_map"] = style_map
+    options["style_map"] = custom_style_map + _default_style_map
     return options
 
 
