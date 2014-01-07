@@ -69,19 +69,24 @@ By default,
 Mammoth maps some common .docx styles to HTML elements.
 For instance,
 a paragraph with the style `Heading1` is converted to a `h1` element.
-You can pass in custom styles using the `styles` argument:
+You can pass in a custom map for styles by passing an options object with a `styleMap` property as a second argument to `convertToHtml`.
+A description of the syntax for styles can be found in the section "Writing styles".
+For instance, if paragraphs with the style `SectionTitle` should be converted to `h1` elements,
+and paragraphs with the style `SubSectionTitle` should be converted to `h2` elements:
 
 ```python
 import mammoth
 
 styles = """
-p.AsideHeading => div.aside > h2:fresh
-p.AsideText => div.aside > p:fresh
+p.SectionTitle => h1:fresh
+p.SubSectionTitle => h2:fresh
 """
 
 with open("document.docx", "rb") as docx_file:
-    result = mammoth.convert_to_html(docx_file, styles)
+    result = mammoth.convert_to_html(docx_file, styles=styles)
 ```
+
+User-defined style mappings are used in preference to the default style mappings.
 
 ## Writing styles
 
