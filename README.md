@@ -92,7 +92,7 @@ with open("document.docx", "rb") as docx_file:
 
 User-defined style mappings are used in preference to the default style mappings.
 To stop using the default style mappings altogether,
-set pass `includeDefaultStyleMap=False`:
+set pass `include_default_style_map=False`:
 
 ```python
     result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
