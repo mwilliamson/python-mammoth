@@ -94,7 +94,7 @@ User-defined style mappings are used in preference to the default style mappings
 
 ## Writing style maps
 
-A style map is made up of a number of style mappings.
+A style map is made up of a number of style mappings separated by new lines.
 
 A style mapping has two parts:
 
