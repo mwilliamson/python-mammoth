@@ -12,11 +12,11 @@ import mammoth
 def main():
     args = _parse_args()
     
-    if args.styles is None:
-        styles = None
+    if args.style_map is None:
+        style_map = None
     else:
-        with open(args.styles) as styles_fileobj:
-            styles = styles_fileobj.read()
+        with open(args.style_map) as style_map_fileobj:
+            style_map = style_map_fileobj.read()
     
     with open(args.path, "rb") as docx_fileobj:
         if args.output_dir is None:
@@ -27,7 +27,11 @@ def main():
             output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
             output_path = os.path.join(args.output_dir, output_filename)
         
-        result = mammoth.convert_to_html(docx_fileobj, styles=styles, convert_image=convert_image)
+        result = mammoth.convert_to_html(
+            docx_fileobj,
+            style_map=style_map,
+            convert_image=convert_image,
+        )
         for message in result.messages:
             sys.stderr.write(message.message)
             sys.stderr.write("\n")
@@ -90,7 +94,7 @@ def _parse_args():
     output_group.add_argument("output", nargs="?")
     output_group.add_argument("--output-dir", nargs="?")
     
-    parser.add_argument("--styles", required=False)
+    parser.add_argument("--style-map", required=False)
     return parser.parse_args()
 
 

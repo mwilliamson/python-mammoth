@@ -39,12 +39,12 @@ For instance:
 
 #### Styles
 
-Custom styles can be read from a file using `--styles`.
+A custom style map can be read from a file using `--style-map`.
 For instance:
 
-    mammoth document.docx output.html --styles=custom-styles
+    mammoth document.docx output.html --style-map=custom-style-map
     
-Where `custom-styles` looks something like:
+Where `custom-style-map` looks something like:
 
     p.AsideHeading => div.aside > h2:fresh
     p.AsideText => div.aside > p:fresh
@@ -69,7 +69,7 @@ By default,
 Mammoth maps some common .docx styles to HTML elements.
 For instance,
 a paragraph with the style `Heading1` is converted to a `h1` element.
-You can pass in a custom map for styles by passing an options object with a `styleMap` property as a second argument to `convertToHtml`.
+You can pass in custom styles using the `style_map` argument.
 A description of the syntax for styles can be found in the section "Writing styles".
 For instance, if paragraphs with the style `SectionTitle` should be converted to `h1` elements,
 and paragraphs with the style `SubSectionTitle` should be converted to `h2` elements:

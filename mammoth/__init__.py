@@ -2,16 +2,16 @@ from .results import Result
 from . import docx, conversion, style_reader, lists
 
 
-def convert_to_html(fileobj, styles=None, convert_image=None):
-    if styles is None:
-        styles = _default_styles
+def convert_to_html(fileobj, style_map=None, convert_image=None):
+    if style_map is None:
+        style_map = _default_styles
     
     return docx.read(fileobj).bind(lambda document: 
-        conversion.convert_document_element_to_html(document, styles=_read_styles(styles), convert_image=convert_image)
+        conversion.convert_document_element_to_html(document, styles=_read_style_map(style_map), convert_image=convert_image)
     )
 
 
-def _read_styles(style_text):
+def _read_style_map(style_text):
     lines = filter(None, map(lambda line: line.strip(), style_text.split("\n")))
     return lists.map(style_reader.read_style, lines)
     
