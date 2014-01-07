@@ -77,13 +77,13 @@ and paragraphs with the style `SubSectionTitle` should be converted to `h2` elem
 ```python
 import mammoth
 
-styles = """
+style_map = """
 p.SectionTitle => h1:fresh
 p.SubSectionTitle => h2:fresh
 """
 
 with open("document.docx", "rb") as docx_file:
-    result = mammoth.convert_to_html(docx_file, styles=styles)
+    result = mammoth.convert_to_html(docx_file, style_map=style_map)
 ```
 
 User-defined style mappings are used in preference to the default style mappings.
