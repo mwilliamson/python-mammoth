@@ -5,11 +5,11 @@ from . import documents, results, html_paths
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
-def convert_document_element_to_html(element, styles=None, convert_image=None):
-    if styles is None:
-        styles = []
+def convert_document_element_to_html(element, style_map=None, convert_image=None):
+    if style_map is None:
+        style_map = []
     html_generator = HtmlGenerator()
-    converter = DocumentConverter(styles, convert_image=convert_image)
+    converter = DocumentConverter(style_map, convert_image=convert_image)
     converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
     return results.Result(html_generator.html_string(), converter.messages)

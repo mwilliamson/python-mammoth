@@ -40,7 +40,7 @@ def paragraphs_are_converted_by_satisfying_matching_paths():
         documents.paragraph(style_name="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
-        styles=[
+        style_map=[
             style_reader.read_style("p.TipsParagraph => p.tip")
         ]
     )
@@ -63,7 +63,7 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
         documents.paragraph(style_name="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
-        styles=[
+        style_map=[
             style_reader.read_style("p => p.tip")
         ]
     )
@@ -94,7 +94,7 @@ def bulleted_paragraphs_are_converted_using_matching_styles():
         documents.paragraph(children=[
             _run_with_text("Hello")
         ], numbering=documents.numbering_level(level_index=0, is_ordered=False)),
-        styles=[
+        style_map=[
             style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
         ]
     )
@@ -107,7 +107,7 @@ def bulleted_styles_dont_match_plain_paragraph():
         documents.paragraph(children=[
             _run_with_text("Hello")
         ]),
-        styles=[
+        style_map=[
             style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
         ]
     )
@@ -134,7 +134,7 @@ def italic_runs_are_wrapped_in_emphasis_tags():
 def runs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(
         documents.run(style_name="TipsRun", children=[documents.Text("Tip")]),
-        styles=[
+        style_map=[
             style_reader.read_style("r.TipsRun => span.tip")
         ]
     )
