@@ -1,10 +1,11 @@
-import collections
+import dodge
 
-Document = collections.namedtuple("Document", ["children"])
-Paragraph = collections.namedtuple("Paragraph", ["children", "style_name", "numbering"])
-Run = collections.namedtuple("Run", ["children", "style_name", "is_bold", "is_italic"])
-Text = collections.namedtuple("Text", ["value"])
-Hyperlink = collections.namedtuple("Hyperlink", ["href", "children"])
+
+Document = dodge.data_class("Document", ["children"])
+Paragraph = dodge.data_class("Paragraph", ["children", "style_name", "numbering"])
+Run = dodge.data_class("Run", ["children", "style_name", "is_bold", "is_italic"])
+Text = dodge.data_class("Text", ["value"])
+Hyperlink = dodge.data_class("Hyperlink", ["href", "children"])
 
 class Tab(object):
     pass
@@ -40,4 +41,4 @@ hyperlink = Hyperlink
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))
 
-_NumberingLevel = collections.namedtuple("NumberingLevel", ["level_index", "is_ordered"])
+_NumberingLevel = dodge.data_class("NumberingLevel", ["level_index", "is_ordered"])

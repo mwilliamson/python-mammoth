@@ -27,4 +27,15 @@ def simple_list_is_converted_to_list_elements():
         result = mammoth.convert_to_html(fileobj=fileobj)
         assert_equal([], result.messages)
         assert_equal("<ul><li>Apple</li><li>Banana</li></ul>", result.value)
-        
+
+
+@istest
+def transform_document_is_applied_to_document_before_conversion():
+    def transform_document(document):
+        document.children[0].style_name = "Heading1"
+        return document
+    
+    with open(test_path("single-paragraph.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, transform_document=transform_document)
+        assert_equal("<h1>Walking on imported air</h1>", result.value)
+        assert_equal([], result.messages)
