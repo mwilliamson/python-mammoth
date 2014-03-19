@@ -55,3 +55,14 @@ def images_are_written_to_separate_files_if_output_dir_is_set():
         with open(image_path, "rb") as image_file:
             assert_equal(_image_base_64, base64.b64encode(image_file.read()))
     
+
+@istest
+def style_map_is_used_if_set():
+    with tempman.create_temp_dir() as temp_dir:
+        docx_path = test_path("single-paragraph.docx")
+        style_map_path = os.path.join(temp_dir.path, "style-map")
+        with open(style_map_path, "w") as style_map_file:
+            style_map_file.write("p => span:fresh")
+        result = _local.run(["mammoth", docx_path, "--style-map", style_map_path])
+        assert_equal(b"", result.stderr_output)
+        assert_equal(b"<span>Walking on imported air</span>", result.output)
