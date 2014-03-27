@@ -14,7 +14,7 @@ _install_requires = [
 ]
 
 if sys.version_info[:2] <= (2, 6):
-    _install_requires.append("argparse==1.2.1")
+    _install_requires.append("argparse>=1.1,<2.0")
 
 setup(
     name='mammoth',
