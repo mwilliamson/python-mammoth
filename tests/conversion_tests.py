@@ -37,7 +37,7 @@ def empty_paragraphs_are_ignored():
 @istest
 def paragraphs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(
-        documents.paragraph(style_name="TipsParagraph", children=[
+        documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
         style_map=[
@@ -50,7 +50,7 @@ def paragraphs_are_converted_by_satisfying_matching_paths():
 @istest
 def default_paragraph_style_is_used_if_no_matching_style_is_found():
     result = convert_document_element_to_html(
-        documents.paragraph(style_name="TipsParagraph", children=[
+        documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
     )
@@ -60,7 +60,7 @@ def default_paragraph_style_is_used_if_no_matching_style_is_found():
 @istest
 def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
     result = convert_document_element_to_html(
-        documents.paragraph(style_name="TipsParagraph", children=[
+        documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
         style_map=[
@@ -73,7 +73,7 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
 @istest
 def warning_is_emitted_if_paragraph_style_is_unrecognised():
     result = convert_document_element_to_html(
-        documents.paragraph(style_name="TipsParagraph", children=[
+        documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
     )
@@ -133,7 +133,7 @@ def italic_runs_are_wrapped_in_emphasis_tags():
 @istest
 def runs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(
-        documents.run(style_name="TipsRun", children=[documents.Text("Tip")]),
+        documents.run(style_id="TipsRun", children=[documents.Text("Tip")]),
         style_map=[
             style_reader.read_style("r.TipsRun => span.tip")
         ]

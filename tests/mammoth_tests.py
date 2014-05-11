@@ -32,7 +32,7 @@ def simple_list_is_converted_to_list_elements():
 @istest
 def transform_document_is_applied_to_document_before_conversion():
     def transform_document(document):
-        document.children[0].style_name = "Heading1"
+        document.children[0].style_id = "Heading1"
         return document
     
     with open(test_path("single-paragraph.docx"), "rb") as fileobj:

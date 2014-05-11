@@ -44,15 +44,15 @@ class ReadXmlElementTests(object):
     @istest
     def paragraph_has_no_style_if_it_has_no_properties(self):
         element = xml_element("w:p")
-        assert_equal(None, _read_and_get_document_xml_element(element).style_name)
+        assert_equal(None, _read_and_get_document_xml_element(element).style_id)
         
     @istest
-    def paragraph_has_style_name_read_from_paragraph_properties_if_present(self):
+    def paragraph_has_style_id_read_from_paragraph_properties_if_present(self):
         style_xml = xml_element("w:pStyle", {"w:val": "Heading1"})
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         paragraph = _read_and_get_document_xml_element(paragraph_xml)
-        assert_equal("Heading1", paragraph.style_name)
+        assert_equal("Heading1", paragraph.style_id)
         
     @istest
     def paragraph_has_no_numbering_if_it_has_no_numbering_properties(self):
@@ -77,13 +77,13 @@ class ReadXmlElementTests(object):
     @istest
     def run_has_no_style_if_it_has_no_properties(self):
         element = xml_element("w:r")
-        assert_equal(None, _read_and_get_document_xml_element(element).style_name)
+        assert_equal(None, _read_and_get_document_xml_element(element).style_id)
         
     @istest
-    def run_has_style_name_read_from_run_properties_if_present(self):
+    def run_has_style_id_read_from_run_properties_if_present(self):
         style_xml = xml_element("w:rStyle", {"w:val": "Emphasis"})
         run = self._read_run_with_properties([style_xml])
-        assert_equal("Emphasis", run.style_name)
+        assert_equal("Emphasis", run.style_id)
         
     @istest
     def run_is_not_bold_if_bold_element_is_not_present(self):

@@ -2,8 +2,8 @@ import dodge
 
 
 Document = dodge.data_class("Document", ["children"])
-Paragraph = dodge.data_class("Paragraph", ["children", "style_name", "numbering"])
-Run = dodge.data_class("Run", ["children", "style_name", "is_bold", "is_italic"])
+Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "numbering"])
+Run = dodge.data_class("Run", ["children", "style_id", "is_bold", "is_italic"])
 Text = dodge.data_class("Text", ["value"])
 Hyperlink = dodge.data_class("Hyperlink", ["href", "children"])
 
@@ -20,11 +20,11 @@ class Image(object):
 
 document = Document
 
-def paragraph(children, style_name=None, numbering=None):
-    return Paragraph(children, style_name, numbering)
+def paragraph(children, style_id=None, numbering=None):
+    return Paragraph(children, style_id, numbering)
 
-def run(children, style_name=None, is_bold=None, is_italic=None):
-    return Run(children, style_name, bool(is_bold), bool(is_italic))
+def run(children, style_id=None, is_bold=None, is_italic=None):
+    return Run(children, style_id, bool(is_bold), bool(is_italic))
 
 text = Text
 

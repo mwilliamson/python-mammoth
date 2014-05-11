@@ -42,7 +42,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
     @handler("w:r")
     def run(element):
         properties = element.find_child_or_null("w:rPr")
-        style_name = properties \
+        style_id = properties \
             .find_child_or_null("w:rStyle") \
             .attributes.get("w:val")
         is_bold = properties.find_child("w:b")
@@ -51,7 +51,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
         return _read_xml_elements(element.children) \
             .map(lambda children: documents.run(
                 children=children,
-                style_name=style_name,
+                style_id=style_id,
                 is_bold=is_bold,
                 is_italic=is_italic,
             ))
@@ -60,7 +60,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
     @handler("w:p")
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
-        style_name = properties \
+        style_id = properties \
             .find_child_or_null("w:pStyle") \
             .attributes.get("w:val")
         numbering_properties = properties.find_child("w:numPr")
@@ -72,7 +72,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
         return _read_xml_elements(element.children) \
             .map(lambda children: documents.paragraph(
                 children=children,
-                style_name=style_name,
+                style_id=style_id,
                 numbering=numbering,
             ))
 

@@ -104,8 +104,8 @@ class DocumentConverter(object):
             if _document_matcher_matches(document_matcher, element, element_type):
                 return style.html_path
         
-        if element.style_name is not None:
-            self.messages.append(results.warning("Unrecognised {0} style: {1}".format(element_type, element.style_name)))
+        if element.style_id is not None:
+            self.messages.append(results.warning("Unrecognised {0} style: {1}".format(element_type, element.style_id)))
         
         return default
         
@@ -113,8 +113,8 @@ class DocumentConverter(object):
 def _document_matcher_matches(matcher, element, element_type):
     return (
         matcher.element_type == element_type and (
-            matcher.style_name is None or
-            matcher.style_name == element.style_name
+            matcher.style_id is None or
+            matcher.style_id == element.style_id
         ) and (
             element_type != "paragraph" or
             matcher.numbering is None or

@@ -17,14 +17,14 @@ def read_document_matcher_node(root_node):
     
 
 def _read_paragraph_node(paragraph_node):
-    style_name = _read_style_node(paragraph_node.children[1])
+    style_id = _read_style_node(paragraph_node.children[1])
     numbering = _read_list_node(paragraph_node.children[2])
-    return document_matchers.paragraph(style_name=style_name, numbering=numbering)
+    return document_matchers.paragraph(style_id=style_id, numbering=numbering)
     
 
 def _read_run_node(run_node):
-    style_name = _read_style_node(run_node.children[1])
-    return document_matchers.run(style_name=style_name)
+    style_id = _read_style_node(run_node.children[1])
+    return document_matchers.run(style_id=style_id)
 
 
 def _read_style_node(style_node):
@@ -46,11 +46,11 @@ def _read_list_node(list_node):
 grammar_text = r"""
 document_matcher = paragraph / run
 
-paragraph = "p" style_name? list?
+paragraph = "p" style_id? list?
 
-run = "r" style_name?
+run = "r" style_id?
 
-style_name = "." style_identifier
+style_id = "." style_identifier
 
 style_identifier = ~"[A-Z0-9]*"i
 

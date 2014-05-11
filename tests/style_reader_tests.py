@@ -72,9 +72,9 @@ class ReadDocumentMatcherTests(object):
     
     
     @istest
-    def reads_paragraph_with_style_name(self):
+    def reads_paragraph_with_style_id(self):
         assert_equal(
-            document_matchers.paragraph(style_name="Heading1"),
+            document_matchers.paragraph(style_id="Heading1"),
             read_document_matcher("p.Heading1")
         )
     
@@ -104,9 +104,9 @@ class ReadDocumentMatcherTests(object):
     
     
     @istest
-    def reads_run_with_style_name(self):
+    def reads_run_with_style_id(self):
         assert_equal(
-            document_matchers.run(style_name="Emphasis"),
+            document_matchers.run(style_id="Emphasis"),
             read_document_matcher("r.Emphasis")
         )
 
