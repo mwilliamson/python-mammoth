@@ -105,7 +105,10 @@ class DocumentConverter(object):
                 return style.html_path
         
         if element.style_id is not None:
-            self.messages.append(results.warning("Unrecognised {0} style: {1}".format(element_type, element.style_id)))
+            self.messages.append(results.warning(
+                "Unrecognised {0} style: {1} (Style ID: {2})".format(
+                    element_type, element.style_name, element.style_id)
+            ))
         
         return default
         

@@ -86,11 +86,13 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
 @istest
 def warning_is_emitted_if_paragraph_style_is_unrecognised():
     result = convert_document_element_to_html(
-        documents.paragraph(style_id="TipsParagraph", children=[
-            _run_with_text("Tip")
-        ]),
+        documents.paragraph(
+            style_id="Heading1",
+            style_name="Heading 1",
+            children=[_run_with_text("Tip")]
+        ),
     )
-    assert_equal([results.warning("Unrecognised paragraph style: TipsParagraph")], result.messages)
+    assert_equal([results.warning("Unrecognised paragraph style: Heading 1 (Style ID: Heading1)")], result.messages)
     
 
 @istest
