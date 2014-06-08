@@ -3,7 +3,7 @@ import dodge
 
 Document = dodge.data_class("Document", ["children"])
 Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "style_name", "numbering"])
-Run = dodge.data_class("Run", ["children", "style_id", "is_bold", "is_italic"])
+Run = dodge.data_class("Run", ["children", "style_id", "style_name", "is_bold", "is_italic"])
 Text = dodge.data_class("Text", ["value"])
 Hyperlink = dodge.data_class("Hyperlink", ["href", "children"])
 
@@ -23,8 +23,8 @@ document = Document
 def paragraph(children, style_id=None, style_name=None, numbering=None):
     return Paragraph(children, style_id, style_name, numbering)
 
-def run(children, style_id=None, is_bold=None, is_italic=None):
-    return Run(children, style_id, bool(is_bold), bool(is_italic))
+def run(children, style_id=None, style_name=None, is_bold=None, is_italic=None):
+    return Run(children, style_id, style_name, bool(is_bold), bool(is_italic))
 
 text = Text
 

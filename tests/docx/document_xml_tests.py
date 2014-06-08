@@ -96,9 +96,21 @@ class ReadXmlElementTests(object):
         
     @istest
     def run_has_style_id_read_from_run_properties_if_present(self):
-        style_xml = xml_element("w:rStyle", {"w:val": "Emphasis"})
-        run = self._read_run_with_properties([style_xml])
-        assert_equal("Emphasis", run.style_id)
+        style_xml = xml_element("w:rStyle", {"w:val": "Heading1Char"})
+        
+        styles = Styles({}, {"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")})
+        
+        run = self._read_run_with_properties([style_xml], styles=styles)
+        assert_equal("Heading1Char", run.style_id)
+        
+    @istest
+    def run_has_style_name_read_from_run_properties_and_styles(self):
+        style_xml = xml_element("w:rStyle", {"w:val": "Heading1Char"})
+        
+        styles = Styles({}, {"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")})
+        
+        run = self._read_run_with_properties([style_xml], styles=styles)
+        assert_equal("Heading 1 Char", run.style_name)
         
     @istest
     def run_is_not_bold_if_bold_element_is_not_present(self):
@@ -120,10 +132,10 @@ class ReadXmlElementTests(object):
         run = self._read_run_with_properties([xml_element("w:i")])
         assert_equal(True, run.is_italic)
     
-    def _read_run_with_properties(self, properties):
+    def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
-        return _read_and_get_document_xml_element(run_xml)
+        return _read_and_get_document_xml_element(run_xml, styles=styles)
 
 
     @istest

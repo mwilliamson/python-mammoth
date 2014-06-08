@@ -51,6 +51,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
         style_id = properties \
             .find_child_or_null("w:rStyle") \
             .attributes.get("w:val")
+        
+        if style_id is None:
+            style_name = None
+        else:
+            style_name = styles.find_character_style_by_id(style_id).name
+            
         is_bold = properties.find_child("w:b")
         is_italic = properties.find_child("w:i")
         
@@ -58,6 +64,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
             .map(lambda children: documents.run(
                 children=children,
                 style_id=style_id,
+                style_name=style_name,
                 is_bold=is_bold,
                 is_italic=is_italic,
             ))
