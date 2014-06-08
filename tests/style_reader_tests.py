@@ -80,6 +80,14 @@ class ReadDocumentMatcherTests(object):
     
     
     @istest
+    def reads_paragraph_with_style_name(self):
+        assert_equal(
+            document_matchers.paragraph(style_name="Heading 1"),
+            read_document_matcher("p[style-name='Heading 1']")
+        )
+    
+    
+    @istest
     def reads_paragraph_ordered_list(self):
         assert_equal(
             document_matchers.paragraph(numbering=documents.numbering_level(1, is_ordered=True)),
@@ -108,6 +116,14 @@ class ReadDocumentMatcherTests(object):
         assert_equal(
             document_matchers.run(style_id="Emphasis"),
             read_document_matcher("r.Emphasis")
+        )
+    
+    
+    @istest
+    def reads_run_with_style_name(self):
+        assert_equal(
+            document_matchers.run(style_name="Emphasis"),
+            read_document_matcher("r[style-name='Emphasis']")
         )
 
 
