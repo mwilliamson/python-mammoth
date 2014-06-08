@@ -16,9 +16,9 @@ def convert_document_element_to_html(element, style_map=None, convert_image=None
 
 
 class DocumentConverter(object):
-    def __init__(self, styles, convert_image):
+    def __init__(self, style_map, convert_image):
         self.messages = []
-        self._styles = styles
+        self._style_map = style_map
         self._converters = {
             documents.Document: self._convert_document,
             documents.Paragraph: self._convert_paragraph,
@@ -99,7 +99,7 @@ class DocumentConverter(object):
         
     
     def _find_html_path(self, element, element_type, default):
-        for style in self._styles:
+        for style in self._style_map:
             document_matcher = style.document_matcher
             if _document_matcher_matches(document_matcher, element, element_type):
                 return style.html_path
