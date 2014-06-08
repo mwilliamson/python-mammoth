@@ -31,7 +31,8 @@ def read_styles_xml_element(element):
 def _read_style_element(element):
     element_type = element.attributes["w:type"]
     style_id = element.attributes["w:styleId"]
-    return Style(element_type=element_type, style_id=style_id)
+    name = element.find_child("w:name").attributes["w:val"]
+    return Style(element_type=element_type, style_id=style_id, name=name)
 
 
-Style = collections.namedtuple("Style", ["element_type", "style_id"])
+Style = collections.namedtuple("Style", ["element_type", "style_id", "name"])

@@ -46,6 +46,18 @@ def paragraph_and_character_styles_are_distinct():
     assert_equal(None, styles.find_paragraph_style_by_id("Heading1Char"))
 
 
+@istest
+def styles_include_names():
+    element = xml_element("w:styles", {}, [
+        _paragraph_style_element("Heading1", "Heading 1"),
+    ])
+    styles = read_styles_xml_element(element)
+    assert_equal(
+        "Heading 1",
+        styles.find_paragraph_style_by_id("Heading1").name
+    )
+
+
 def _paragraph_style_element(style_id, name):
     return _style_element("paragraph", style_id, name)
 
