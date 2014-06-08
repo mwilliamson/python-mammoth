@@ -38,7 +38,6 @@ def _read_style_id_node(style_id_node):
 
 def _read_style_name_node(style_name_node):
     if style_name_node.children:
-        print style_name_node.children[0].children[1]
         return style_name_node.children[0].children[1].text
     else:
         return None
