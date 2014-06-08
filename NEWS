@@ -1,0 +1,5 @@
+# 0.3.0
+
+* Rename --styles CLI argument to --style-map.
+
+* Rename styles argument in convert_to_html to style_map.
