@@ -35,13 +35,26 @@ def empty_paragraphs_are_ignored():
 
 
 @istest
-def paragraphs_are_converted_by_satisfying_matching_paths():
+def style_mappings_using_style_ids_can_be_used_to_map_paragraphs():
     result = convert_document_element_to_html(
         documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
         ]),
         style_map=[
             style_reader.read_style("p.TipsParagraph => p.tip")
+        ]
+    )
+    assert_equal('<p class="tip">Tip</p>', result.value)
+
+
+@istest
+def style_mappings_using_style_names_can_be_used_to_map_paragraphs():
+    result = convert_document_element_to_html(
+        documents.paragraph(style_id="TipsParagraph", style_name="Tips Paragraph", children=[
+            _run_with_text("Tip")
+        ]),
+        style_map=[
+            style_reader.read_style("p[style-name='Tips Paragraph'] => p.tip")
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)

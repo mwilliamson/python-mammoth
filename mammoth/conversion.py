@@ -116,6 +116,9 @@ def _document_matcher_matches(matcher, element, element_type):
             matcher.style_id is None or
             matcher.style_id == element.style_id
         ) and (
+            matcher.style_name is None or
+            matcher.style_name == element.style_name
+        ) and (
             element_type != "paragraph" or
             matcher.numbering is None or
             matcher.numbering == element.numbering
