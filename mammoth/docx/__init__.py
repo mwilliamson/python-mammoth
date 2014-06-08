@@ -7,6 +7,7 @@ from .document_xml import read_document_xml_element
 from .content_types_xml import read_content_types_xml_element
 from .relationships_xml import read_relationships_xml_element
 from .numbering_xml import read_numbering_xml_element, Numbering
+from .styles_xml import read_styles_xml_element
 
 
 _namespaces = [
@@ -34,6 +35,9 @@ def read(fileobj):
     else:
         numbering = Numbering({})
     
+    with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
+        styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
+    
     with _open_entry(zip_file, "word/document.xml") as document_fileobj:
         document_xml = _parse_docx_xml(document_fileobj)
         return read_document_xml_element(
@@ -42,6 +46,7 @@ def read(fileobj):
             relationships=relationships,
             docx_file=zip_file,
             numbering=numbering,
+            styles=styles,
         )
 
 

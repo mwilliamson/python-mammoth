@@ -8,6 +8,7 @@ from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
+from mammoth.docx.styles_xml import Styles, Style
 
 
 @istest
@@ -51,8 +52,22 @@ class ReadXmlElementTests(object):
         style_xml = xml_element("w:pStyle", {"w:val": "Heading1"})
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
-        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        
+        styles = Styles({"Heading1": Style(style_id="Heading1", name="Heading 1")}, {})
+        
+        paragraph = _read_and_get_document_xml_element(paragraph_xml, styles=styles)
         assert_equal("Heading1", paragraph.style_id)
+        
+    @istest
+    def paragraph_has_style_name_read_from_paragraph_properties_and_styles(self):
+        style_xml = xml_element("w:pStyle", {"w:val": "Heading1"})
+        properties_xml = xml_element("w:pPr", {}, [style_xml])
+        paragraph_xml = xml_element("w:p", {}, [properties_xml])
+        
+        styles = Styles({"Heading1": Style(style_id="Heading1", name="Heading 1")}, {})
+        
+        paragraph = _read_and_get_document_xml_element(paragraph_xml, styles=styles)
+        assert_equal("Heading 1", paragraph.style_name)
         
     @istest
     def paragraph_has_no_numbering_if_it_has_no_numbering_properties(self):

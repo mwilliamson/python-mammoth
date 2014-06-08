@@ -7,11 +7,17 @@ from .. import lists
 from .xmlparser import node_types
 
 
-def read_document_xml_element(element, numbering=None, content_types=None, relationships=None, docx_file=None):
-    reader = _create_reader(numbering=numbering, content_types=content_types, relationships=relationships, docx_file=docx_file)
+def read_document_xml_element(element, numbering=None, content_types=None, relationships=None, styles=None, docx_file=None):
+    reader = _create_reader(
+        numbering=numbering,
+        content_types=content_types,
+        relationships=relationships,
+        styles=styles,
+        docx_file=docx_file,
+    )
     return reader(element)
 
-def _create_reader(numbering, content_types, relationships, docx_file):
+def _create_reader(numbering, content_types, relationships, styles, docx_file):
     _handlers = {}
     _ignored_elements = set([
         "w:bookmarkStart",
@@ -63,6 +69,12 @@ def _create_reader(numbering, content_types, relationships, docx_file):
         style_id = properties \
             .find_child_or_null("w:pStyle") \
             .attributes.get("w:val")
+        
+        if style_id is None:
+            style_name = None
+        else:
+            style_name = styles.find_paragraph_style_by_id(style_id).name
+        
         numbering_properties = properties.find_child("w:numPr")
         if numbering_properties is None:
             numbering = None
@@ -73,6 +85,7 @@ def _create_reader(numbering, content_types, relationships, docx_file):
             .map(lambda children: documents.paragraph(
                 children=children,
                 style_id=style_id,
+                style_name=style_name,
                 numbering=numbering,
             ))
 
