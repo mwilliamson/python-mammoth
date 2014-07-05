@@ -6,7 +6,7 @@ and convert them to HTML.
 Mammoth aims to produce simple and clean HTML by using semantic information in the document,
 and ignoring other details.
 For instance,
-Mammoth converts any paragraph with the style `Heading1` to `h1` elements,
+Mammoth converts any paragraph with the style `Heading 1` to `h1` elements,
 rather than attempting to exactly copy the styling (font, text size, colour, etc.) of the heading.
 
 There's a large mismatch between the structure used by .docx and the structure of HTML,
@@ -48,8 +48,8 @@ For instance:
     
 Where `custom-style-map` looks something like:
 
-    p.AsideHeading => div.aside > h2:fresh
-    p.AsideText => div.aside > p:fresh
+    p[style-name='Aside Heading'] => div.aside > h2:fresh
+    p[style-name='Aside Text'] => div.aside > p:fresh
 
 ### Library
 
@@ -74,18 +74,18 @@ with open("document.docx", "rb") as docx_file:
 By default,
 Mammoth maps some common .docx styles to HTML elements.
 For instance,
-a paragraph with the style `Heading1` is converted to a `h1` element.
-You can pass in a custom style map using the `style_map` argument.
+a paragraph with the style name `Heading 1` is converted to a `h1` element.
+You can pass in a custom map for styles by passing an options object with a `style_map` property as a second argument to `convert_to_html`.
 A description of the syntax for style maps can be found in the section "Writing style maps".
-For instance, if paragraphs with the style `SectionTitle` should be converted to `h1` elements,
-and paragraphs with the style `SubSectionTitle` should be converted to `h2` elements:
+For instance, if paragraphs with the style name `Section Title` should be converted to `h1` elements,
+and paragraphs with the style name `Subsection Title` should be converted to `h2` elements:
 
 ```python
 import mammoth
 
 style_map = """
-p.SectionTitle => h1:fresh
-p.SubSectionTitle => h2:fresh
+p[style-name='Section Title'] => h1:fresh
+p[style-name='Subsection Title'] => h2:fresh
 """
 
 with open("document.docx", "rb") as docx_file:
@@ -94,7 +94,7 @@ with open("document.docx", "rb") as docx_file:
 
 User-defined style mappings are used in preference to the default style mappings.
 To stop using the default style mappings altogether,
-set pass `include_default_style_map=False`:
+pass `include_default_style_map=False`:
 
 ```python
     result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
@@ -118,26 +118,26 @@ When writing style mappings, it's helpful to understand Mammoth's notion of fres
 When generating, Mammoth will only close an HTML element when necessary.
 Otherwise, elements are reused.
 
-For instance, suppose one of the specified style mappings is `p.Heading1 => h1`.
-If Mammoth encounters a .docx paragraph with the style `Heading1`,
+For instance, suppose one of the specified style mappings is `p[style-name='Heading 1'] => h1`.
+If Mammoth encounters a .docx paragraph with the style name `Heading 1`,
 the .docx paragraph is converted to a `h1` element with the same text.
-If the next .docx paragraph also has the style `Heading1`,
+If the next .docx paragraph also has the style name `Heading 1`,
 then the text of that paragraph will be appended to the *existing* `h1` element,
 rather than creating a new `h1` element.
 
 In most cases, you'll probably want to generate a new `h1` element instead.
 You can specify this by using the `:fresh` modifier:
 
-`p.Heading1 => h1:fresh`
+`p[style-name='Heading 1'] => h1:fresh`
 
-The two consective `Heading1` .docx paragraphs will then be converted to two separate `h1` elements.
+The two consective `Heading 1` .docx paragraphs will then be converted to two separate `h1` elements.
 
 Reusing elements is useful in generating more complicated HTML structures.
 For instance, suppose your .docx contains asides.
 Each aside might have a heading and some body text,
 which should be contained within a single `div.aside` element.
-In this case, style mappings similar to `p.AsideHeading => div.aside > h2:fresh` and
-`p.AsideText => div.aside > p:fresh` might be helpful.
+In this case, style mappings similar to `p[style-name='Aside Heading'] => div.aside > h2:fresh` and
+`p[style-name='Aside Text'] => div.aside > p:fresh` might be helpful.
 
 ### Document element matchers
 
@@ -155,8 +155,19 @@ Match any run:
 r
 ```
 
-To match a paragraph or run with a specific style name,
-append a dot followed by the style name.
+To match a paragraph or run with a specific style,
+you can reference the style by name.
+This is the style name that is displayed in Microsoft Word or LibreOffice.
+For instance, to match a paragraph with the style name `Heading 1`:
+
+```
+p[style-name='Heading 1']
+```
+
+Styles can also be referenced by style ID.
+This is the ID used internally in the .docx file.
+To match a paragraph or run with a specific style ID,
+append a dot followed by the style ID.
 For instance, to match a paragraph with the style `Heading1`:
 
 ```
