@@ -69,7 +69,7 @@ with open("document.docx", "rb") as docx_file:
     messages = result.messages # Any messages, such as warnings during conversion
 ```
 
-### Custom style map
+#### Custom style map
 
 By default,
 Mammoth maps some common .docx styles to HTML elements.
