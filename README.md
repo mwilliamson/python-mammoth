@@ -99,6 +99,37 @@ pass `include_default_style_map=False`:
 ```python
 result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
 ```
+
+### API
+
+#### `mammoth.convert_to_html(fileobj, style_map=None, include_default_style_map=True)`
+
+Converts the source document to HTML.
+
+* `fileobj`: a file-like object containing the source document.
+  Files should be opened in binary mode.
+  
+* `style_map`: a string to specify the mapping of Word styles to HTML.
+  See the section "Writing style maps" for a description of the syntax.
+
+* `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
+  To stop using the default style map altogether,
+  pass `include_default_style_map=False`.
+
+* Returns a result with the following properties:
+
+  * `value`: the generated HTML
+
+  * `messages`: any messages, such as errors and warnings, generated during the conversion
+
+#### Messages
+
+Each message has the following properties:
+
+* `type`: a string representing the type of the message, such as `"warning"`
+
+* `message`: a string containing the actual message
+
 ## Writing style maps
 
 A style map is made up of a number of style mappings separated by new lines.
