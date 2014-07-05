@@ -3,3 +3,8 @@
 * Rename --styles CLI argument to --style-map.
 
 * Rename styles argument in convert_to_html to style_map.
+
+* Allow paragraphs and runs to be matched by style name. For instance, to match
+  a paragraph with the style name `Heading 1`:
+  
+    p[style-name='Heading 1']
