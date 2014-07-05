@@ -97,7 +97,7 @@ To stop using the default style mappings altogether,
 pass `include_default_style_map=False`:
 
 ```python
-    result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
+result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
 ```
 ## Writing style maps
 
