@@ -192,6 +192,22 @@ def docx_table_is_converted_to_table_in_html():
 
 
 @istest
+def empty_cells_are_preserved_in_table():
+    table = documents.table([
+        documents.table_row([
+            documents.table_cell([_paragraph_with_text("")]),
+            documents.table_cell([_paragraph_with_text("Top right")]),
+        ]),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<tr><td></td><td><p>Top right</p></td></tr>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def images_are_converted_to_img_tags_with_data_uri():
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)

@@ -12,8 +12,11 @@ class HtmlGenerator(object):
             self._write_all()
             self._fragments.append(_escape_html(text))
     
-    def start(self, name, attributes=None):
+    def start(self, name, attributes=None, always_write=False):
         self._stack.append(_Element(name, attributes))
+        
+        if always_write:
+            self._write_all()
 
     def end(self):
         element = self._stack.pop()

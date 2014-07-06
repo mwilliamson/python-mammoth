@@ -89,7 +89,7 @@ class DocumentConverter(object):
     
     
     def _convert_table_cell(self, table_cell, html_generator):
-        html_generator.start("td")
+        html_generator.start("td", always_write=True)
         for child in table_cell.children:
             child_generator = HtmlGenerator()
             self.convert_element_to_html(child, child_generator)
