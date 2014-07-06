@@ -6,6 +6,9 @@ Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "style_name",
 Run = dodge.data_class("Run", ["children", "style_id", "style_name", "is_bold", "is_italic"])
 Text = dodge.data_class("Text", ["value"])
 Hyperlink = dodge.data_class("Hyperlink", ["href", "children"])
+Table = dodge.data_class("Table", ["children"])
+TableRow = dodge.data_class("TableRow", ["children"])
+TableCell = dodge.data_class("TableCell", ["children"])
 
 class Tab(object):
     pass
@@ -36,7 +39,9 @@ def tab():
 
 image = Image
 hyperlink = Hyperlink
-
+table = Table
+table_row = TableRow
+table_cell = TableCell
 
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))

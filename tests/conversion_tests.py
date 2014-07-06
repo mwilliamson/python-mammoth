@@ -171,6 +171,27 @@ def docx_tab_is_converted_to_tab_in_html():
 
 
 @istest
+def docx_table_is_converted_to_table_in_html():
+    table = documents.table([
+        documents.table_row([
+            documents.table_cell([_paragraph_with_text("Top left")]),
+            documents.table_cell([_paragraph_with_text("Top right")]),
+        ]),
+        documents.table_row([
+            documents.table_cell([_paragraph_with_text("Bottom left")]),
+            documents.table_cell([_paragraph_with_text("Bottom right")]),
+        ]),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<tr><td><p>Top left</p></td><td><p>Top right</p></td></tr>" +
+        "<tr><td><p>Bottom left</p></td><td><p>Bottom right</p></td></tr>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def images_are_converted_to_img_tags_with_data_uri():
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
@@ -194,6 +215,10 @@ def can_define_custom_conversion_for_images():
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)
     assert_equal('<img alt="abc" />', result.value)
+
+
+def _paragraph_with_text(text):
+    return documents.paragraph(children=[_run_with_text(text)])
 
 
 def _run_with_text(text):

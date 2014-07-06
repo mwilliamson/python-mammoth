@@ -26,6 +26,9 @@ class DocumentConverter(object):
             documents.Text: self._convert_text,
             documents.Hyperlink: self._convert_hyperlink,
             documents.Tab: self._convert_tab,
+            documents.Table: self._convert_table,
+            documents.TableRow: self._convert_table_row,
+            documents.TableCell: self._convert_table_cell,
             documents.Image: convert_image or self._convert_image,
         }
 
@@ -70,6 +73,30 @@ class DocumentConverter(object):
     
     def _convert_tab(self, tab, html_generator):
         html_generator.text("\t")
+    
+    
+    def _convert_table(self, table, html_generator):
+        html_generator.end_all()
+        html_generator.start("table")
+        self._convert_elements_to_html(table.children, html_generator)
+        html_generator.end()
+    
+    
+    def _convert_table_row(self, table_row, html_generator):
+        html_generator.start("tr")
+        self._convert_elements_to_html(table_row.children, html_generator)
+        html_generator.end()
+    
+    
+    def _convert_table_cell(self, table_cell, html_generator):
+        html_generator.start("td")
+        for child in table_cell.children:
+            child_generator = HtmlGenerator()
+            self.convert_element_to_html(child, child_generator)
+            child_generator.end_all()
+            html_generator.append(child_generator)
+            
+        html_generator.end()
     
     
     def _convert_image(self, image, html_generator):
