@@ -86,6 +86,18 @@ with open("document.docx", "rb") as docx_file:
     messages = result.messages # Any messages, such as warnings during conversion
 ```
 
+You can also extract the raw text of the document by using `mammoth.extract_raw_text`.
+This will ignore all formatting in the document.
+Each paragraph is followed by two newlines.
+
+```python
+with open("document.docx", "rb") as docx_file:
+    result = mammoth.extract_raw_text(docx_file)
+    text = result.value # The raw text
+    messages = result.messages # Any messages
+```
+
+
 #### Custom style map
 
 By default,
@@ -138,6 +150,21 @@ Converts the source document to HTML.
   * `value`: the generated HTML
 
   * `messages`: any messages, such as errors and warnings, generated during the conversion
+
+#### `mammoth.extract_raw_text(fileobj)`
+
+Extract the raw text of the document.
+This will ignore all formatting in the document.
+Each paragraph is followed by two newlines.
+
+* `fileobj`: a file-like object containing the source document.
+  Files should be opened in binary mode.
+
+* Returns a result with the following properties:
+
+  * `value`: the raw text
+
+  * `messages`: any messages, such as errors and warnings
 
 #### Messages
 
