@@ -13,6 +13,23 @@ There's a large mismatch between the structure used by .docx and the structure o
 meaning that the conversion is unlikely to be perfect for more complicated documents.
 Mammoth works best if you only use styles to semantically mark up your document.
 
+The following features are currently supported:
+
+* Headings.
+
+* Lists.
+
+* Customisable mapping from your own docx styles to HTML.
+  For instance, you could convert `WarningHeading` to `h1.warning` by providing an appropriate style mapping.
+  
+* Tables.
+  The formatting of the table itself, such as borders, is currently ignored,
+  but the formatting of the text is treated the same as in the rest of the document.
+  
+* Images.
+
+* Bold and italics.
+
 ## Installation
 
     pip install mammoth
