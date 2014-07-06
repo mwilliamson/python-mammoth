@@ -54,3 +54,12 @@ def transform_document_is_applied_to_document_before_conversion():
         result = mammoth.convert_to_html(fileobj=fileobj, transform_document=transform_document)
         assert_equal("<h1>Walking on imported air</h1>", result.value)
         assert_equal([], result.messages)
+
+
+@istest
+def can_extract_raw_text():
+    with open(test_path("simple-list.docx"), "rb") as fileobj:
+        result = mammoth.extract_raw_text(fileobj=fileobj)
+        assert_equal([], result.messages)
+        assert_equal("Apple\n\nBanana\n\n", result.value)
+        
