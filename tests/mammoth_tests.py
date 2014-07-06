@@ -29,6 +29,21 @@ def simple_list_is_converted_to_list_elements():
         assert_equal("<ul><li>Apple</li><li>Banana</li></ul>", result.value)
 
 
+#~ @istest
+def word_tables_are_converted_to_html_tables():
+    expected_html = ("<p>Above</p>" +
+        "<table>" +
+        "<tr><td><p>Top left</p></td><td><p>Top right</p></td></tr>" +
+        "<tr><td><p>Bottom left</p></td><td><p>Bottom right</p></td></tr>" +
+        "</table>" +
+        "<p>Below</p>")
+    
+    
+    with open(test_path("tables.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal([], result.messages)
+        assert_equal(expected_html, result.value)
+
 @istest
 def transform_document_is_applied_to_document_before_conversion():
     def transform_document(document):
