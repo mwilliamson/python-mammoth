@@ -1,3 +1,7 @@
+# 0.3.1
+
+* Add support for tables
+
 # 0.3.0
 
 * Rename --styles CLI argument to --style-map.
