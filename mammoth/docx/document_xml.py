@@ -119,6 +119,24 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
         return results.success(documents.tab())
     
     
+    @handler("w:tbl")
+    def table(element):
+        return _read_xml_elements(element.children) \
+            .map(documents.table)
+    
+    
+    @handler("w:tr")
+    def table(element):
+        return _read_xml_elements(element.children) \
+            .map(documents.table_row)
+    
+    
+    @handler("w:tc")
+    def table(element):
+        return _read_xml_elements(element.children) \
+            .map(documents.table_cell)
+    
+    
     @handler("w:ins")
     @handler("w:smartTag")
     @handler("w:drawing")

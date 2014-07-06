@@ -143,7 +143,28 @@ class ReadXmlElementTests(object):
         element = xml_element("w:tab")
         tab = _read_and_get_document_xml_element(element)
         assert_equal(documents.tab(), tab)
-        
+    
+    
+    @istest
+    def word_table_is_read_as_document_table_element(self):
+        element = xml_element("w:tbl", {}, [
+            xml_element("w:tr", {}, [
+                xml_element("w:tc", {}, [
+                    xml_element("w:p", {}, [])
+                ]),
+            ]),
+        ])
+        table = _read_and_get_document_xml_element(element)
+        expected_result = documents.table([
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([])
+                ])
+            ])
+        ])
+        assert_equal(expected_result, table)
+
+
     @istest
     def children_of_w_ins_are_converted_normally(self):
         element = xml_element("w:p", {}, [
