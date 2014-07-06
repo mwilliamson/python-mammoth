@@ -31,6 +31,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
         "w:del",
         "w:pPr",
         "w:rPr",
+        "w:tblPr",
+        "w:tblGrid",
+        "w:tcPr",
     ])
 
     def handler(name):

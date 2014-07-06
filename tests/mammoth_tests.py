@@ -29,7 +29,7 @@ def simple_list_is_converted_to_list_elements():
         assert_equal("<ul><li>Apple</li><li>Banana</li></ul>", result.value)
 
 
-#~ @istest
+@istest
 def word_tables_are_converted_to_html_tables():
     expected_html = ("<p>Above</p>" +
         "<table>" +
