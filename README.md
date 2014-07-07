@@ -30,6 +30,8 @@ The following features are currently supported:
 
 * Bold and italics.
 
+* Links.
+
 ## Installation
 
     pip install mammoth
