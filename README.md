@@ -131,6 +131,26 @@ pass `include_default_style_map=False`:
 result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
 ```
 
+#### Custom image handlers
+
+By default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
+This behaviour can be changed by setting the `convertImage` option to an [image converter](#image-converters) .
+
+For instance, the following would replicate the default behaviour:
+
+```python
+
+def convert_image(image):
+    with image.open() as image_bytes:
+        encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
+    
+    return {
+        "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
+    }
+
+mammoth.convert_to_html(docx_file, convert_image=mammoth.images.inline(convert_image))
+```
+
 ### API
 
 #### `mammoth.convert_to_html(fileobj, style_map=None, include_default_style_map=True)`
@@ -146,6 +166,9 @@ Converts the source document to HTML.
 * `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
+    
+* `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
+  Set this argument to an [image converter](#image-converters) to override the default behaviour.
 
 * Returns a result with the following properties:
 
@@ -175,6 +198,35 @@ Each message has the following properties:
 * `type`: a string representing the type of the message, such as `"warning"`
 
 * `message`: a string containing the actual message
+
+#### Image converters
+
+An inline image converter can be created by calling `mammoth.images.inline(func)`.
+This creates an inline `<img>` element for each image in the original docx.
+`func` should be a function that has one argument `image`.
+This argument is the image element being converted,
+and has the following properties:
+
+* `open()`: open the image file. Returns a file-like object.
+  
+* `content_type`: the content type of the image, such as `image/png`.
+
+`func` should return a `dict` with a `src` item,
+which will be used as the `src` attribute on the `<img>` element.
+
+For instance, the following replicates the default image conversion:
+
+```python
+def convert_image(image):
+    with image.open() as image_bytes:
+        encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
+    
+    return {
+        "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
+    }
+
+mammoth.images.inline(convert_image)
+```
 
 ## Writing style maps
 
