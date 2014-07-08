@@ -1,7 +1,7 @@
 import base64
 import io
 
-from . import documents, results, html_paths
+from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
@@ -29,7 +29,7 @@ class DocumentConverter(object):
             documents.Table: self._convert_table,
             documents.TableRow: self._convert_table_row,
             documents.TableCell: self._convert_table_cell,
-            documents.Image: convert_image or self._convert_image,
+            documents.Image: convert_image or images.inline(self._convert_image),
         }
 
 
@@ -99,17 +99,13 @@ class DocumentConverter(object):
         html_generator.end()
     
     
-    def _convert_image(self, image, html_generator):
+    def _convert_image(self, image):
         with image.open() as image_bytes:
             encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
         
-        attributes = {
+        return {
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
         }
-        if image.alt_text:
-            attributes["alt"] = image.alt_text
-            
-        html_generator.self_closing("img", attributes)
 
 
     def _convert_elements_to_html(self, elements, html_generator):

@@ -1,5 +1,7 @@
 from .results import Result
-from . import docx, conversion, options, documents
+from . import docx, conversion, options, documents, images
+
+__all__ = ["convert_to_html", "extract_raw_text", "images"]
 
 
 def convert_to_html(fileobj, transform_document=None, **kwargs):

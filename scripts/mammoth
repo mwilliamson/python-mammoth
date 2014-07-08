@@ -23,7 +23,7 @@ def main():
             convert_image = None
             output_path = args.output
         else:
-            convert_image = ImageWriter(args.output_dir)
+            convert_image = mammoth.images.inline(ImageWriter(args.output_dir))
             output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
             output_path = os.path.join(args.output_dir, output_filename)
         
@@ -45,21 +45,16 @@ class ImageWriter(object):
         self._output_dir = output_dir
         self._image_number = 1
         
-    def __call__(self, element, html_generator):
-        
+    def __call__(self, element):
         extension = element.content_type.partition("/")[2]
         image_filename = "{0}.{1}".format(self._image_number, extension)
         with open(os.path.join(self._output_dir, image_filename), "wb") as image_dest:
             with element.open() as image_source:
                 shutil.copyfileobj(image_source, image_dest)
         
-        attributes = {"src": image_filename}
-        if element.alt_text is not None:
-            attributes["alt"] = element.alt_text
-        
-        html_generator.self_closing("img", attributes)
-        
         self._image_number += 1
+        
+        return {"src": image_filename}
 
 
 @contextlib.contextmanager
