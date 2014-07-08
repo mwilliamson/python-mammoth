@@ -16,14 +16,14 @@ def convert_to_html(fileobj, transform_document=None, **kwargs):
 
 
 def extract_raw_text(fileobj):
-    return docx.read(fileobj).map(extract_raw_text_from_element)
+    return docx.read(fileobj).map(_extract_raw_text_from_element)
 
 
-def extract_raw_text_from_element(element):
+def _extract_raw_text_from_element(element):
     if isinstance(element, documents.Text):
         return element.value
     else:
-        text = "".join(map(extract_raw_text_from_element, element.children))
+        text = "".join(map(_extract_raw_text_from_element, element.children))
         if isinstance(element, documents.Paragraph):
             return text + "\n\n"
         else:
