@@ -134,7 +134,7 @@ result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default
 #### Custom image handlers
 
 By default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
-This behaviour can be changed by setting the `convertImage` option to an [image converter](#image-converters) .
+This behaviour can be changed by setting the `convert_image` argument to an [image converter](#image-converters) .
 
 For instance, the following would replicate the default behaviour:
 
