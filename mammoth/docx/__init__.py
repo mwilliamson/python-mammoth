@@ -1,7 +1,6 @@
 import zipfile
 import contextlib
 
-from ..results import Result
 from .xmlparser import parse_xml
 from .document_xml import read_document_xml_element
 from .content_types_xml import read_content_types_xml_element

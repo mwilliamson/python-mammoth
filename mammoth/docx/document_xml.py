@@ -129,13 +129,13 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
     
     
     @handler("w:tr")
-    def table(element):
+    def table_row(element):
         return _read_xml_elements(element.children) \
             .map(documents.table_row)
     
     
     @handler("w:tc")
-    def table(element):
+    def table_cell(element):
         return _read_xml_elements(element.children) \
             .map(documents.table_cell)
     

@@ -1,6 +1,7 @@
 .PHONY: test upload clean bootstrap setup
 
 test:
+	_virtualenv/bin/pyflakes mammoth tests
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
 	
 upload: setup assert-converted-readme

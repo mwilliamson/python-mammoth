@@ -2,7 +2,7 @@ from nose.tools import istest, assert_equal
 
 from mammoth.docx.xmlparser import element as xml_element
 from mammoth.docx.relationships_xml import \
-    read_relationships_xml_element, Relationships, Relationship
+    read_relationships_xml_element, Relationship
 
 
 @istest

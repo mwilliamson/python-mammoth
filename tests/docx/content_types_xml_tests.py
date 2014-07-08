@@ -20,7 +20,7 @@ def content_type_is_based_on_default_for_extension_if_there_is_no_override():
 
 
 @istest
-def content_type_is_based_on_default_for_extension_if_there_is_no_override():
+def content_type_is_based_on_override_if_present():
     element = xml_element("content-types:Types", {}, [
         xml_element("content-types:Default", {
             "Extension": "png",

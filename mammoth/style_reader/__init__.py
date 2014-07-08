@@ -5,6 +5,9 @@ from .document_matcher_reader import read_document_matcher, grammar_text as docu
 from ..styles import Style
 
 
+__all__ = ["read_style", "read_html_path", "read_document_matcher"]
+
+
 def read_style(string):
     style_node = _grammar.parse(string)
     return _read_style_node(style_node)

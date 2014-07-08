@@ -1,5 +1,4 @@
 import base64
-import io
 
 from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
