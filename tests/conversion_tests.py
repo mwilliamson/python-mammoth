@@ -2,6 +2,7 @@ import io
 
 from nose.tools import istest, assert_equal
 
+import mammoth
 from mammoth import documents, style_reader, results
 from mammoth.conversion import convert_document_element_to_html
 from mammoth.docx.xmlparser import parse_xml
@@ -145,6 +146,23 @@ def italic_runs_are_wrapped_in_emphasis_tags():
     assert_equal("<em>Hello</em>", result.value)
     
 
+@istest
+def underline_runs_are_ignored_by_default():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_underline=True),
+    )
+    assert_equal("Hello", result.value)
+    
+
+@istest
+def underline_runs_can_be_wrapped_in_tags():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_underline=True),
+        convert_underline=mammoth.underline.element("u")
+    )
+    assert_equal("<u>Hello</u>", result.value)
+    
+    
 @istest
 def runs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(

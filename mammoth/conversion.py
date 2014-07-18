@@ -4,18 +4,18 @@ from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
-def convert_document_element_to_html(element, style_map=None, convert_image=None):
+def convert_document_element_to_html(element, style_map=None, convert_image=None, convert_underline=None):
     if style_map is None:
         style_map = []
     html_generator = HtmlGenerator()
-    converter = DocumentConverter(style_map, convert_image=convert_image)
+    converter = DocumentConverter(style_map, convert_image=convert_image, convert_underline=convert_underline)
     converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
     return results.Result(html_generator.html_string(), converter.messages)
 
 
 class DocumentConverter(object):
-    def __init__(self, style_map, convert_image):
+    def __init__(self, style_map, convert_image, convert_underline):
         self.messages = []
         self._style_map = style_map
         self._converters = {
@@ -30,6 +30,7 @@ class DocumentConverter(object):
             documents.TableCell: self._convert_table_cell,
             documents.Image: convert_image or images.inline(self._convert_image),
         }
+        self._convert_underline = convert_underline
 
 
     def convert_element_to_html(self, element, html_generator):
@@ -55,6 +56,8 @@ class DocumentConverter(object):
             run_generator.start("strong")
         if run.is_italic:
             run_generator.start("em")
+        if run.is_underline and self._convert_underline is not None:
+            self._convert_underline(run_generator)
         self._convert_elements_to_html(run.children, run_generator)
         run_generator.end_all()
         html_generator.append(run_generator)
