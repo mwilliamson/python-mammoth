@@ -28,7 +28,7 @@ The following features are currently supported:
   
 * Images.
 
-* Bold and italics.
+* Bold, italics and underlines.
 
 * Links.
 
@@ -139,7 +139,6 @@ This behaviour can be changed by setting the `convert_image` argument to an [ima
 For instance, the following would replicate the default behaviour:
 
 ```python
-
 def convert_image(image):
     with image.open() as image_bytes:
         encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
@@ -149,6 +148,18 @@ def convert_image(image):
     }
 
 mammoth.convert_to_html(docx_file, convert_image=mammoth.images.inline(convert_image))
+```
+
+#### Underline
+
+By default, the underlining of any text is ignored since underlining can be confused with links in HTML documents.
+This behaviour can be changed by setting the `convert_underline` argument to `mammoth.underline.element(name)`.
+
+For instance, suppose that a source document uses underlining for emphasis.
+The following will wrap any underlined source text in `<em>` tags:
+
+```python
+mammoth.convert_to_html(docx_file, convert_underline=mammoth.underline.element("em"))
 ```
 
 ### API
@@ -169,6 +180,9 @@ Converts the source document to HTML.
     
 * `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
   Set this argument to an [image converter](#image-converters) to override the default behaviour.
+  
+* `convert_underline`: by default, the underlining of any text is ignored.
+  Set this argument to [`mammoth.underline.element(name)`](#underline) to override the default behaviour.
 
 * Returns a result with the following properties:
 
