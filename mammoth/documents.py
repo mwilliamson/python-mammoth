@@ -9,6 +9,7 @@ Hyperlink = dodge.data_class("Hyperlink", ["href", "children"])
 Table = dodge.data_class("Table", ["children"])
 TableRow = dodge.data_class("TableRow", ["children"])
 TableCell = dodge.data_class("TableCell", ["children"])
+LineBreak = dodge.data_class("LineBreak", [])
 
 class Tab(object):
     pass
@@ -42,6 +43,7 @@ hyperlink = Hyperlink
 table = Table
 table_row = TableRow
 table_cell = TableCell
+line_break = LineBreak
 
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))

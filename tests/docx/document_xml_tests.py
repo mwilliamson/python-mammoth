@@ -219,6 +219,22 @@ class ReadXmlElementTests(object):
             [documents.run([])],
             _read_and_get_document_xml_element(element)
         )
+    
+    
+    @istest
+    def br_is_read_as_line_break(self):
+        break_element = xml_element("w:br", {}, [])
+        result = _read_and_get_document_xml_element(break_element)
+        assert_equal(result, documents.line_break())
+    
+    
+    @istest
+    def warning_on_breaks_that_arent_line_breaks(self):
+        break_element = xml_element("w:br", {"w:type": "page"}, [])
+        result = read_document_xml_element(break_element)
+        expected_warning = results.warning("Unsupported break type: page")
+        assert_equal([expected_warning], result.messages)
+        assert_equal(None, result.value)
         
         
     @istest

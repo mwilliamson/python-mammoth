@@ -159,6 +159,15 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
             href = relationships[relationship_id].target
             return children_result.map(lambda children: documents.hyperlink(href, children))
     
+    @handler("w:br")
+    def br(element):
+        break_type = element.attributes.get("w:type")
+        if break_type:
+            warning = results.warning("Unsupported break type: {0}".format(break_type))
+            return results.Result(None, [warning])
+        else:
+            return results.success(documents.line_break())
+    
     @handler("wp:inline")
     @handler("wp:anchor")
     def inline(element):
