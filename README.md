@@ -32,6 +32,8 @@ The following features are currently supported:
 
 * Links.
 
+* Line breaks.
+
 ## Installation
 
     pip install mammoth
