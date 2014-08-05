@@ -28,6 +28,7 @@ class DocumentConverter(object):
             documents.Table: self._convert_table,
             documents.TableRow: self._convert_table_row,
             documents.TableCell: self._convert_table_cell,
+            documents.LineBreak: self._line_break,
             documents.Image: convert_image or images.inline(self._convert_image),
         }
         self._convert_underline = convert_underline
@@ -99,6 +100,10 @@ class DocumentConverter(object):
             html_generator.append(child_generator)
             
         html_generator.end()
+    
+    
+    def _line_break(self, line_break, html_generator):
+        html_generator.self_closing("br")
     
     
     def _convert_image(self, image):

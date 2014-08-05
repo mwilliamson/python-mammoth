@@ -226,6 +226,13 @@ def empty_cells_are_preserved_in_table():
 
 
 @istest
+def line_break_is_converted_to_br():
+    line_break = documents.line_break()
+    result = convert_document_element_to_html(line_break)
+    assert_equal("<br />", result.value)
+
+
+@istest
 def images_are_converted_to_img_tags_with_data_uri():
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
