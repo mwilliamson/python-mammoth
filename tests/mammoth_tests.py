@@ -14,6 +14,14 @@ def docx_containing_one_paragraph_is_converted_to_single_p_element():
 
 
 @istest
+def can_read_xml_files_with_utf8_bom():
+    with open(test_path("utf8-bom.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("<p>This XML has a byte order mark.</p>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
 def inline_images_are_included_in_output():
     with open(test_path("tiny-picture.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)
