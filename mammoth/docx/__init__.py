@@ -7,6 +7,7 @@ from .content_types_xml import read_content_types_xml_element
 from .relationships_xml import read_relationships_xml_element
 from .numbering_xml import read_numbering_xml_element, Numbering
 from .styles_xml import read_styles_xml_element
+from .footnotes_xml import read_footnotes_xml_element
 
 
 _namespaces = [
@@ -37,6 +38,12 @@ def read(fileobj):
     with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
         styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
     
+    if _has_entry(zip_file, "word/footnotes.xml"):
+        with _open_entry(zip_file, "word/footnotes.xml") as footnotes_fileobj:
+            footnote_elements = read_footnotes_xml_element(_parse_docx_xml(footnotes_fileobj))
+    else:
+        footnote_elements = []
+    
     with _open_entry(zip_file, "word/document.xml") as document_fileobj:
         document_xml = _parse_docx_xml(document_fileobj)
         return read_document_xml_element(
@@ -46,6 +53,7 @@ def read(fileobj):
             docx_file=zip_file,
             numbering=numbering,
             styles=styles,
+            footnote_elements=footnote_elements,
         )
 
 
