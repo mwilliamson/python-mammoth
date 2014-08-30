@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import base64
 import random
 
@@ -45,7 +47,8 @@ class DocumentConverter(object):
             documents.TableCell: self._convert_table_cell,
             documents.LineBreak: self._line_break,
             documents.Image: convert_image or images.inline(self._convert_image),
-            documents.FootnoteReference: self._footnote_reference,
+            documents.FootnoteReference: self._convert_footnote_reference,
+            documents.Footnote: self._convert_footnote,
         }
         self._convert_underline = convert_underline
 
@@ -56,6 +59,14 @@ class DocumentConverter(object):
 
     def _convert_document(self, document, html_generator):
         self._convert_elements_to_html(document.children, html_generator)
+        html_generator.end_all()
+        html_generator.start("ol")
+        footnotes = [
+            document.footnotes.find_footnote_by_id(footnote_id)
+            for footnote_id in self._footnote_ids
+        ]
+        self._convert_elements_to_html(footnotes, html_generator)
+        html_generator.end()
 
 
     def _convert_paragraph(self, paragraph, html_generator):
@@ -130,7 +141,7 @@ class DocumentConverter(object):
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
         }
     
-    def _footnote_reference(self, footnote_reference, html_generator):
+    def _convert_footnote_reference(self, footnote_reference, html_generator):
         uid = self._footnote_uid(footnote_reference.footnote_id)
         html_generator.start("sup")
         html_generator.start("a", {
@@ -141,6 +152,18 @@ class DocumentConverter(object):
         footnote_number = len(self._footnote_ids)
         html_generator.text("[{0}]".format(footnote_number))
         html_generator.end()
+        html_generator.end()
+    
+    def _convert_footnote(self, footnote, html_generator):
+        uid = self._footnote_uid(footnote.id)
+        html_generator.start("li", {"id": "footnote-{0}".format(uid)})
+        footnote_generator = HtmlGenerator()
+        self._convert_elements_to_html(footnote.body, footnote_generator)
+        footnote_generator.text(" ")
+        footnote_generator.start("a", {"href": "#footnote-ref-{0}".format(uid)})
+        footnote_generator.text(u"↑")
+        footnote_generator.end_all()
+        html_generator.append(footnote_generator)
         html_generator.end()
 
 

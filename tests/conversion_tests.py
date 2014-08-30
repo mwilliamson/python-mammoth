@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import io
 
 from nose.tools import istest, assert_equal
@@ -266,6 +268,27 @@ def footnote_reference_is_converted_to_superscript_intra_page_link():
         generate_uniquifier=lambda: 42
     )
     assert_equal('<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup>', result.value)
+
+
+@istest
+def footnotes_are_included_after_the_main_body():
+    footnote_reference = documents.footnote_reference("4")
+    document = documents.document(
+        [documents.paragraph([
+            _run_with_text("Knock knock"),
+            documents.run([footnote_reference])
+        ])],
+        footnotes=documents.Footnotes({
+            "4": documents.Footnote("4", [_paragraph_with_text("Who's there?")])
+        })
+    )
+    result = convert_document_element_to_html(
+        document,
+        generate_uniquifier=lambda: 42
+    )
+    expected_html = (u'<p>Knock knock<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup></p>' +
+                u'<ol><li id="footnote-42-4"><p>Who\'s there? <a href="#footnote-ref-42-4">↑</a></p></li></ol>')
+    assert_equal(expected_html, result.value)
 
 
 def _paragraph_with_text(text):
