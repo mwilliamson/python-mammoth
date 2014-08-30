@@ -26,6 +26,8 @@ The following features are currently supported:
   The formatting of the table itself, such as borders, is currently ignored,
   but the formatting of the text is treated the same as in the rest of the document.
   
+* Footnotes.
+  
 * Images.
 
 * Bold, italics and underlines.
