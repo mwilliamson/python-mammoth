@@ -9,6 +9,7 @@ from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 from mammoth.docx.styles_xml import Styles, Style
+from mammoth.docx.footnotes_xml import FootnoteElement
 
 
 @istest
@@ -38,7 +39,7 @@ class ReadXmlElementTests(object):
     def can_read_text_within_document(self):
         element = _document_element_with_text("Hello!")
         assert_equal(
-            documents.Document([documents.paragraph([documents.run([documents.Text("Hello!")])])]),
+            documents.document([documents.paragraph([documents.run([documents.Text("Hello!")])])]),
             _read_and_get_document_xml_element(element)
         )
         
@@ -300,6 +301,19 @@ class ReadXmlElementTests(object):
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
             assert_equal(image_bytes, image_file.read())
+        
+    @istest
+    def footnotes_of_document_are_read(self):
+        paragraph_xml = xml_element("w:p")
+        footnotes = [FootnoteElement("4", [paragraph_xml])]
+        
+        body_xml = xml_element("w:body")
+        document_xml = xml_element("w:document", {}, [body_xml])
+        
+        document = _read_and_get_document_xml_element(document_xml, footnote_elements=footnotes)
+        footnote = document.footnotes.find_footnote_by_id("4")
+        assert_equal("4", footnote.id)
+        assert isinstance(footnote.body[0], documents.Paragraph)
     
     @istest
     def ignored_elements_are_ignored_without_message(self):

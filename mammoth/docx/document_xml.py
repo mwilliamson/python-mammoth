@@ -7,17 +7,28 @@ from .. import lists
 from .xmlparser import node_types
 
 
-def read_document_xml_element(element, numbering=None, content_types=None, relationships=None, styles=None, docx_file=None):
+def read_document_xml_element(element,
+        numbering=None,
+        content_types=None,
+        relationships=None,
+        styles=None,
+        footnote_elements=None,
+        docx_file=None):
+    
+    if footnote_elements is None:
+        footnote_elements = []
+    
     reader = _create_reader(
         numbering=numbering,
         content_types=content_types,
         relationships=relationships,
         styles=styles,
+        footnote_elements=footnote_elements,
         docx_file=docx_file,
     )
     return reader(element)
 
-def _create_reader(numbering, content_types, relationships, styles, docx_file):
+def _create_reader(numbering, content_types, relationships, styles, footnote_elements, docx_file):
     _handlers = {}
     _ignored_elements = set([
         "w:bookmarkStart",
@@ -115,8 +126,21 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
     @handler("w:document")
     def document(element):
         body_element = _find_child(element, "w:body")
-        return _read_xml_elements(body_element.children) \
-            .map(documents.document)
+        children_result = _read_xml_elements(body_element.children)
+        footnotes_result = results.combine(map(_read_footnote, footnote_elements))
+        
+        return results.map(
+            lambda children, footnotes: documents.document(
+                children,
+                documents.footnotes(dict((footnote.id, footnote) for footnote in footnotes))
+            ),
+            children_result, footnotes_result
+        )
+    
+    
+    def _read_footnote(element):
+        return _read_xml_elements(element.body).map(
+            lambda body: documents.footnote(element.id, body))
     
     
     @handler("w:tab")

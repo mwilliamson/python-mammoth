@@ -34,3 +34,7 @@ def combine(results):
             messages.append(message)
         
     return Result(values, messages)
+
+
+def map(func, *args):
+    return combine(args).map(lambda values: func(*values))
