@@ -258,6 +258,16 @@ def can_define_custom_conversion_for_images():
     assert_equal('<img alt="abc" />', result.value)
 
 
+@istest
+def footnote_reference_is_converted_to_superscript_intra_page_link():
+    footnote_reference = documents.footnote_reference("4")
+    result = convert_document_element_to_html(
+        footnote_reference,
+        generate_uniquifier=lambda: 42
+    )
+    assert_equal('<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup>', result.value)
+
+
 def _paragraph_with_text(text):
     return documents.paragraph(children=[_run_with_text(text)])
 

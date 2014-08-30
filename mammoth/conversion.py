@@ -1,23 +1,38 @@
 import base64
+import random
 
 from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
-def convert_document_element_to_html(element, style_map=None, convert_image=None, convert_underline=None):
+def convert_document_element_to_html(element,
+        style_map=None,
+        convert_image=None,
+        convert_underline=None,
+        generate_uniquifier=None):
+            
     if style_map is None:
         style_map = []
+    
+    if generate_uniquifier is None:
+        generate_uniquifier = lambda: random.randint(0, 1000000000000000)
+        
     html_generator = HtmlGenerator()
-    converter = DocumentConverter(style_map, convert_image=convert_image, convert_underline=convert_underline)
+    converter = DocumentConverter(style_map,
+        convert_image=convert_image,
+        convert_underline=convert_underline,
+        generate_uniquifier=generate_uniquifier)
     converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
     return results.Result(html_generator.html_string(), converter.messages)
 
 
 class DocumentConverter(object):
-    def __init__(self, style_map, convert_image, convert_underline):
+    def __init__(self, style_map, convert_image, convert_underline, generate_uniquifier):
         self.messages = []
         self._style_map = style_map
+        self._uniquifier = generate_uniquifier()
+        self._footnote_ids = []
         self._converters = {
             documents.Document: self._convert_document,
             documents.Paragraph: self._convert_paragraph,
@@ -30,6 +45,7 @@ class DocumentConverter(object):
             documents.TableCell: self._convert_table_cell,
             documents.LineBreak: self._line_break,
             documents.Image: convert_image or images.inline(self._convert_image),
+            documents.FootnoteReference: self._footnote_reference,
         }
         self._convert_underline = convert_underline
 
@@ -113,6 +129,19 @@ class DocumentConverter(object):
         return {
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
         }
+    
+    def _footnote_reference(self, footnote_reference, html_generator):
+        uid = self._footnote_uid(footnote_reference.footnote_id)
+        html_generator.start("sup")
+        html_generator.start("a", {
+            "href": "#footnote-" + uid,
+            "id": "footnote-ref-" + uid
+        })
+        self._footnote_ids.append(footnote_reference.footnote_id);
+        footnote_number = len(self._footnote_ids)
+        html_generator.text("[{0}]".format(footnote_number))
+        html_generator.end()
+        html_generator.end()
 
 
     def _convert_elements_to_html(self, elements, html_generator):
@@ -141,6 +170,10 @@ class DocumentConverter(object):
             ))
         
         return default
+        
+
+    def _footnote_uid(self, footnote_id):
+        return "{0}-{1}".format(self._uniquifier, footnote_id)
         
 
 def _document_matcher_matches(matcher, element, element_type):
