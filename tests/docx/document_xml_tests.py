@@ -316,6 +316,12 @@ class ReadXmlElementTests(object):
         assert isinstance(footnote.body[0], documents.Paragraph)
     
     @istest
+    def footnote_reference_has_id_read(self):
+        footnote_xml = xml_element("w:footnoteReference", {"w:id": "4"})
+        footnote = _read_and_get_document_xml_element(footnote_xml)
+        assert_equal("4", footnote.footnote_id)
+    
+    @istest
     def ignored_elements_are_ignored_without_message(self):
         element = xml_element("w:bookmarkStart")
         result = read_document_xml_element(element)

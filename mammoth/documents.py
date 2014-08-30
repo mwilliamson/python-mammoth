@@ -71,3 +71,5 @@ class Footnotes(object):
         return not (self == other)
 
 footnotes = Footnotes
+
+footnote_reference = FootnoteReference = dodge.data_class("FootnoteReference", ["footnote_id"])

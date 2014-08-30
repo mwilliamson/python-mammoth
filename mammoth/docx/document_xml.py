@@ -141,7 +141,7 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
     def _read_footnote(element):
         return _read_xml_elements(element.body).map(
             lambda body: documents.footnote(element.id, body))
-    
+     
     
     @handler("w:tab")
     def tab(element):
@@ -220,6 +220,10 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
         
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
         return results.success(image)
+    
+    @handler("w:footnoteReference")
+    def footnote_reference(element):
+        return results.success(documents.footnote_reference(element.attributes["w:id"]))
     
     def read(element):
         handler = _handlers.get(element.name)
