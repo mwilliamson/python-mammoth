@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 from nose.tools import istest, assert_equal
 
 from .testing import test_path
@@ -58,11 +60,11 @@ def word_tables_are_converted_to_html_tables():
 @istest
 def footnotes_are_appended_to_text():
     # TODO: don't duplicate footnotes with multiple references
-    expected_html = (u'<p>Ouch' +
-        u'<sup><a href="#footnote-42-1" id="footnote-ref-42-1">[1]</a></sup>.' +
-        u'<sup><a href="#footnote-42-2" id="footnote-ref-42-2">[2]</a></sup></p>' +
-        u'<ol><li id="footnote-42-1"><p> A tachyon walks into a bar. <a href="#footnote-ref-42-1">↑</a></p></li>' +
-        u'<li id="footnote-42-2"><p> Fin. <a href="#footnote-ref-42-2">↑</a></p></li></ol>')
+    expected_html = ('<p>Ouch' +
+        '<sup><a href="#footnote-42-1" id="footnote-ref-42-1">[1]</a></sup>.' +
+        '<sup><a href="#footnote-42-2" id="footnote-ref-42-2">[2]</a></sup></p>' +
+        '<ol><li id="footnote-42-1"><p> A tachyon walks into a bar. <a href="#footnote-ref-42-1">↑</a></p></li>' +
+        '<li id="footnote-42-2"><p> Fin. <a href="#footnote-ref-42-2">↑</a></p></li></ol>')
     
     with open(test_path("footnotes.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj, generate_uniquifier=lambda: 42)

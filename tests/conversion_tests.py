@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import io
 
 from nose.tools import istest, assert_equal
@@ -286,8 +288,8 @@ def footnotes_are_included_after_the_main_body():
         document,
         generate_uniquifier=lambda: 42
     )
-    expected_html = (u'<p>Knock knock<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup></p>' +
-                u'<ol><li id="footnote-42-4"><p>Who\'s there? <a href="#footnote-ref-42-4">↑</a></p></li></ol>')
+    expected_html = ('<p>Knock knock<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup></p>' +
+                '<ol><li id="footnote-42-4"><p>Who\'s there? <a href="#footnote-ref-42-4">↑</a></p></li></ol>')
     assert_equal(expected_html, result.value)
 
 

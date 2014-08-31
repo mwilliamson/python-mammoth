@@ -2,6 +2,7 @@
 
 import base64
 import random
+import sys
 
 from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
@@ -161,7 +162,7 @@ class DocumentConverter(object):
         self._convert_elements_to_html(footnote.body, footnote_generator)
         footnote_generator.text(" ")
         footnote_generator.start("a", {"href": "#footnote-ref-{0}".format(uid)})
-        footnote_generator.text(u"↑")
+        footnote_generator.text(_up_arrow)
         footnote_generator.end_all()
         html_generator.append(footnote_generator)
         html_generator.end()
@@ -213,3 +214,7 @@ def _document_matcher_matches(matcher, element, element_type):
             matcher.numbering == element.numbering
         )
     )
+
+_up_arrow = "↑"
+if sys.version_info[0] < 3:
+    _up_arrow = _up_arrow.decode("utf8")
