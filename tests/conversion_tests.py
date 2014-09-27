@@ -166,6 +166,28 @@ def underline_runs_can_be_wrapped_in_tags():
     )
     assert_equal("<u>Hello</u>", result.value)
     
+
+@istest
+def superscript_runs_are_wrapped_in_sup_tags():
+    result = convert_document_element_to_html(
+        documents.run(
+            children=[documents.text("Hello")],
+            vertical_alignment=documents.VerticalAlignment.superscript,
+        ),
+    )
+    assert_equal("<sup>Hello</sup>", result.value)
+    
+
+@istest
+def subscript_runs_are_wrapped_in_sub_tags():
+    result = convert_document_element_to_html(
+        documents.run(
+            children=[documents.text("Hello")],
+            vertical_alignment=documents.VerticalAlignment.subscript,
+        ),
+    )
+    assert_equal("<sub>Hello</sub>", result.value)
+    
     
 @istest
 def runs_are_converted_by_satisfying_matching_paths():
