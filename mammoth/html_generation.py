@@ -1,6 +1,10 @@
 import cgi
 import sys
 
+from .html_paths import HtmlPath
+
+# TODO from future import unicode literals
+
 
 class HtmlGenerator(object):
     #:: Self -> none
@@ -58,7 +62,7 @@ class HtmlGenerator(object):
     
     #:: Self -> str
     def html_string(self):
-        return u("").join(self._fragments)
+        return "".join(self._fragments)
 
 
 class _Element(object):
@@ -84,7 +88,7 @@ def _generate_attribute_string(attributes):
     else:
         return "".join(
             ' {0}="{1}"'.format(key, _escape_html(value))
-            for key, value in _iteritems(attributes)
+            for key, value in attributes.items()
         )
 
 
@@ -122,13 +126,4 @@ def _is_element_match(generated_element, path_element):
 #:: HtmlPathElement -> str
 def _generate_class_attribute(path_element):
     return " ".join(path_element.class_names)
-
-
-if sys.version_info[0] == 2:
-    _iteritems = lambda x: x.iteritems()
-    u = lambda value: unicode(value, "unicode_escape")
-    
-else:
-    _iteritems = lambda x: x.items()
-    u = lambda value: value
 
