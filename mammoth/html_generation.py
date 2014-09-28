@@ -1,9 +1,9 @@
+from __future__ import unicode_literals
+
 import cgi
 import sys
 
 from .html_paths import HtmlPath, HtmlPathElement
-
-# TODO from future import unicode literals
 
 
 class HtmlGenerator(object):
