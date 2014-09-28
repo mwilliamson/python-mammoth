@@ -1,7 +1,7 @@
 import cgi
 import sys
 
-from .html_paths import HtmlPath
+from .html_paths import HtmlPath, HtmlPathElement
 
 # TODO from future import unicode literals
 
