@@ -1,15 +1,43 @@
 from __future__ import unicode_literals
 
 import cgi
-import sys
 
 from .html_paths import HtmlPath, HtmlPathElement
+
+
+#:: str -> str
+def _escape_html(text):
+    return cgi.escape(text, quote=True)
+
+
+#:: dict[str, str] -> str
+def _generate_attribute_string(attributes):
+    if attributes is None:
+        return ""
+    else:
+        return "".join(
+            ' {0}="{1}"'.format(key, _escape_html(value))
+            for key, value in attributes.items()
+        )
+
+
+class _Element(object):
+    #:: Self, str, dict[str, str] -> none
+    def __init__(self, name, attributes):
+        if attributes is None:
+            attributes = {}
+        
+        self.name = name
+        self.attributes = attributes
+        self.written = False
 
 
 class HtmlGenerator(object):
     #:: Self -> none
     def __init__(self):
+        #:: list[_Element]
         self._stack = []
+        #:: list[str]
         self._fragments = []
     
     #:: Self, str -> none
@@ -63,33 +91,6 @@ class HtmlGenerator(object):
     #:: Self -> str
     def html_string(self):
         return "".join(self._fragments)
-
-
-class _Element(object):
-    #:: Self, str, dict[str, str] -> none
-    def __init__(self, name, attributes):
-        if attributes is None:
-            attributes = {}
-        
-        self.name = name
-        self.attributes = attributes
-        self.written = False
-
-
-#:: str -> str
-def _escape_html(text):
-    return cgi.escape(text, quote=True)
-
-
-#:: dict[str, str] -> str
-def _generate_attribute_string(attributes):
-    if attributes is None:
-        return ""
-    else:
-        return "".join(
-            ' {0}="{1}"'.format(key, _escape_html(value))
-            for key, value in attributes.items()
-        )
 
 
 #:: HtmlGenerator, HtmlPath -> none
