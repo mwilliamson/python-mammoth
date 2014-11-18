@@ -46,7 +46,7 @@ class HtmlGenerator(object):
             self._write_all()
             self._fragments.append(_escape_html(text))
     
-    #:: Self, str, dict[str, str], bool -> none
+    #:: Self, str, attributes: dict[str, str], always_write: bool -> none
     def start(self, name, attributes=None, always_write=False):
         self._stack.append(_Element(name, attributes))
         
@@ -93,17 +93,18 @@ class HtmlGenerator(object):
         return "".join(self._fragments)
 
 
-#:: HtmlGenerator, HtmlPath -> none
-def satisfy_html_path(generator, path):
-    first_unsatisfied_index = _find_first_unsatisfied_index(generator, path)
-    while len(generator._stack) > first_unsatisfied_index:
-        generator.end()
-    
-    for element in path.elements[first_unsatisfied_index:]:
-        attributes = {}
-        if element.class_names:
-            attributes["class"] = _generate_class_attribute(element)
-        generator.start(element.names[0], attributes=attributes)
+#:: HtmlPathElement -> str
+def _generate_class_attribute(path_element):
+    return " ".join(path_element.class_names)
+
+
+#:: _Element, HtmlPathElement -> bool
+def _is_element_match(generated_element, path_element):
+    return (
+        not path_element.fresh and
+        generated_element.name in path_element.names and
+        generated_element.attributes.get("class", "") == _generate_class_attribute(path_element)
+    )
     
 
 #:: HtmlGenerator, HtmlPath -> int
@@ -115,16 +116,16 @@ def _find_first_unsatisfied_index(generator, path):
     return len(generator._stack)
 
 
-#:: _Element, HtmlPathElement -> bool
-def _is_element_match(generated_element, path_element):
-    return (
-        not path_element.fresh and
-        generated_element.name in path_element.names and
-        generated_element.attributes.get("class", "") == _generate_class_attribute(path_element)
-    )
-
-
-#:: HtmlPathElement -> str
-def _generate_class_attribute(path_element):
-    return " ".join(path_element.class_names)
+#:: HtmlGenerator, HtmlPath -> none
+def satisfy_html_path(generator, path):
+    first_unsatisfied_index = _find_first_unsatisfied_index(generator, path)
+    while len(generator._stack) > first_unsatisfied_index:
+        generator.end()
+    
+    for element in path.elements[first_unsatisfied_index:]:
+        #:: dict[str, str]
+        attributes = {}
+        if element.class_names:
+            attributes["class"] = _generate_class_attribute(element)
+        generator.start(element.names[0], attributes=attributes)
 
