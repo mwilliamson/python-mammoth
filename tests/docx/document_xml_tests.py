@@ -143,6 +143,16 @@ class ReadXmlElementTests(object):
         run = self._read_run_with_properties([xml_element("w:u")])
         assert_equal(True, run.is_underline)
     
+    @istest
+    def run_has_baseline_vertical_alignment_if_vertical_alignment_element_is_not_present(self):
+        run = self._read_run_with_properties([])
+        assert_equal(documents.VerticalAlignment.baseline, run.vertical_alignment)
+        
+    @istest
+    def run_has_vertical_alignment_read_from_vertical_alignment_element(self):
+        run = self._read_run_with_properties([xml_element("w:vertAlign", {"w:val": "superscript"})])
+        assert_equal(documents.VerticalAlignment.superscript, run.vertical_alignment)
+    
     def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])

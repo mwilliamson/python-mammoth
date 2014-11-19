@@ -70,7 +70,11 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
             style_name = None
         else:
             style_name = styles.find_character_style_by_id(style_id).name
-            
+        
+        vertical_alignment = properties \
+            .find_child_or_null("w:vertAlign") \
+            .attributes.get("w:val")
+        
         is_bold = properties.find_child("w:b")
         is_italic = properties.find_child("w:i")
         is_underline = properties.find_child("w:u")
@@ -83,6 +87,7 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
                 is_bold=is_bold,
                 is_italic=is_italic,
                 is_underline=is_underline,
+                vertical_alignment=vertical_alignment,
             ))
 
 

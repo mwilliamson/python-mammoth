@@ -85,6 +85,10 @@ class DocumentConverter(object):
             run_generator.start("strong")
         if run.is_italic:
             run_generator.start("em")
+        if run.vertical_alignment == documents.VerticalAlignment.superscript:
+            run_generator.start("sup")
+        if run.vertical_alignment == documents.VerticalAlignment.subscript:
+            run_generator.start("sub")
         if run.is_underline and self._convert_underline is not None:
             self._convert_underline(run_generator)
         self._convert_elements_to_html(run.children, run_generator)
