@@ -10,19 +10,19 @@ def _escape_html(text):
     return cgi.escape(text, quote=True)
 
 
-#:: dict[str, str] -> str
+#:: dict[str, str] | none -> str
 def _generate_attribute_string(attributes):
     if attributes is None:
-        return ""
-    else:
-        return "".join(
-            ' {0}="{1}"'.format(key, _escape_html(value))
-            for key, value in attributes.items()
-        )
+        attributes = {}
+    
+    return "".join(
+        ' {0}="{1}"'.format(key, _escape_html(value))
+        for key, value in attributes.items()
+    )
 
 
 class _Element(object):
-    #:: Self, str, dict[str, str] -> none
+    #:: Self, str, dict[str, str] | none -> none
     def __init__(self, name, attributes):
         if attributes is None:
             attributes = {}
@@ -46,8 +46,8 @@ class HtmlGenerator(object):
             self._write_all()
             self._fragments.append(_escape_html(text))
     
-    #:: Self, str, attributes: dict[str, str], always_write: bool -> none
-    def start(self, name, attributes=None, always_write=False):
+    #:: Self, str, ?attributes: dict[str, str], ?always_write: bool -> none
+    def start(self, name, attributes=None, always_write=None):
         self._stack.append(_Element(name, attributes))
         
         if always_write:
