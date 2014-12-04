@@ -1,7 +1,8 @@
 .PHONY: test upload clean bootstrap setup
 
 test:
-	_virtualenv/bin/pyflakes mammoth tests
+	#_virtualenv/bin/pyflakes mammoth tests
+	nope check mammoth/html_generation.py html_paths.py underline.py
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
 	
 upload: setup assert-converted-readme

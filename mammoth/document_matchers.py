@@ -1,17 +1,27 @@
 import collections
 
 
+ParagraphMatcher = collections.namedtuple("ParagraphMatcher", [
+    #:: str
+    "element_type",
+    #:: str | none
+    "style_id",
+    #:: str | none
+    "style_name",
+    "numbering"
+])
+
+
 def paragraph(style_id=None, style_name=None, numbering=None):
-    return ParagraphMatcher(style_id, style_name, numbering)
+    return ParagraphMatcher("paragraph", style_id, style_name, numbering)
 
 
-ParagraphMatcher = collections.namedtuple("ParagraphMatcher", ["style_id", "style_name", "numbering"])
-ParagraphMatcher.element_type = "paragraph"
+RunMatcher = collections.namedtuple("RunMatcher", [
+    "element_type",
+    "style_id",
+    "style_name"
+])
 
 
 def run(style_id=None, style_name=None):
-    return RunMatcher(style_id, style_name)
-
-
-RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
-RunMatcher.element_type = "run"
+    return RunMatcher("run", style_id, style_name)
