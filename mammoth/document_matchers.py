@@ -33,3 +33,7 @@ RunMatcher = collections.namedtuple("RunMatcher", [
 #:: ?style_id: str | none, ?style_name: str | none -> RunMatcher
 def run(style_id=None, style_name=None):
     return RunMatcher("run", style_id, style_name)
+
+
+#:type DocumentMatcher = ParagraphMatcher | RunMatcher
+DocumentMatcher = None
