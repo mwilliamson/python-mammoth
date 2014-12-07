@@ -13,6 +13,7 @@ def _escape_html(text):
 #:: dict[str, str] | none -> str
 def _generate_attribute_string(attributes):
     if attributes is None:
+        #:: dict[str, str]
         attributes = {}
     
     return "".join(
@@ -25,6 +26,7 @@ class _Element(object):
     #:: Self, str, dict[str, str] | none -> none
     def __init__(self, name, attributes):
         if attributes is None:
+            #:: dict[str, str]
             attributes = {}
         
         self.name = name

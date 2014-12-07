@@ -25,6 +25,7 @@ def path(elements):
 #:: list[str], class_names: list[str], fresh: bool -> HtmlPathElement
 def element(names, class_names=None, fresh=None):
     if class_names is None:
+        #:: list[str]
         class_names = []
     if fresh is None:
         fresh = False

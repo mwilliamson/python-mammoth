@@ -3,6 +3,7 @@
 test:
 	#_virtualenv/bin/pyflakes mammoth tests
 	nope check \
+		mammoth/documents.py \
 		mammoth/html_generation.py \
 		html_paths.py \
 		underline.py
