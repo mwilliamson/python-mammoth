@@ -3,11 +3,12 @@
 test:
 	#_virtualenv/bin/pyflakes mammoth tests
 	nope check \
-		mammoth/documents.py \
 		mammoth/document_matchers.py \
+		mammoth/documents.py \
 		mammoth/html_generation.py \
-		html_paths.py \
-		underline.py
+		mammoth/images.py \
+		mammoth/html_paths.py \
+		mammoth/underline.py
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
 	
 upload: setup assert-converted-readme
