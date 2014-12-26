@@ -134,13 +134,15 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
         children_result = _read_xml_elements(body_element.children)
         footnotes_result = results.combine(map(_read_footnote, footnote_elements))
         
-        return results.map(
-            lambda children, footnotes: documents.document(
-                children,
-                documents.footnotes(dict((footnote.id, footnote) for footnote in footnotes))
-            ),
-            children_result, footnotes_result
-        )
+        footnotes = documents.footnotes(dict(
+            (footnote.id, footnote)
+            for footnote in footnotes_result.value
+        ))
+        
+        document = documents.document(children_result.value, footnotes)
+        
+        return results.combine([children_result, footnotes_result]) \
+            .map(lambda _: document)
     
     
     def _read_footnote(element):

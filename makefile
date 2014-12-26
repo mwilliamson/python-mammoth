@@ -8,6 +8,7 @@ test:
 		mammoth/html_generation.py \
 		mammoth/html_paths.py \
 		mammoth/images.py \
+		mammoth/results.py \
 		mammoth/styles.py \
 		mammoth/underline.py
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
