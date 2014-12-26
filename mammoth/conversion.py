@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import unicode_literals
 
 import base64
 import random
@@ -220,5 +221,3 @@ def _document_matcher_matches(matcher, element, element_type):
     )
 
 _up_arrow = "↑"
-if sys.version_info[0] < 3:
-    _up_arrow = _up_arrow.decode("utf8")
