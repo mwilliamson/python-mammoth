@@ -129,10 +129,7 @@ footnote_reference = FootnoteReference
 #:: list[object], ?footnotes: Footnotes -> Document
 def document(children, footnotes=None):
     if footnotes is None:
-        # TODO: type hinting for call args
-        #:: dict[str, Footnote]
-        f = {}
-        footnotes = Footnotes(f)
+        footnotes = Footnotes({})
     return Document(children, footnotes)
 
 #:: list[object], ?style_id: str, ?style_name: str, ?numbering: NumberingLevel -> Paragraph
