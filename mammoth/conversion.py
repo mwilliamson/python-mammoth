@@ -9,6 +9,10 @@ from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
+def _default_uniquifier_generator():
+    return random.randint(0, 1000000000000000)
+
+
 def convert_document_element_to_html(element,
         style_map=None,
         convert_image=None,
@@ -19,7 +23,7 @@ def convert_document_element_to_html(element,
         style_map = []
     
     if generate_uniquifier is None:
-        generate_uniquifier = lambda: random.randint(0, 1000000000000000)
+        generate_uniquifier = _default_uniquifier_generator
         
     html_generator = HtmlGenerator()
     converter = DocumentConverter(style_map,
@@ -33,10 +37,14 @@ def convert_document_element_to_html(element,
 
 class DocumentConverter(object):
     def __init__(self, style_map, convert_image, convert_underline, generate_uniquifier):
+        if convert_image is None:
+            convert_image = images.inline(self._convert_image)
+        
         self.messages = []
         self._style_map = style_map
         self._uniquifier = generate_uniquifier()
         self._footnote_ids = []
+        
         self._converters = {
             documents.Document: self._convert_document,
             documents.Paragraph: self._convert_paragraph,
@@ -48,7 +56,7 @@ class DocumentConverter(object):
             documents.TableRow: self._convert_table_row,
             documents.TableCell: self._convert_table_cell,
             documents.LineBreak: self._line_break,
-            documents.Image: convert_image or images.inline(self._convert_image),
+            documents.Image: convert_image,
             documents.FootnoteReference: self._convert_footnote_reference,
             documents.Footnote: self._convert_footnote,
         }
