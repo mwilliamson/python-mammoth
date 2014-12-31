@@ -3,6 +3,7 @@
 test:
 	#_virtualenv/bin/pyflakes mammoth tests
 	nope check \
+		mammoth/conversion.py \
 		mammoth/document_matchers.py \
 		mammoth/documents.py \
 		mammoth/html_generation.py \
