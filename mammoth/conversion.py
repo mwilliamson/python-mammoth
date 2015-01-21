@@ -35,7 +35,7 @@ class DocumentConverter(object):
         self.messages = []
         self._style_map = style_map
         self._uniquifier = generate_uniquifier()
-        self._footnote_ids = []
+        self._note_references = []
         self._converters = {
             documents.Document: self._convert_document,
             documents.Paragraph: self._convert_paragraph,
@@ -48,8 +48,8 @@ class DocumentConverter(object):
             documents.TableCell: self._convert_table_cell,
             documents.LineBreak: self._line_break,
             documents.Image: convert_image or images.inline(self._convert_image),
-            documents.FootnoteReference: self._convert_footnote_reference,
-            documents.Footnote: self._convert_footnote,
+            documents.NoteReference: self._convert_note_reference,
+            documents.Note: self._convert_note,
         }
         self._convert_underline = convert_underline
 
@@ -62,11 +62,11 @@ class DocumentConverter(object):
         self._convert_elements_to_html(document.children, html_generator)
         html_generator.end_all()
         html_generator.start("ol")
-        footnotes = [
-            document.footnotes.find_footnote_by_id(footnote_id)
-            for footnote_id in self._footnote_ids
+        notes = [
+            document.notes.resolve(reference)
+            for reference in self._note_references
         ]
-        self._convert_elements_to_html(footnotes, html_generator)
+        self._convert_elements_to_html(notes, html_generator)
         html_generator.end()
 
 
@@ -146,29 +146,29 @@ class DocumentConverter(object):
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
         }
     
-    def _convert_footnote_reference(self, footnote_reference, html_generator):
-        uid = self._footnote_uid(footnote_reference.footnote_id)
+    def _convert_note_reference(self, note_reference, html_generator):
+        uid = self._note_uid(note_reference.note_id)
         html_generator.start("sup")
         html_generator.start("a", {
-            "href": "#footnote-" + uid,
-            "id": "footnote-ref-" + uid
+            "href": "#{0}-{1}".format(note_reference.note_type, uid),
+            "id": "{0}-ref-{1}".format(note_reference.note_type, uid),
         })
-        self._footnote_ids.append(footnote_reference.footnote_id);
-        footnote_number = len(self._footnote_ids)
-        html_generator.text("[{0}]".format(footnote_number))
+        self._note_references.append(note_reference);
+        note_number = len(self._note_references)
+        html_generator.text("[{0}]".format(note_number))
         html_generator.end()
         html_generator.end()
     
-    def _convert_footnote(self, footnote, html_generator):
-        uid = self._footnote_uid(footnote.id)
-        html_generator.start("li", {"id": "footnote-{0}".format(uid)})
-        footnote_generator = HtmlGenerator()
-        self._convert_elements_to_html(footnote.body, footnote_generator)
-        footnote_generator.text(" ")
-        footnote_generator.start("a", {"href": "#footnote-ref-{0}".format(uid)})
-        footnote_generator.text(_up_arrow)
-        footnote_generator.end_all()
-        html_generator.append(footnote_generator)
+    def _convert_note(self, note, html_generator):
+        uid = self._note_uid(note.id)
+        html_generator.start("li", {"id": "{0}-{1}".format(note.note_type, uid)})
+        note_generator = HtmlGenerator()
+        self._convert_elements_to_html(note.body, note_generator)
+        note_generator.text(" ")
+        note_generator.start("a", {"href": "#{0}-ref-{1}".format(note.note_type, uid)})
+        note_generator.text(_up_arrow)
+        note_generator.end_all()
+        html_generator.append(note_generator)
         html_generator.end()
 
 
@@ -200,8 +200,8 @@ class DocumentConverter(object):
         return default
         
 
-    def _footnote_uid(self, footnote_id):
-        return "{0}-{1}".format(self._uniquifier, footnote_id)
+    def _note_uid(self, note_id):
+        return "{0}-{1}".format(self._uniquifier, note_id)
         
 
 def _document_matcher_matches(matcher, element, element_type):

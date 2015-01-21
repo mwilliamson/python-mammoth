@@ -23,12 +23,12 @@ def read_document_xml_element(element,
         content_types=content_types,
         relationships=relationships,
         styles=styles,
-        footnote_elements=footnote_elements,
+        note_elements=footnote_elements,
         docx_file=docx_file,
     )
     return reader(element)
 
-def _create_reader(numbering, content_types, relationships, styles, footnote_elements, docx_file):
+def _create_reader(numbering, content_types, relationships, styles, note_elements, docx_file):
     _handlers = {}
     _ignored_elements = set([
         "w:bookmarkStart",
@@ -134,20 +134,13 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
     def document(element):
         body_element = _find_child(element, "w:body")
         children_result = _read_xml_elements(body_element.children)
-        footnotes_result = results.combine(map(_read_footnote, footnote_elements))
-        
-        return results.map(
-            lambda children, footnotes: documents.document(
-                children,
-                documents.footnotes(dict((footnote.id, footnote) for footnote in footnotes))
-            ),
-            children_result, footnotes_result
-        )
+        notes_result = results.combine(map(_read_note, note_elements)).map(documents.notes)
+        return results.map(documents.document, children_result, notes_result)
     
     
-    def _read_footnote(element):
+    def _read_note(element):
         return _read_xml_elements(element.body).map(
-            lambda body: documents.footnote(element.id, body))
+            lambda body: documents.note(element.note_type, element.id, body))
      
     
     @handler("w:tab")
@@ -228,9 +221,15 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
         return results.success(image)
     
-    @handler("w:footnoteReference")
-    def footnote_reference(element):
-        return results.success(documents.footnote_reference(element.attributes["w:id"]))
+    def note_reference_reader(note_type):
+        @handler("w:{0}Reference".format(note_type))
+        def note_reference(element):
+            return results.success(documents.note_reference(note_type, element.attributes["w:id"]))
+        
+        return note_reference
+    
+    note_reference_reader("footnote")
+    note_reference_reader("endnote")
     
     def read(element):
         handler = _handlers.get(element.name)

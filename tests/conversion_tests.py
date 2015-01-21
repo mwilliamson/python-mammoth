@@ -286,7 +286,7 @@ def can_define_custom_conversion_for_images():
 
 @istest
 def footnote_reference_is_converted_to_superscript_intra_page_link():
-    footnote_reference = documents.footnote_reference("4")
+    footnote_reference = documents.note_reference("footnote", "4")
     result = convert_document_element_to_html(
         footnote_reference,
         generate_uniquifier=lambda: 42
@@ -296,15 +296,15 @@ def footnote_reference_is_converted_to_superscript_intra_page_link():
 
 @istest
 def footnotes_are_included_after_the_main_body():
-    footnote_reference = documents.footnote_reference("4")
+    footnote_reference = documents.note_reference("footnote", "4")
     document = documents.document(
         [documents.paragraph([
             _run_with_text("Knock knock"),
             documents.run([footnote_reference])
         ])],
-        footnotes=documents.Footnotes({
-            "4": documents.Footnote("4", [_paragraph_with_text("Who's there?")])
-        })
+        notes=documents.notes([
+            documents.note("footnote", "4", [_paragraph_with_text("Who's there?")])
+        ])
     )
     result = convert_document_element_to_html(
         document,

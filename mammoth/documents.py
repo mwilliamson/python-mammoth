@@ -1,7 +1,7 @@
 import dodge
 
 
-Document = dodge.data_class("Document", ["children", "footnotes"])
+Document = dodge.data_class("Document", ["children", "notes"])
 Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "style_name", "numbering"])
 Run = dodge.data_class("Run", [
     "children", "style_id", "style_name", "is_bold", "is_italic",
@@ -25,10 +25,10 @@ class Image(object):
         self.open = open
 
 
-def document(children, footnotes=None):
-    if footnotes is None:
-        footnotes = Footnotes({})
-    return Document(children, footnotes)
+def document(children, notes=None):
+    if notes is None:
+        notes = Notes({})
+    return Document(children, notes)
 
 def paragraph(children, style_id=None, style_name=None, numbering=None):
     return Paragraph(children, style_id, style_name, numbering)
@@ -67,22 +67,32 @@ def numbering_level(level_index, is_ordered):
 _NumberingLevel = dodge.data_class("NumberingLevel", ["level_index", "is_ordered"])
 
 
-footnote = Footnote = dodge.data_class("Footnote", ["id", "body"])
+note = Note = dodge.data_class("Note", ["note_type", "id", "body"])
 
 
-class Footnotes(object):
-    def __init__(self, footnotes):
-        self._footnotes = footnotes
+class Notes(object):
+    def __init__(self, notes):
+        self._notes = notes
     
-    def find_footnote_by_id(self, id):
-        return self._footnotes[id]
+    def find_note(self, note_type, note_id):
+        return self._notes[(note_type, note_id)]
+    
+    def resolve(self, reference):
+        return self.find_note(reference.note_type, reference.note_id)
     
     def __eq__(self, other):
-        return isinstance(other, Footnotes) and self._footnotes == other._footnotes
+        return isinstance(other, Notes) and self._notes == other._notes
 
     def __ne__(self, other):
         return not (self == other)
 
-footnotes = Footnotes
+def notes(notes_list):
+    return Notes(dict(
+        (_note_key(note), note)
+        for note in notes_list
+    ))
+    
+def _note_key(note):
+    return (note.note_type, note.id)
 
-footnote_reference = FootnoteReference = dodge.data_class("FootnoteReference", ["footnote_id"])
+note_reference = NoteReference = dodge.data_class("NoteReference", ["note_type", "note_id"])

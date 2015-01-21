@@ -321,7 +321,7 @@ class ReadXmlElementTests(object):
         document_xml = xml_element("w:document", {}, [body_xml])
         
         document = _read_and_get_document_xml_element(document_xml, footnote_elements=footnotes)
-        footnote = document.footnotes.find_footnote_by_id("4")
+        footnote = document.notes.find_note("footnote", "4")
         assert_equal("4", footnote.id)
         assert isinstance(footnote.body[0], documents.Paragraph)
     
@@ -329,7 +329,7 @@ class ReadXmlElementTests(object):
     def footnote_reference_has_id_read(self):
         footnote_xml = xml_element("w:footnoteReference", {"w:id": "4"})
         footnote = _read_and_get_document_xml_element(footnote_xml)
-        assert_equal("4", footnote.footnote_id)
+        assert_equal("4", footnote.note_id)
     
     @istest
     def ignored_elements_are_ignored_without_message(self):
