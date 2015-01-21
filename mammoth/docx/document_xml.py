@@ -40,6 +40,8 @@ def _create_reader(numbering, content_types, relationships, styles, footnote_ele
         "w:commentRangeEnd",
         "w:commentReference",
         "w:del",
+        "w:footnoteRef",
+        "w:endnoteRef",
         "w:pPr",
         "w:rPr",
         "w:tblPr",
