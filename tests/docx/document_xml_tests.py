@@ -9,7 +9,7 @@ from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 from mammoth.docx.styles_xml import Styles, Style
-from mammoth.docx.footnotes_xml import FootnoteElement
+from mammoth.docx.footnotes_xml import NoteElement
 
 
 @istest
@@ -315,7 +315,7 @@ class ReadXmlElementTests(object):
     @istest
     def footnotes_of_document_are_read(self):
         paragraph_xml = xml_element("w:p")
-        footnotes = [FootnoteElement("4", [paragraph_xml])]
+        footnotes = [NoteElement("footnote", "4", [paragraph_xml])]
         
         body_xml = xml_element("w:body")
         document_xml = xml_element("w:document", {}, [body_xml])
