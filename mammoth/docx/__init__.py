@@ -38,11 +38,8 @@ def read(fileobj):
     with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
         styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
     
-    if _has_entry(zip_file, "word/footnotes.xml"):
-        with _open_entry(zip_file, "word/footnotes.xml") as footnotes_fileobj:
-            footnote_elements = read_footnotes_xml_element(_parse_docx_xml(footnotes_fileobj))
-    else:
-        footnote_elements = []
+    footnote_elements = _try_read_entry_or_default(
+        zip_file, "word/footnotes.xml", read_footnotes_xml_element, default=[])
     
     with _open_entry(zip_file, "word/document.xml") as document_fileobj:
         document_xml = _parse_docx_xml(document_fileobj)
@@ -68,6 +65,14 @@ def _open_entry(zip_file, name):
         yield entry
     finally:
         entry.close()
+
+
+def _try_read_entry_or_default(zip_file, name, reader, default):
+    if _has_entry(zip_file, name):
+        with _open_entry(zip_file, name) as fileobj:
+            return reader(_parse_docx_xml(fileobj))
+    else:
+        return default
 
 
 def _has_entry(zip_file, name):
