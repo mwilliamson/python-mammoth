@@ -7,12 +7,23 @@ import sys
 
 from . import documents, results, html_paths, images
 from .html_generation import HtmlGenerator, satisfy_html_path
+from .results import Result
+from .styles import Style
+from .documents import Document
+from .images import ImageConverter
+from .underline import UnderlineConverter
 
-
+#:: -> int
 def _default_uniquifier_generator():
     return random.randint(0, 1000000000000000)
 
 
+#:: Document,
+#:  ?style_map: list[Style],
+#:  ?convert_image: ImageConverter,
+#:  ?convert_underline: UnderlineConverter,
+#:  ?generate_uniquifier: (-> int)
+#:  -> Result[str]
 def convert_document_element_to_html(element,
         style_map=None,
         convert_image=None,

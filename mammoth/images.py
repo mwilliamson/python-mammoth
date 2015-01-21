@@ -2,7 +2,10 @@ from .documents import Image
 from .html_generation import HtmlGenerator
 
 
-#:: (Image -> dict[str, str]) -> (Image, HtmlGenerator -> none)
+#:type ImageConverter = (Image, HtmlGenerator -> none)
+ImageConverter = None
+
+#:: (Image -> dict[str, str]) -> ImageConverter
 def inline(func):
     #:: Image, HtmlGenerator -> none
     def convert_image(image, html_generator):

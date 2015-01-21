@@ -1,6 +1,9 @@
 from .html_generation import HtmlGenerator
 
-#:: str -> (HtmlGenerator -> none)
+#:type UnderlineConverter = (HtmlGenerator -> none)
+UnderlineConverter = None
+
+#:: str -> UnderlineConverter
 def element(name):
     #:: HtmlGenerator -> none
     def convert_underline(html_generator):

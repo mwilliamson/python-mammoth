@@ -1,3 +1,5 @@
+#:nope treat-as-empty
+
 from . import docx, conversion, options, documents, images, underline
 
 __all__ = ["convert_to_html", "extract_raw_text", "images", "underline"]
