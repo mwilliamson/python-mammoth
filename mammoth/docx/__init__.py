@@ -7,7 +7,7 @@ from .content_types_xml import read_content_types_xml_element
 from .relationships_xml import read_relationships_xml_element
 from .numbering_xml import read_numbering_xml_element, Numbering
 from .styles_xml import read_styles_xml_element
-from .footnotes_xml import read_footnotes_xml_element
+from .notes_xml import read_footnotes_xml_element
 
 
 _namespaces = [

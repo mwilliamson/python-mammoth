@@ -9,7 +9,7 @@ from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 from mammoth.docx.styles_xml import Styles, Style
-from mammoth.docx.footnotes_xml import NoteElement
+from mammoth.docx.notes_xml import NoteElement
 
 
 @istest

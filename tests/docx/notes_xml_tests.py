@@ -1,7 +1,7 @@
 from nose.tools import istest, assert_equal
 
 from mammoth.docx.xmlparser import element as xml_element
-from mammoth.docx.footnotes_xml import read_footnotes_xml_element
+from mammoth.docx.notes_xml import read_footnotes_xml_element
 
 
 @istest
