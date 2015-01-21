@@ -74,6 +74,21 @@ def footnotes_are_appended_to_text():
 
 
 @istest
+def endnotes_are_appended_to_text():
+    expected_html = ('<p>Ouch' +
+        '<sup><a href="#endnote-42-2" id="endnote-ref-42-2">[1]</a></sup>.' +
+        '<sup><a href="#endnote-42-3" id="endnote-ref-42-3">[2]</a></sup></p>' +
+        '<ol><li id="endnote-42-2"><p> A tachyon walks into a bar. <a href="#endnote-ref-42-2">↑</a></p></li>' +
+        '<li id="endnote-42-3"><p> Fin. <a href="#endnote-ref-42-3">↑</a></p></li></ol>')
+    
+    with open(test_path("endnotes.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, generate_uniquifier=lambda: 42)
+        # TODO: get rid of warnings
+        #~ assert_equal([], result.messages)
+        assert_equal(expected_html, result.value)
+
+
+@istest
 def transform_document_is_applied_to_document_before_conversion():
     def transform_document(document):
         document.children[0].style_id = "Heading1"

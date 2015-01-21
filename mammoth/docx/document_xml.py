@@ -13,17 +13,17 @@ def read_document_xml_element(element,
         relationships=None,
         styles=None,
         footnote_elements=None,
+        endnote_elements=None,
         docx_file=None):
     
-    if footnote_elements is None:
-        footnote_elements = []
+    note_elements = (footnote_elements or []) + (endnote_elements or [])
     
     reader = _create_reader(
         numbering=numbering,
         content_types=content_types,
         relationships=relationships,
         styles=styles,
-        note_elements=footnote_elements,
+        note_elements=note_elements,
         docx_file=docx_file,
     )
     return reader(element)

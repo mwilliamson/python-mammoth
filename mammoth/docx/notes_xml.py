@@ -27,3 +27,4 @@ class NoteElement(object):
 
 
 read_footnotes_xml_element = create_reader("footnote")
+read_endnotes_xml_element = create_reader("endnote")
