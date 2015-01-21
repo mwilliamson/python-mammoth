@@ -28,12 +28,9 @@ def read(fileobj):
     
     with _open_entry(zip_file, "word/_rels/document.xml.rels") as relationships_fileobj:
         relationships = read_relationships_xml_element(_parse_docx_xml(relationships_fileobj))
-    
-    if _has_entry(zip_file, "word/numbering.xml"):
-        with _open_entry(zip_file, "word/numbering.xml") as numbering_fileobj:
-            numbering = read_numbering_xml_element(_parse_docx_xml(numbering_fileobj))
-    else:
-        numbering = Numbering({})
+
+    numbering = _try_read_entry_or_default(
+        zip_file, "word/numbering.xml", read_numbering_xml_element, default=Numbering({}))
     
     with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
         styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
