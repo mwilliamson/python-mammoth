@@ -27,6 +27,14 @@ p[style-name='Heading 1'] => h1:fresh
 p[style-name='Heading 2'] => h2:fresh
 p[style-name='Heading 3'] => h3:fresh
 p[style-name='Heading 4'] => h4:fresh
+p[style-name='heading 1'] => h1:fresh
+p[style-name='heading 2'] => h2:fresh
+p[style-name='heading 3'] => h3:fresh
+p[style-name='heading 4'] => h4:fresh
+p[style-name='heading 4'] => h4:fresh
+
+p[style-name='footnote text'] => p
+
 p:unordered-list(1) => ul > li:fresh
 p:unordered-list(2) => ul|ol > li > ul > li:fresh
 p:unordered-list(3) => ul|ol > li > ul|ol > li > ul > li:fresh
