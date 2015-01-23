@@ -17,6 +17,8 @@ def _read_style_map(style_text):
 
 
 _default_style_map = _read_style_map("""
+p[style-name='Normal'] => p:fresh
+
 p.Heading1 => h1:fresh
 p.Heading2 => h2:fresh
 p.Heading3 => h3:fresh
