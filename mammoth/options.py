@@ -11,9 +11,16 @@ def read_options(options):
 
 
 def _read_style_map(style_text):
-    lines = filter(None, map(lambda line: line.strip(), style_text.split("\n")))
+    lines = filter(None, map(_get_line, style_text.split("\n")))
     return lists.map(style_reader.read_style, lines)
     
+
+def _get_line(line):
+    line = line.strip()
+    if line.startswith("#"):
+        return None
+    else:
+        return line
 
 
 _default_style_map = _read_style_map("""
@@ -35,6 +42,12 @@ p[style-name='heading 4'] => h4:fresh
 
 p[style-name='footnote text'] => p
 r[style-name='footnote reference'] =>
+        
+# LibreOffice
+p[style-name='Footnote'] => p
+r[style-name='Footnote anchor'] =>
+p[style-name='Endnote'] => p
+r[style-name='Endnote anchor'] =>
 
 p:unordered-list(1) => ul > li:fresh
 p:unordered-list(2) => ul|ol > li > ul > li:fresh
