@@ -34,6 +34,7 @@ p[style-name='heading 4'] => h4:fresh
 p[style-name='heading 4'] => h4:fresh
 
 p[style-name='footnote text'] => p
+r[style-name='footnote reference'] =>
 
 p:unordered-list(1) => ul > li:fresh
 p:unordered-list(2) => ul|ol > li > ul > li:fresh

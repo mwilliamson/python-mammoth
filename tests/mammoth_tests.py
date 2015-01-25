@@ -68,8 +68,7 @@ def footnotes_are_appended_to_text():
     
     with open(test_path("footnotes.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj, generate_uniquifier=lambda: 42)
-        # TODO: get rid of warnings
-        #~ assert_equal([], result.messages)
+        assert_equal([], result.messages)
         assert_equal(expected_html, result.value)
 
 
