@@ -9,6 +9,13 @@ def read_html_path(string):
 
 
 def read_html_path_node(path_node):
+    if path_node.children:
+        return _read_html_path_elements_node(path_node.children[0])
+    else:
+        return html_paths.empty
+
+
+def _read_html_path_elements_node(path_node):
     elements = [
         _read_element_node(child)
         for child in _repeated_children_with_separator(path_node, has_whitespace=True)
@@ -60,7 +67,9 @@ def _repeated_children_with_separator(node, has_whitespace):
 
 grammar_text = r"""
 
-html_path = element (whitespace* ">" whitespace* element)*
+html_path = html_path_elements?
+
+html_path_elements = element (whitespace* ">" whitespace* element)*
 
 element = tag_names class_name* fresh?
 
@@ -70,7 +79,7 @@ class_name = "." identifier
 
 fresh = ":fresh"
 
-identifier = ~"[A-Z0-9]*"i
+identifier = ~"[A-Z0-9]+"i
 
 whitespace = ~"\s"*
 

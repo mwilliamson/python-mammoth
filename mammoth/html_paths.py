@@ -15,3 +15,5 @@ def element(names, class_names=None, fresh=None):
 
 HtmlPath = collections.namedtuple("HtmlPath", ["elements"])
 HtmlPathElement = collections.namedtuple("HtmlPathElement", ["names", "class_names", "fresh"])
+
+empty = path([])
