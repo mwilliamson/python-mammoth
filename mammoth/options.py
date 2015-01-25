@@ -42,6 +42,8 @@ p[style-name='heading 4'] => h4:fresh
 
 p[style-name='footnote text'] => p
 r[style-name='footnote reference'] =>
+p[style-name='endnote text'] => p
+r[style-name='endnote reference'] =>
         
 # LibreOffice
 p[style-name='Footnote'] => p
