@@ -61,13 +61,13 @@ def word_tables_are_converted_to_html_tables():
 def footnotes_are_appended_to_text():
     # TODO: don't duplicate footnotes with multiple references
     expected_html = ('<p>Ouch' +
-        '<sup><a href="#footnote-42-1" id="footnote-ref-42-1">[1]</a></sup>.' +
-        '<sup><a href="#footnote-42-2" id="footnote-ref-42-2">[2]</a></sup></p>' +
-        '<ol><li id="footnote-42-1"><p> A tachyon walks into a bar. <a href="#footnote-ref-42-1">↑</a></p></li>' +
-        '<li id="footnote-42-2"><p> Fin. <a href="#footnote-ref-42-2">↑</a></p></li></ol>')
+        '<sup><a href="#doc-42-footnote-1" id="doc-42-footnote-ref-1">[1]</a></sup>.' +
+        '<sup><a href="#doc-42-footnote-2" id="doc-42-footnote-ref-2">[2]</a></sup></p>' +
+        '<ol><li id="doc-42-footnote-1"><p> A tachyon walks into a bar. <a href="#doc-42-footnote-ref-1">↑</a></p></li>' +
+        '<li id="doc-42-footnote-2"><p> Fin. <a href="#doc-42-footnote-ref-2">↑</a></p></li></ol>')
     
     with open(test_path("footnotes.docx"), "rb") as fileobj:
-        result = mammoth.convert_to_html(fileobj=fileobj, generate_uniquifier=lambda: 42)
+        result = mammoth.convert_to_html(fileobj=fileobj, id_prefix="doc-42")
         assert_equal([], result.messages)
         assert_equal(expected_html, result.value)
 
@@ -75,13 +75,13 @@ def footnotes_are_appended_to_text():
 @istest
 def endnotes_are_appended_to_text():
     expected_html = ('<p>Ouch' +
-        '<sup><a href="#endnote-42-2" id="endnote-ref-42-2">[1]</a></sup>.' +
-        '<sup><a href="#endnote-42-3" id="endnote-ref-42-3">[2]</a></sup></p>' +
-        '<ol><li id="endnote-42-2"><p> A tachyon walks into a bar. <a href="#endnote-ref-42-2">↑</a></p></li>' +
-        '<li id="endnote-42-3"><p> Fin. <a href="#endnote-ref-42-3">↑</a></p></li></ol>')
+        '<sup><a href="#doc-42-endnote-2" id="doc-42-endnote-ref-2">[1]</a></sup>.' +
+        '<sup><a href="#doc-42-endnote-3" id="doc-42-endnote-ref-3">[2]</a></sup></p>' +
+        '<ol><li id="doc-42-endnote-2"><p> A tachyon walks into a bar. <a href="#doc-42-endnote-ref-2">↑</a></p></li>' +
+        '<li id="doc-42-endnote-3"><p> Fin. <a href="#doc-42-endnote-ref-3">↑</a></p></li></ol>')
     
     with open(test_path("endnotes.docx"), "rb") as fileobj:
-        result = mammoth.convert_to_html(fileobj=fileobj, generate_uniquifier=lambda: 42)
+        result = mammoth.convert_to_html(fileobj=fileobj, id_prefix="doc-42")
         assert_equal([], result.messages)
         assert_equal(expected_html, result.value)
 

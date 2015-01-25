@@ -289,9 +289,9 @@ def footnote_reference_is_converted_to_superscript_intra_page_link():
     footnote_reference = documents.note_reference("footnote", "4")
     result = convert_document_element_to_html(
         footnote_reference,
-        generate_uniquifier=lambda: 42
+        id_prefix="doc-42"
     )
-    assert_equal('<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup>', result.value)
+    assert_equal('<sup><a href="#doc-42-footnote-4" id="doc-42-footnote-ref-4">[1]</a></sup>', result.value)
 
 
 @istest
@@ -308,10 +308,10 @@ def footnotes_are_included_after_the_main_body():
     )
     result = convert_document_element_to_html(
         document,
-        generate_uniquifier=lambda: 42
+        id_prefix="doc-42"
     )
-    expected_html = ('<p>Knock knock<sup><a href="#footnote-42-4" id="footnote-ref-42-4">[1]</a></sup></p>' +
-                '<ol><li id="footnote-42-4"><p>Who\'s there? <a href="#footnote-ref-42-4">↑</a></p></li></ol>')
+    expected_html = ('<p>Knock knock<sup><a href="#doc-42-footnote-4" id="doc-42-footnote-ref-4">[1]</a></sup></p>' +
+                '<ol><li id="doc-42-footnote-4"><p>Who\'s there? <a href="#doc-42-footnote-ref-4">↑</a></p></li></ol>')
     assert_equal(expected_html, result.value)
 
 

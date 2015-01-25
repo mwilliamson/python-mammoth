@@ -322,7 +322,7 @@ class ReadXmlElementTests(object):
         
         document = _read_and_get_document_xml_element(document_xml, footnote_elements=footnotes)
         footnote = document.notes.find_note("footnote", "4")
-        assert_equal("4", footnote.id)
+        assert_equal("4", footnote.note_id)
         assert isinstance(footnote.body[0], documents.Paragraph)
     
     @istest

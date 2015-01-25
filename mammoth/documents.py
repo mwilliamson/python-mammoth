@@ -67,7 +67,7 @@ def numbering_level(level_index, is_ordered):
 _NumberingLevel = dodge.data_class("NumberingLevel", ["level_index", "is_ordered"])
 
 
-note = Note = dodge.data_class("Note", ["note_type", "id", "body"])
+note = Note = dodge.data_class("Note", ["note_type", "note_id", "body"])
 
 
 class Notes(object):
@@ -93,6 +93,6 @@ def notes(notes_list):
     ))
     
 def _note_key(note):
-    return (note.note_type, note.id)
+    return (note.note_type, note.note_id)
 
 note_reference = NoteReference = dodge.data_class("NoteReference", ["note_type", "note_id"])

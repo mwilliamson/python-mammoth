@@ -12,29 +12,29 @@ def convert_document_element_to_html(element,
         style_map=None,
         convert_image=None,
         convert_underline=None,
-        generate_uniquifier=None):
+        id_prefix=None):
             
     if style_map is None:
         style_map = []
     
-    if generate_uniquifier is None:
-        generate_uniquifier = lambda: random.randint(0, 1000000000000000)
+    if id_prefix is None:
+        id_prefix = str(random.randint(0, 1000000000000000))
         
     html_generator = HtmlGenerator()
     converter = DocumentConverter(style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,
-        generate_uniquifier=generate_uniquifier)
+        id_prefix=id_prefix)
     converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
     return results.Result(html_generator.html_string(), converter.messages)
 
 
 class DocumentConverter(object):
-    def __init__(self, style_map, convert_image, convert_underline, generate_uniquifier):
+    def __init__(self, style_map, convert_image, convert_underline, id_prefix):
         self.messages = []
         self._style_map = style_map
-        self._uniquifier = generate_uniquifier()
+        self._id_prefix = id_prefix
         self._note_references = []
         self._converters = {
             documents.Document: self._convert_document,
@@ -147,11 +147,10 @@ class DocumentConverter(object):
         }
     
     def _convert_note_reference(self, note_reference, html_generator):
-        uid = self._note_uid(note_reference.note_id)
         html_generator.start("sup")
         html_generator.start("a", {
-            "href": "#{0}-{1}".format(note_reference.note_type, uid),
-            "id": "{0}-ref-{1}".format(note_reference.note_type, uid),
+            "href": "#" + self._note_html_id(note_reference),
+            "id": self._note_ref_html_id(note_reference),
         })
         self._note_references.append(note_reference);
         note_number = len(self._note_references)
@@ -160,12 +159,11 @@ class DocumentConverter(object):
         html_generator.end()
     
     def _convert_note(self, note, html_generator):
-        uid = self._note_uid(note.id)
-        html_generator.start("li", {"id": "{0}-{1}".format(note.note_type, uid)})
+        html_generator.start("li", {"id": self._note_html_id(note)})
         note_generator = HtmlGenerator()
         self._convert_elements_to_html(note.body, note_generator)
         note_generator.text(" ")
-        note_generator.start("a", {"href": "#{0}-ref-{1}".format(note.note_type, uid)})
+        note_generator.start("a", {"href": "#" + self._note_ref_html_id(note)})
         note_generator.text(_up_arrow)
         note_generator.end_all()
         html_generator.append(note_generator)
@@ -200,8 +198,11 @@ class DocumentConverter(object):
         return default
         
 
-    def _note_uid(self, note_id):
-        return "{0}-{1}".format(self._uniquifier, note_id)
+    def _note_html_id(self, note):
+        return "{0}-{1}-{2}".format(self._id_prefix, note.note_type, note.note_id)
+        
+    def _note_ref_html_id(self, note):
+        return "{0}-{1}-ref-{2}".format(self._id_prefix, note.note_type, note.note_id)
         
 
 def _document_matcher_matches(matcher, element, element_type):
