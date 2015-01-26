@@ -219,7 +219,13 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
                 return contextlib.closing(image_file)
         
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
-        return results.success(image)
+        
+        if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
+            messages = []
+        else:
+            messages = [results.warning("Image of type {0} is unlikely to display in web browsers".format(content_type))]
+            
+        return results.Result(image, messages)
     
     def note_reference_reader(note_type):
         @handler("w:{0}Reference".format(note_type))

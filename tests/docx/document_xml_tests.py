@@ -312,6 +312,37 @@ class ReadXmlElementTests(object):
         with image.open() as image_file:
             assert_equal(image_bytes, image_file.read())
         
+        
+    @istest
+    @funk.with_context
+    def warning_if_unsupported_image_type(self, context):
+        drawing_element = _create_inline_image(
+            relationship_id="rId5",
+            description="It's a hat",
+        )
+        
+        image_bytes = b"Not an image at all!"
+        
+        relationships = Relationships({
+            "rId5": Relationship(target="media/hat.emf")
+        })
+        
+        docx_file = context.mock()
+        funk.allows(docx_file).open("word/media/hat.emf").returns(io.BytesIO(image_bytes))
+        
+        content_types = context.mock()
+        funk.allows(content_types).find_content_type("word/media/hat.emf").returns("image/x-emf")
+        
+        result = read_document_xml_element(
+            drawing_element,
+            content_types=content_types,
+            relationships=relationships,
+            docx_file=docx_file,
+        )
+        assert_equal("image/x-emf", result.value[0].content_type)
+        expected_warning = results.warning("Image of type image/x-emf is unlikely to display in web browsers")
+        assert_equal([expected_warning], result.messages)
+        
     @istest
     def footnotes_of_document_are_read(self):
         paragraph_xml = xml_element("w:p")
