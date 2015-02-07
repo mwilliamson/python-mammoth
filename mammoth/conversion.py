@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import base64
 import random
 
-from . import documents, results, html_paths, images
+from . import documents, results, html_paths, images, writers
 from .html_generation import HtmlGenerator, satisfy_html_path
 
 
@@ -20,8 +20,8 @@ def convert_document_element_to_html(element,
     
     if id_prefix is None:
         id_prefix = str(random.randint(0, 1000000000000000))
-        
-    html_generator = HtmlGenerator()
+    
+    html_generator = HtmlGenerator(writers.writer)
     converter = DocumentConverter(style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,

@@ -1,12 +1,11 @@
 from __future__ import unicode_literals
 
-from .writers.html import HtmlWriter
-
 
 class HtmlGenerator(object):
-    def __init__(self):
+    def __init__(self, create_writer):
         self._stack = []
-        self._writer = HtmlWriter()
+        self._create_writer = create_writer
+        self._writer = create_writer()
     
     def text(self, text):
         if text:
@@ -50,7 +49,7 @@ class HtmlGenerator(object):
         return self._writer.as_string()
     
     def child(self):
-        return HtmlGenerator()
+        return HtmlGenerator(self._create_writer)
 
 
 class _Element(object):
