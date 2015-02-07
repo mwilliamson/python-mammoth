@@ -78,7 +78,7 @@ class DocumentConverter(object):
 
 
     def _convert_run(self, run, html_generator):
-        run_generator = HtmlGenerator()
+        run_generator = html_generator.child()
         html_path = self._find_html_path_for_run(run)
         if html_path:
             satisfy_html_path(run_generator, html_path)
@@ -127,7 +127,7 @@ class DocumentConverter(object):
     def _convert_table_cell(self, table_cell, html_generator):
         html_generator.start("td", always_write=True)
         for child in table_cell.children:
-            child_generator = HtmlGenerator()
+            child_generator = html_generator.child()
             self.convert_element_to_html(child, child_generator)
             child_generator.end_all()
             html_generator.append(child_generator)
@@ -161,7 +161,7 @@ class DocumentConverter(object):
     
     def _convert_note(self, note, html_generator):
         html_generator.start("li", {"id": self._note_html_id(note)})
-        note_generator = HtmlGenerator()
+        note_generator = html_generator.child()
         self._convert_elements_to_html(note.body, note_generator)
         note_generator.text(" ")
         note_generator.start("a", {"href": "#" + self._note_ref_html_id(note)})

@@ -48,6 +48,9 @@ class HtmlGenerator(object):
     
     def as_string(self):
         return self._writer.as_string()
+    
+    def child(self):
+        return HtmlGenerator()
 
 
 class _Element(object):
