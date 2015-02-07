@@ -28,7 +28,7 @@ def convert_document_element_to_html(element,
         id_prefix=id_prefix)
     converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
-    return results.Result(html_generator.html_string(), converter.messages)
+    return results.Result(html_generator.as_string(), converter.messages)
 
 
 class DocumentConverter(object):

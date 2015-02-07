@@ -41,12 +41,12 @@ class HtmlGenerator(object):
         self._writer.start(element.name, element.attributes)
     
     def append(self, other):
-        other_string = other.html_string()
+        other_string = other.as_string()
         if other_string:
             self._write_all()
             self._writer.append(other_string)
     
-    def html_string(self):
+    def as_string(self):
         return self._writer.as_string()
 
 
