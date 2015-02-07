@@ -1,17 +1,17 @@
 from __future__ import unicode_literals
 
-import cgi
+from .writers.html import HtmlWriter
 
 
 class HtmlGenerator(object):
     def __init__(self):
         self._stack = []
-        self._fragments = []
+        self._writer = HtmlWriter()
     
     def text(self, text):
         if text:
             self._write_all()
-            self._fragments.append(_escape_html(text))
+            self._writer.text(text)
     
     def start(self, name, attributes=None, always_write=False):
         self._stack.append(_Element(name, attributes))
@@ -22,15 +22,14 @@ class HtmlGenerator(object):
     def end(self):
         element = self._stack.pop()
         if element.written:
-            self._fragments.append("</{0}>".format(element.name))
+            self._writer.end(element.name)
     
     def end_all(self):
         while self._stack:
             self.end()
     
     def self_closing(self, name, attributes=None):
-        attribute_string = _generate_attribute_string(attributes)
-        self._fragments.append("<{0}{1} />".format(name, attribute_string))
+        self._writer.self_closing(name, attributes)
     
     def _write_all(self):
         for element in self._stack:
@@ -39,17 +38,16 @@ class HtmlGenerator(object):
                 self._write_element(element)
     
     def _write_element(self, element):
-        attribute_string = _generate_attribute_string(element.attributes)
-        self._fragments.append("<{0}{1}>".format(element.name, attribute_string))
+        self._writer.start(element.name, element.attributes)
     
     def append(self, other):
-        if other._fragments:
+        other_string = other.html_string()
+        if other_string:
             self._write_all()
-            for fragment in other._fragments:
-                self._fragments.append(fragment)
+            self._writer.append(other_string)
     
     def html_string(self):
-        return "".join(self._fragments)
+        return self._writer.as_string()
 
 
 class _Element(object):
@@ -60,20 +58,6 @@ class _Element(object):
         self.name = name
         self.attributes = attributes
         self.written = False
-
-
-def _escape_html(text):
-    return cgi.escape(text, quote=True)
-
-
-def _generate_attribute_string(attributes):
-    if attributes is None:
-        return ""
-    else:
-        return "".join(
-            ' {0}="{1}"'.format(key, _escape_html(attributes[key]))
-            for key in sorted(attributes)
-        )
 
 
 def satisfy_html_path(generator, path):
