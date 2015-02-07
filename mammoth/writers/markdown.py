@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
+import re
+
 
 class MarkdownWriter(object):
     def __init__(self):
         self._fragments = []
     
     def text(self, text):
-        self._fragments.append(text)
+        self._fragments.append(_escape_markdown(text))
     
     def start(self, name, attributes=None):
         pass
@@ -23,3 +25,7 @@ class MarkdownWriter(object):
     
     def as_string(self):
         return "".join(self._fragments)
+
+
+def _escape_markdown(value):
+    return re.sub(r"([\`\*_\{\}\[\]\(\)\#\+\-\.\!])", r"\\\1", re.sub("\\\\", "\\\\\\\\", value))
