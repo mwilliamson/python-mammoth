@@ -19,14 +19,14 @@ if sys.version_info[:2] <= (2, 6):
 setup(
     name='mammoth',
     version='0.3.9',
-    description='Convert Word documents to simple and clean HTML',
+    description='Convert Word documents from docx to simple and clean HTML and Markdown',
     long_description=read("README"),
     author='Michael Williamson',
     author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/python-mammoth',
     packages=['mammoth', 'mammoth.docx', 'mammoth.style_reader', 'mammoth.writers'],
     scripts=["scripts/mammoth"],
-    keywords="docx word office clean html",
+    keywords="docx word office clean html markdown md",
     install_requires=_install_requires,
     classifiers=[
         'Development Status :: 4 - Beta',

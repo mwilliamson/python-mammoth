@@ -13,7 +13,8 @@ def convert_document_element_to_html(element,
         style_map=None,
         convert_image=None,
         convert_underline=None,
-        id_prefix=None):
+        id_prefix=None,
+        output_format=None):
             
     if style_map is None:
         style_map = []
@@ -21,7 +22,7 @@ def convert_document_element_to_html(element,
     if id_prefix is None:
         id_prefix = str(random.randint(0, 1000000000000000))
     
-    html_generator = HtmlGenerator(writers.writer)
+    html_generator = HtmlGenerator(lambda: writers.writer(output_format))
     converter = DocumentConverter(style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,

@@ -66,3 +66,11 @@ def style_map_is_used_if_set():
         result = _local.run(["mammoth", docx_path, "--style-map", style_map_path])
         assert_equal(b"", result.stderr_output)
         assert_equal(b"<span>Walking on imported air</span>", result.output)
+
+
+@istest
+def output_format_markdown_option_generates_markdown_output():
+    docx_path = test_path("single-paragraph.docx")
+    result = _local.run(["mammoth", docx_path, "--output-format=markdown"])
+    assert_equal(b"", result.stderr_output)
+    assert_equal(b"Walking on imported air\n\n", result.output)

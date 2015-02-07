@@ -7,6 +7,7 @@ import os
 import shutil
 
 import mammoth
+from mammoth import writers
 
 
 def main():
@@ -27,10 +28,11 @@ def main():
             output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
             output_path = os.path.join(args.output_dir, output_filename)
         
-        result = mammoth.convert_to_html(
+        result = mammoth.convert(
             docx_fileobj,
             style_map=style_map,
             convert_image=convert_image,
+            output_format=args.output_format,
         )
         for message in result.messages:
             sys.stderr.write(message.message)
@@ -89,6 +91,7 @@ def _parse_args():
     output_group.add_argument("output", nargs="?")
     output_group.add_argument("--output-dir", nargs="?")
     
+    parser.add_argument("--output-format", required=False, choices=writers.formats())
     parser.add_argument("--style-map", required=False)
     return parser.parse_args()
 

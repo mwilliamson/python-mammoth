@@ -99,6 +99,14 @@ def transform_document_is_applied_to_document_before_conversion():
 
 
 @istest
+def docx_containing_one_paragraph_can_be_converted_to_markdown():
+    with open(test_path("single-paragraph.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_markdown(fileobj=fileobj)
+        assert_equal("Walking on imported air\n\n", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
 def can_extract_raw_text():
     with open(test_path("simple-list.docx"), "rb") as fileobj:
         result = mammoth.extract_raw_text(fileobj=fileobj)
