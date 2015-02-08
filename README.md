@@ -74,6 +74,16 @@ Where `custom-style-map` looks something like:
     p[style-name='Aside Heading'] => div.aside > h2:fresh
     p[style-name='Aside Text'] => div.aside > p:fresh
 
+#### Markdown
+
+Using `--output-format=markdown` will cause Markdown to be generated.
+For instance:
+
+    mammoth document.docx --output-format=markdown
+
+Markdown support is still in its early stages,
+so you may find some features are unsupported.
+
 ### Library
 
 #### Basic conversion
@@ -193,6 +203,12 @@ Converts the source document to HTML.
   * `value`: the generated HTML
 
   * `messages`: any messages, such as errors and warnings, generated during the conversion
+
+#### `mammoth.convert_to_markdown(*args, **kwargs)`
+
+Converts the source document to Markdown.
+This behaves the same as `convert_to_html`,
+except that the `value` property of the result contains Markdown rather than HTML.
 
 #### `mammoth.extract_raw_text(fileobj)`
 
