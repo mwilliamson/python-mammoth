@@ -35,7 +35,7 @@ def _hyperlink(attributes):
 
 
 def _image(attributes):
-    src = attributes.get("src")
+    src = attributes.get("src", "")
     alt_text = attributes.get("alt", "")
     return _WriterOutput("![{0}]({1})".format(alt_text, src), "")
 
