@@ -117,6 +117,13 @@ def image_elements_are_written_as_markdown_images():
     writer = _create_writer()
     writer.self_closing("img", {"src": "http://example.com/image.jpg", "alt": "Alt Text"})
     assert_equal("![Alt Text](http://example.com/image.jpg)", writer.as_string())
+    
+
+@istest
+def images_are_written_even_if_they_dont_have_alt_text():
+    writer = _create_writer()
+    writer.self_closing("img", {"src": "http://example.com/image.jpg"})
+    assert_equal("![](http://example.com/image.jpg)", writer.as_string())
 
 
 def _create_writer():
