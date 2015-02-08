@@ -131,6 +131,13 @@ def images_are_written_even_if_they_dont_have_a_src_attribute():
     writer = _create_writer()
     writer.self_closing("img", {"alt": "Alt Text"})
     assert_equal("![Alt Text]()", writer.as_string())
+    
+
+@istest
+def image_elements_are_ignored_if_they_have_no_src_and_no_alt_text():
+    writer = _create_writer()
+    writer.self_closing("img")
+    assert_equal("", writer.as_string())
 
 
 def _create_writer():
