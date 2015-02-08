@@ -13,6 +13,15 @@ def special_markdown_characters_are_escaped():
 
 
 @istest
+def unrecognised_elements_are_treated_as_normal_text():
+    writer = _create_writer()
+    writer.start("blah");
+    writer.text("Hello");
+    writer.end("blah");
+    assert_equal("Hello", writer.as_string())
+
+
+@istest
 def paragraphs_are_terminated_with_double_new_line():
     writer = _create_writer()
     writer.start("p");

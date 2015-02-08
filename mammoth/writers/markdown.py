@@ -25,6 +25,7 @@ def _init_writers():
 
 
 _writers = _init_writers()
+_default_writer = lambda: ("", "")
 
 
 class MarkdownWriter(object):
@@ -36,7 +37,7 @@ class MarkdownWriter(object):
         self._fragments.append(_escape_markdown(text))
     
     def start(self, name, attributes=None):
-        start, end = _writers[name]()
+        start, end = _writers.get(name, _default_writer)()
         self._fragments.append(start)
         self._element_stack.append(end)
 
