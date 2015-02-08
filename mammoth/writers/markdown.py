@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 import re
 
 
+def _symmetric_wrapped(end):
+    return _Wrapped(end, end)
+
 
 class _Wrapped(object):
     def __init__(self, start, end):
@@ -17,6 +20,7 @@ def _init_writers():
     writers = {
         "p": _Wrapped("", "\n\n"),
         "br": _Wrapped("", "  \n"),
+        "strong": _symmetric_wrapped("__"),
     }
     
     for level in range(1, 7):

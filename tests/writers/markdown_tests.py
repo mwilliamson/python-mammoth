@@ -54,7 +54,16 @@ def br_is_written_as_two_spaces_followed_by_newline():
     writer.text("Hello");
     writer.self_closing("br");
     assert_equal("Hello  \n", writer.as_string())
-    
+
+
+@istest
+def strong_text_is_surrounded_by_two_underscores():
+    writer = _create_writer()
+    writer.text("Hello ");
+    writer.start("strong");
+    writer.text("World")
+    writer.end("strong")
+    assert_equal("Hello __World__", writer.as_string())
 
 
 def _create_writer():
