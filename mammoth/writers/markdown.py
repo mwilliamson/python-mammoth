@@ -16,6 +16,7 @@ class _Wrapped(object):
 def _init_writers():
     writers = {
         "p": _Wrapped("", "\n\n"),
+        "br": _Wrapped("", "  \n"),
     }
     
     for level in range(1, 7):
@@ -46,7 +47,8 @@ class MarkdownWriter(object):
         self._fragments.append(end)
     
     def self_closing(self, name, attributes=None):
-        pass
+        self.start(name, attributes)
+        self.end(name)
     
     def append(self, other):
         self._fragments.append(other)

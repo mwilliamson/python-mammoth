@@ -46,6 +46,14 @@ def h6_elements_are_converted_to_heading_with_six_leading_hashes():
     writer.text("Hello");
     writer.end("h6");
     assert_equal("###### Hello\n\n", writer.as_string())
+
+
+@istest
+def br_is_written_as_two_spaces_followed_by_newline():
+    writer = _create_writer()
+    writer.text("Hello");
+    writer.self_closing("br");
+    assert_equal("Hello  \n", writer.as_string())
     
 
 
