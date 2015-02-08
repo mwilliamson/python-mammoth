@@ -94,6 +94,14 @@ def anchor_tags_without_href_attribute_are_treated_as_ordinary_text():
     assert_equal("Hello", writer.as_string())
     
 
+@istest
+def elements_with_ids_have_anchor_tags_with_ids_appended_to_start_of_markdown_element():
+    writer = _create_writer()
+    writer.start("h1", {"id": "start"})
+    writer.text("Hello")
+    writer.end("h1")
+    assert_equal('# <a id="start"></a>Hello\n\n', writer.as_string())
+
 
 def _create_writer():
     return MarkdownWriter()

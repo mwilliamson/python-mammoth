@@ -58,6 +58,7 @@ class MarkdownWriter(object):
         
         start, end = _writers.get(name, _default_writer)(attributes)
         self._fragments.append(start)
+        self._write_anchor(attributes)
         self._element_stack.append(end)
 
     def end(self, name):
@@ -73,6 +74,11 @@ class MarkdownWriter(object):
     
     def as_string(self):
         return "".join(self._fragments)
+    
+    def _write_anchor(self, attributes):
+        html_id = attributes.get("id")
+        if html_id:
+            self._fragments.append('<a id="{0}"></a>'.format(html_id))
 
 
 def _escape_markdown(value):
