@@ -3,6 +3,13 @@ from __future__ import unicode_literals
 import re
 
 
+class _WriterOutput(object):
+    def __init__(self, start, end, anchor_position=None):
+        self.start = start
+        self.end = end
+        self.anchor_position = anchor_position
+
+
 def _symmetric_wrapped(end):
     return _Wrapped(end, end)
 
@@ -13,13 +20,16 @@ class _Wrapped(object):
         self._end = end
     
     def __call__(self, attributes):
-        return self._start, self._end
+        return _WriterOutput(self._start, self._end)
 
 
 def _hyperlink(attributes):
     href = attributes.get("href", "")
     if href:
-        return "[", "]({0})".format(href)
+        return _WriterOutput(
+            "[", "]({0})".format(href),
+            anchor_position="before",
+        )
     else:
         return _default_output
 
@@ -40,7 +50,7 @@ def _init_writers():
 
 
 _writers = _init_writers()
-_default_output = ("", "")
+_default_output = _WriterOutput("", "")
 _default_writer = lambda attributes: _default_output
 
 
@@ -56,10 +66,18 @@ class MarkdownWriter(object):
         if attributes is None:
             attributes = {}
         
-        start, end = _writers.get(name, _default_writer)(attributes)
-        self._fragments.append(start)
-        self._write_anchor(attributes)
-        self._element_stack.append(end)
+        output = _writers.get(name, _default_writer)(attributes)
+        
+        anchor_before_start = output.anchor_position == "before"
+        if anchor_before_start:
+            self._write_anchor(attributes)
+        
+        self._fragments.append(output.start)
+        
+        if not anchor_before_start:
+            self._write_anchor(attributes)
+        
+        self._element_stack.append(output.end)
 
     def end(self, name):
         end = self._element_stack.pop()

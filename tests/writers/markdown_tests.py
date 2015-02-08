@@ -101,6 +101,15 @@ def elements_with_ids_have_anchor_tags_with_ids_appended_to_start_of_markdown_el
     writer.text("Hello")
     writer.end("h1")
     assert_equal('# <a id="start"></a>Hello\n\n', writer.as_string())
+    
+
+@istest
+def links_have_anchors_before_opening_square_bracket():
+    writer = _create_writer()
+    writer.start("a", {"href": "http://example.com", "id": "start"})
+    writer.text("Hello")
+    writer.end("a")
+    assert_equal('<a id="start"></a>[Hello](http://example.com)', writer.as_string())
 
 
 def _create_writer():
