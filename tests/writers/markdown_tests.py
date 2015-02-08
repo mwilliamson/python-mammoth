@@ -76,5 +76,15 @@ def emphasised_text_is_surrounded_by_one_asterix():
     assert_equal("Hello *World*", writer.as_string())
 
 
+@istest
+def anchor_tags_are_written_as_hyperlinks():
+    writer = _create_writer()
+    writer.start("a", {"href": "http://example.com"});
+    writer.text("Hello");
+    writer.end("a");
+    assert_equal("[Hello](http://example.com)", writer.as_string())
+    
+
+
 def _create_writer():
     return MarkdownWriter()

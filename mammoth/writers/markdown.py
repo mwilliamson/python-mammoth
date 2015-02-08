@@ -12,8 +12,13 @@ class _Wrapped(object):
         self._start = start
         self._end = end
     
-    def __call__(self):
+    def __call__(self, attributes):
         return self._start, self._end
+
+
+def _hyperlink(attributes):
+    href = attributes.get("href", "")
+    return "[", "]({0})".format(href)
 
 
 def _init_writers():
@@ -22,6 +27,7 @@ def _init_writers():
         "br": _Wrapped("", "  \n"),
         "strong": _symmetric_wrapped("__"),
         "em": _symmetric_wrapped("*"),
+        "a": _hyperlink,
     }
     
     for level in range(1, 7):
@@ -31,7 +37,7 @@ def _init_writers():
 
 
 _writers = _init_writers()
-_default_writer = lambda: ("", "")
+_default_writer = lambda attributes: ("", "")
 
 
 class MarkdownWriter(object):
@@ -43,7 +49,7 @@ class MarkdownWriter(object):
         self._fragments.append(_escape_markdown(text))
     
     def start(self, name, attributes=None):
-        start, end = _writers.get(name, _default_writer)()
+        start, end = _writers.get(name, _default_writer)(attributes)
         self._fragments.append(start)
         self._element_stack.append(end)
 
