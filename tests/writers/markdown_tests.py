@@ -141,6 +141,15 @@ def image_elements_are_ignored_if_they_have_no_src_and_no_alt_text():
 
 
 @istest
+def list_item_outside_of_list_is_treated_as_unordered_list():
+    writer = _create_writer()
+    writer.start("li")
+    writer.text("Fruit")
+    writer.end("li")
+    assert_equal("- Fruit\n", writer.as_string())
+
+
+@istest
 def ol_element_is_written_as_ordered_list_with_sequential_numbering():
     writer = _create_writer()
     writer.start("ol")

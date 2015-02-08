@@ -68,7 +68,7 @@ def _list(ordered):
 
 
 def _list_item(attributes, markdown_state):
-    list_state = markdown_state.list_state
+    list_state = markdown_state.list_state or _MarkdownListState(ordered=False)
     list_state.count += 1
     
     if list_state.ordered:
