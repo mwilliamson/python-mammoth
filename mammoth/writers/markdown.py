@@ -18,7 +18,10 @@ class _Wrapped(object):
 
 def _hyperlink(attributes):
     href = attributes.get("href", "")
-    return "[", "]({0})".format(href)
+    if href:
+        return "[", "]({0})".format(href)
+    else:
+        return _default_output
 
 
 def _init_writers():
@@ -37,7 +40,8 @@ def _init_writers():
 
 
 _writers = _init_writers()
-_default_writer = lambda attributes: ("", "")
+_default_output = ("", "")
+_default_writer = lambda attributes: _default_output
 
 
 class MarkdownWriter(object):
@@ -49,6 +53,9 @@ class MarkdownWriter(object):
         self._fragments.append(_escape_markdown(text))
     
     def start(self, name, attributes=None):
+        if attributes is None:
+            attributes = {}
+        
         start, end = _writers.get(name, _default_writer)(attributes)
         self._fragments.append(start)
         self._element_stack.append(end)

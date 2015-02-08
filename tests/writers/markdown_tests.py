@@ -85,6 +85,15 @@ def anchor_tags_are_written_as_hyperlinks():
     assert_equal("[Hello](http://example.com)", writer.as_string())
     
 
+@istest
+def anchor_tags_without_href_attribute_are_treated_as_ordinary_text():
+    writer = _create_writer()
+    writer.start("a");
+    writer.text("Hello");
+    writer.end("a");
+    assert_equal("Hello", writer.as_string())
+    
+
 
 def _create_writer():
     return MarkdownWriter()
