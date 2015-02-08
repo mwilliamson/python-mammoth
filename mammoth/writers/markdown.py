@@ -11,10 +11,11 @@ class MarkdownWriter(object):
         self._fragments.append(_escape_markdown(text))
     
     def start(self, name, attributes=None):
-        pass
+        if name == "h1":
+            self._fragments.append("# ")
 
     def end(self, name):
-        if name == "p":
+        if name in ["p", "h1"]:
             self._fragments.append("\n\n")
     
     def self_closing(self, name, attributes=None):
