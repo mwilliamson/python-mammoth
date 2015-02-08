@@ -66,5 +66,15 @@ def strong_text_is_surrounded_by_two_underscores():
     assert_equal("Hello __World__", writer.as_string())
 
 
+@istest
+def emphasised_text_is_surrounded_by_one_asterix():
+    writer = _create_writer()
+    writer.text("Hello ");
+    writer.start("em");
+    writer.text("World")
+    writer.end("em")
+    assert_equal("Hello *World*", writer.as_string())
+
+
 def _create_writer():
     return MarkdownWriter()

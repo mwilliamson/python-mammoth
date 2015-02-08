@@ -21,6 +21,7 @@ def _init_writers():
         "p": _Wrapped("", "\n\n"),
         "br": _Wrapped("", "  \n"),
         "strong": _symmetric_wrapped("__"),
+        "em": _symmetric_wrapped("*"),
     }
     
     for level in range(1, 7):
