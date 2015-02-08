@@ -175,6 +175,30 @@ def ul_element_is_written_as_unordered_list_using_hyphens_as_bullets():
     writer.end("li")
     writer.end("ul")
     assert_equal("- Fruit\n- Condiments\n\n", writer.as_string())
+
+
+@istest
+def numbering_is_separate_for_nested_list_and_parent_list():
+    writer = _create_writer()
+    writer.start("ol")
+    
+    writer.start("li")
+    writer.text("Fruit")
+    writer.start("ol")
+    writer.start("li")
+    writer.text("Apple")
+    writer.end("li")
+    writer.start("li")
+    writer.text("Banana")
+    writer.end("li")
+    writer.end("ol")
+    writer.end("li")
+    
+    writer.start("li")
+    writer.text("Condiments")
+    writer.end("li")
+    writer.end("ol")
+    assert_equal("1. Fruit\n\t1. Apple\n\t2. Banana\n2. Condiments\n\n", writer.as_string())
         
 
 

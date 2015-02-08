@@ -4,25 +4,35 @@ import re
 
 
 class _WriterOutput(object):
-    def __init__(self, start, end, anchor_position=None, markdown_state=None):
+    def __init__(self, start, end, anchor_position=None):
+        if not callable(end):
+            end_output = end
+            end = lambda: end_output
+        
         self.start = start
         self.end = end
         self.anchor_position = anchor_position
-        self.markdown_state = markdown_state
 
 
 class _MarkdownState(object):
-    def __init__(self, list_state=None):
+    def __init__(self):
+        self._list_state_stack = []
+        self.list_state = None
+        self.list_item_has_closed = False
+    
+    def update_list_state(self, list_state):
+        self._list_state_stack.append(self.list_state)
         self.list_state = list_state
     
-    def updated_list_state(self, list_state):
-        return _MarkdownState(list_state)
+    def pop_list_state(self):
+        self.list_state = self._list_state_stack.pop()
 
 
 class _MarkdownListState(object):
-    def __init__(self, ordered):
+    def __init__(self, ordered, indentation):
         self.ordered = ordered
         self.count = 0
+        self.indentation = indentation
 
 
 def _symmetric_wrapped(end):
@@ -60,15 +70,33 @@ def _image(attributes, markdown_state):
 
 def _list(ordered):
     def call(attributes, markdown_state):
-        list_state = _MarkdownListState(ordered=ordered)
-        markdown_state = markdown_state.updated_list_state(list_state)
-        return _WriterOutput("", "\n", markdown_state=markdown_state)
+        if markdown_state.list_state is None:
+            start = ""
+            end_text = "\n"
+            indentation = 0
+        else:
+            start = "\n"
+            end_text = ""
+            indentation = markdown_state.list_state.indentation + 1
+        
+        def end():
+            markdown_state.pop_list_state()
+            return end_text
+        
+        markdown_state.update_list_state(_MarkdownListState(
+            ordered=ordered,
+            indentation=indentation,
+        ))
+        
+        return _WriterOutput(start, end)
     
     return call
 
 
 def _list_item(attributes, markdown_state):
-    list_state = markdown_state.list_state or _MarkdownListState(ordered=False)
+    markdown_state.list_item_has_closed = False
+    
+    list_state = markdown_state.list_state or _MarkdownListState(ordered=False, indentation=0)
     list_state.count += 1
     
     if list_state.ordered:
@@ -76,7 +104,14 @@ def _list_item(attributes, markdown_state):
     else:
         bullet = "-"
     
-    return _WriterOutput(bullet + " ", "\n")
+    def end():
+        if markdown_state.list_item_has_closed:
+            return ""
+        else:
+            markdown_state.list_item_has_closed = True
+            return "\n"
+    
+    return _WriterOutput(("\t" * list_state.indentation) + bullet + " ", end)
 
 
 def _init_writers():
@@ -117,9 +152,7 @@ class MarkdownWriter(object):
             attributes = {}
         
         output = _writers.get(name, _default_writer)(attributes, self._markdown_state)
-        self._element_stack.append((output.end, self._markdown_state))
-        if output.markdown_state is not None:
-            self._markdown_state = output.markdown_state
+        self._element_stack.append(output.end)
         
         anchor_before_start = output.anchor_position == "before"
         if anchor_before_start:
@@ -133,8 +166,9 @@ class MarkdownWriter(object):
         
 
     def end(self, name):
-        end, markdown_state = self._element_stack.pop()
-        self._fragments.append(end)
+        end = self._element_stack.pop()
+        output = end()
+        self._fragments.append(output)
     
     def self_closing(self, name, attributes=None):
         self.start(name, attributes)
