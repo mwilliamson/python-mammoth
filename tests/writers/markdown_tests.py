@@ -140,5 +140,20 @@ def image_elements_are_ignored_if_they_have_no_src_and_no_alt_text():
     assert_equal("", writer.as_string())
 
 
+@istest
+def ol_element_is_written_as_ordered_list_with_sequential_numbering():
+    writer = _create_writer()
+    writer.start("ol")
+    writer.start("li")
+    writer.text("Fruit")
+    writer.end("li")
+    writer.start("li")
+    writer.text("Condiments")
+    writer.end("li")
+    writer.end("ol")
+    assert_equal("1. Fruit\n2. Condiments\n\n", writer.as_string())
+    
+
+
 def _create_writer():
     return MarkdownWriter()

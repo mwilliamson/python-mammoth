@@ -10,6 +10,16 @@ class _WriterOutput(object):
         self.anchor_position = anchor_position
 
 
+class _MarkdownState(object):
+    def __init__(self):
+        self.list_state = _MarkdownListState()
+
+
+class _MarkdownListState(object):
+    def __init__(self):
+        self.count = 0
+
+
 def _symmetric_wrapped(end):
     return _Wrapped(end, end)
 
@@ -19,11 +29,11 @@ class _Wrapped(object):
         self._start = start
         self._end = end
     
-    def __call__(self, attributes):
+    def __call__(self, attributes, markdown_state):
         return _WriterOutput(self._start, self._end)
 
 
-def _hyperlink(attributes):
+def _hyperlink(attributes, markdown_state):
     href = attributes.get("href", "")
     if href:
         return _WriterOutput(
@@ -34,13 +44,26 @@ def _hyperlink(attributes):
         return _default_output
 
 
-def _image(attributes):
+def _image(attributes, markdown_state):
     src = attributes.get("src", "")
     alt_text = attributes.get("alt", "")
     if src or alt_text:
         return _WriterOutput("![{0}]({1})".format(alt_text, src), "")
     else:
         return _default_output
+
+
+def _list(ordered):
+    def call(attributes, markdown_state):
+        return _WriterOutput("", "\n")
+    
+    return call
+
+
+def _list_item(attributes, markdown_state):
+    list_state = markdown_state.list_state
+    list_state.count += 1
+    return _WriterOutput("{0}. ".format(list_state.count), "\n")
 
 
 def _init_writers():
@@ -51,6 +74,8 @@ def _init_writers():
         "em": _symmetric_wrapped("*"),
         "a": _hyperlink,
         "img": _image,
+        "ol": _list(ordered=True),
+        "li": _list_item,
     }
     
     for level in range(1, 7):
@@ -61,13 +86,14 @@ def _init_writers():
 
 _writers = _init_writers()
 _default_output = _WriterOutput("", "")
-_default_writer = lambda attributes: _default_output
+_default_writer = lambda attributes, markdown_state: _default_output
 
 
 class MarkdownWriter(object):
     def __init__(self):
         self._fragments = []
         self._element_stack = []
+        self._markdown_state = _MarkdownState()
     
     def text(self, text):
         self._fragments.append(_escape_markdown(text))
@@ -76,7 +102,7 @@ class MarkdownWriter(object):
         if attributes is None:
             attributes = {}
         
-        output = _writers.get(name, _default_writer)(attributes)
+        output = _writers.get(name, _default_writer)(attributes, self._markdown_state)
         
         anchor_before_start = output.anchor_position == "before"
         if anchor_before_start:
