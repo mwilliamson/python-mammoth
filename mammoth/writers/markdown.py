@@ -34,6 +34,12 @@ def _hyperlink(attributes):
         return _default_output
 
 
+def _image(attributes):
+    src = attributes.get("src")
+    alt_text = attributes.get("alt")
+    return _WriterOutput("![{0}]({1})".format(alt_text, src), "")
+
+
 def _init_writers():
     writers = {
         "p": _Wrapped("", "\n\n"),
@@ -41,6 +47,7 @@ def _init_writers():
         "strong": _symmetric_wrapped("__"),
         "em": _symmetric_wrapped("*"),
         "a": _hyperlink,
+        "img": _image,
     }
     
     for level in range(1, 7):

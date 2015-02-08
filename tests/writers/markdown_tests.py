@@ -110,6 +110,13 @@ def links_have_anchors_before_opening_square_bracket():
     writer.text("Hello")
     writer.end("a")
     assert_equal('<a id="start"></a>[Hello](http://example.com)', writer.as_string())
+    
+
+@istest
+def image_elements_are_written_as_markdown_images():
+    writer = _create_writer()
+    writer.self_closing("img", {"src": "http://example.com/image.jpg", "alt": "Alt Text"})
+    assert_equal("![Alt Text](http://example.com/image.jpg)", writer.as_string())
 
 
 def _create_writer():
