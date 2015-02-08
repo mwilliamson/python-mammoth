@@ -28,6 +28,15 @@ def h1_elements_are_converted_to_heading_with_leading_hash():
     writer.text("Hello");
     writer.end("h1");
     assert_equal("# Hello\n\n", writer.as_string())
+
+
+@istest
+def h6_elements_are_converted_to_heading_with_six_leading_hashes():
+    writer = _create_writer()
+    writer.start("h6");
+    writer.text("Hello");
+    writer.end("h6");
+    assert_equal("###### Hello\n\n", writer.as_string())
     
 
 
