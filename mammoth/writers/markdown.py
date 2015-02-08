@@ -4,19 +4,24 @@ import re
 
 
 class _WriterOutput(object):
-    def __init__(self, start, end, anchor_position=None):
+    def __init__(self, start, end, anchor_position=None, markdown_state=None):
         self.start = start
         self.end = end
         self.anchor_position = anchor_position
+        self.markdown_state = markdown_state
 
 
 class _MarkdownState(object):
-    def __init__(self):
-        self.list_state = _MarkdownListState()
+    def __init__(self, list_state=None):
+        self.list_state = list_state
+    
+    def updated_list_state(self, list_state):
+        return _MarkdownState(list_state)
 
 
 class _MarkdownListState(object):
-    def __init__(self):
+    def __init__(self, ordered):
+        self.ordered = ordered
         self.count = 0
 
 
@@ -55,7 +60,9 @@ def _image(attributes, markdown_state):
 
 def _list(ordered):
     def call(attributes, markdown_state):
-        return _WriterOutput("", "\n")
+        list_state = _MarkdownListState(ordered=ordered)
+        markdown_state = markdown_state.updated_list_state(list_state)
+        return _WriterOutput("", "\n", markdown_state=markdown_state)
     
     return call
 
@@ -63,7 +70,13 @@ def _list(ordered):
 def _list_item(attributes, markdown_state):
     list_state = markdown_state.list_state
     list_state.count += 1
-    return _WriterOutput("{0}. ".format(list_state.count), "\n")
+    
+    if list_state.ordered:
+        bullet = "{0}.".format(list_state.count)
+    else:
+        bullet = "-"
+    
+    return _WriterOutput(bullet + " ", "\n")
 
 
 def _init_writers():
@@ -75,6 +88,7 @@ def _init_writers():
         "a": _hyperlink,
         "img": _image,
         "ol": _list(ordered=True),
+        "ul": _list(ordered=False),
         "li": _list_item,
     }
     
@@ -103,6 +117,9 @@ class MarkdownWriter(object):
             attributes = {}
         
         output = _writers.get(name, _default_writer)(attributes, self._markdown_state)
+        self._element_stack.append((output.end, self._markdown_state))
+        if output.markdown_state is not None:
+            self._markdown_state = output.markdown_state
         
         anchor_before_start = output.anchor_position == "before"
         if anchor_before_start:
@@ -113,10 +130,10 @@ class MarkdownWriter(object):
         if not anchor_before_start:
             self._write_anchor(attributes)
         
-        self._element_stack.append(output.end)
+        
 
     def end(self, name):
-        end = self._element_stack.pop()
+        end, markdown_state = self._element_stack.pop()
         self._fragments.append(end)
     
     def self_closing(self, name, attributes=None):

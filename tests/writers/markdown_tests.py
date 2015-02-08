@@ -152,7 +152,21 @@ def ol_element_is_written_as_ordered_list_with_sequential_numbering():
     writer.end("li")
     writer.end("ol")
     assert_equal("1. Fruit\n2. Condiments\n\n", writer.as_string())
-    
+
+
+@istest
+def ul_element_is_written_as_unordered_list_using_hyphens_as_bullets():
+    writer = _create_writer()
+    writer.start("ul")
+    writer.start("li")
+    writer.text("Fruit")
+    writer.end("li")
+    writer.start("li")
+    writer.text("Condiments")
+    writer.end("li")
+    writer.end("ul")
+    assert_equal("- Fruit\n- Condiments\n\n", writer.as_string())
+        
 
 
 def _create_writer():
