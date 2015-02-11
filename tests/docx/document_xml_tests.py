@@ -239,7 +239,19 @@ class ReadXmlElementTests(object):
             [documents.run([])],
             _read_and_get_document_xml_element(element)
         )
-    
+        
+    @istest
+    def go_back_bookmark_is_ignored(self):
+        element = xml_element("w:bookmarkStart", {"w:name": "_GoBack"})
+        assert_equal(None, _read_and_get_document_xml_element(element))
+        
+    @istest
+    def bookmark_start_is_read_if_name_is_not_go_back(self):
+        element = xml_element("w:bookmarkStart", {"w:name": "start"})
+        assert_equal(
+            documents.bookmark("start"),
+            _read_and_get_document_xml_element(element)
+        )
     
     @istest
     def br_is_read_as_line_break(self):
@@ -373,7 +385,7 @@ class ReadXmlElementTests(object):
     
     @istest
     def ignored_elements_are_ignored_without_message(self):
-        element = xml_element("w:bookmarkStart")
+        element = xml_element("w:bookmarkEnd")
         result = read_document_xml_element(element)
         assert_equal(None, result.value)
         assert_equal([], result.messages)

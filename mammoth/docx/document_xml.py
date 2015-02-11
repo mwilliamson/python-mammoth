@@ -186,6 +186,15 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
         else:
             return children_result
     
+    @handler("w:bookmarkStart")
+    def bookmark_start(element):
+        name = element.attributes.get("w:name")
+        if name == "_GoBack":
+            return results.success(None)
+        else:
+            return results.success(documents.bookmark(name))
+    
+    
     @handler("w:br")
     def br(element):
         break_type = element.attributes.get("w:type")

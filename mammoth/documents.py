@@ -58,6 +58,8 @@ image = Image
 
 def hyperlink(children, href=None, anchor=None):
     return Hyperlink(href, anchor, children)
+
+bookmark = Bookmark = dodge.data_class("Bookmark", ["name"])
     
 
 table = Table
