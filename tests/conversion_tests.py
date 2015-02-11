@@ -218,6 +218,15 @@ def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
 
 
 @istest
+def bookmarks_are_converted_to_anchors_with_ids():
+    result = convert_document_element_to_html(
+        documents.bookmark(name="start"),
+        id_prefix="doc-42",
+    )
+    assert_equal('<a id="doc-42-start"></a>', result.value)
+
+
+@istest
 def docx_tab_is_converted_to_tab_in_html():
     result = convert_document_element_to_html(documents.tab())
     assert_equal('\t', result.value)

@@ -44,6 +44,7 @@ class DocumentConverter(object):
             documents.Run: self._convert_run,
             documents.Text: self._convert_text,
             documents.Hyperlink: self._convert_hyperlink,
+            documents.Bookmark: self._convert_bookmark,
             documents.Tab: self._convert_tab,
             documents.Table: self._convert_table,
             documents.TableRow: self._convert_table_row,
@@ -110,6 +111,12 @@ class DocumentConverter(object):
         html_generator.start("a", {"href": href})
         self._convert_elements_to_html(hyperlink.children, html_generator)
         html_generator.end()
+    
+    
+    def _convert_bookmark(self, bookmark, html_generator):
+        html_generator.start("a", {"id": "{0}-{1}".format(self._id_prefix, bookmark.name)}, always_write=True)
+        html_generator.end()
+        
     
     
     def _convert_tab(self, tab, html_generator):
