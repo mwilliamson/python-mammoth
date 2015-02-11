@@ -176,12 +176,15 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     @handler("w:hyperlink")
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
+        anchor = element.attributes.get("w:anchor")
         children_result = _read_xml_elements(element.children)
-        if relationship_id is None:
-            return children_result
-        else:
+        if relationship_id is not None:
             href = relationships[relationship_id].target
-            return children_result.map(lambda children: documents.hyperlink(href, children))
+            return children_result.map(lambda children: documents.hyperlink(href=href, children=children))
+        elif anchor is not None:
+            return children_result.map(lambda children: documents.hyperlink(anchor=anchor, children=children))
+        else:
+            return children_result
     
     @handler("w:br")
     def br(element):

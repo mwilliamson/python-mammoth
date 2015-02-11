@@ -8,7 +8,7 @@ Run = dodge.data_class("Run", [
     "is_underline", "vertical_alignment",
 ])
 Text = dodge.data_class("Text", ["value"])
-Hyperlink = dodge.data_class("Hyperlink", ["href", "children"])
+Hyperlink = dodge.data_class("Hyperlink", ["href", "anchor", "children"])
 Table = dodge.data_class("Table", ["children"])
 TableRow = dodge.data_class("TableRow", ["children"])
 TableCell = dodge.data_class("TableCell", ["children"])
@@ -55,7 +55,11 @@ def tab():
 
 
 image = Image
-hyperlink = Hyperlink
+
+def hyperlink(children, href=None, anchor=None):
+    return Hyperlink(href, anchor, children)
+    
+
 table = Table
 table_row = TableRow
 table_cell = TableCell

@@ -218,12 +218,21 @@ class ReadXmlElementTests(object):
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {"r:id": "r42"}, [run_element])
         assert_equal(
-            documents.hyperlink("http://example.com", [documents.run([])]),
+            documents.hyperlink(href="http://example.com", children=[documents.run([])]),
             _read_and_get_document_xml_element(element, relationships=relationships)
         )
         
     @istest
-    def hyperlink_is_ignored_if_it_does_not_have_a_relationship_id(self):
+    def hyperlink_is_read_if_it_has_an_anchor_attribute(self):
+        run_element = xml_element("w:r")
+        element = xml_element("w:hyperlink", {"w:anchor": "start"}, [run_element])
+        assert_equal(
+            documents.hyperlink(anchor="start", children=[documents.run([])]),
+            _read_and_get_document_xml_element(element)
+        )
+        
+    @istest
+    def hyperlink_is_ignored_if_it_does_not_have_a_relationship_id_nor_anchor(self):
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {}, [run_element])
         assert_equal(
