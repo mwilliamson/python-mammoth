@@ -107,16 +107,15 @@ class DocumentConverter(object):
         if hyperlink.anchor is None:
             href = hyperlink.href
         else:
-            href = "#{0}-{1}".format(self._id_prefix, hyperlink.anchor)
+            href = "#{0}".format(self._html_id(hyperlink.anchor))
         html_generator.start("a", {"href": href})
         self._convert_elements_to_html(hyperlink.children, html_generator)
         html_generator.end()
     
     
     def _convert_bookmark(self, bookmark, html_generator):
-        html_generator.start("a", {"id": "{0}-{1}".format(self._id_prefix, bookmark.name)}, always_write=True)
+        html_generator.start("a", {"id": self._html_id(bookmark.name)}, always_write=True)
         html_generator.end()
-        
     
     
     def _convert_tab(self, tab, html_generator):
@@ -212,10 +211,13 @@ class DocumentConverter(object):
         
 
     def _note_html_id(self, note):
-        return "{0}-{1}-{2}".format(self._id_prefix, note.note_type, note.note_id)
+        return self._html_id("{0}-{1}".format(note.note_type, note.note_id))
         
     def _note_ref_html_id(self, note):
-        return "{0}-{1}-ref-{2}".format(self._id_prefix, note.note_type, note.note_id)
+        return self._html_id("{0}-ref-{1}".format(note.note_type, note.note_id))
+    
+    def _html_id(self, suffix):
+        return "{0}-{1}".format(self._id_prefix, suffix)
         
 
 def _document_matcher_matches(matcher, element, element_type):
