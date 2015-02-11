@@ -103,7 +103,11 @@ class DocumentConverter(object):
     
     
     def _convert_hyperlink(self, hyperlink, html_generator):
-        html_generator.start("a", {"href": hyperlink.href})
+        if hyperlink.anchor is None:
+            href = hyperlink.href
+        else:
+            href = "#{0}-{1}".format(self._id_prefix, hyperlink.anchor)
+        html_generator.start("a", {"href": href})
         self._convert_elements_to_html(hyperlink.children, html_generator)
         html_generator.end()
     

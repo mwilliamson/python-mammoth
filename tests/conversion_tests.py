@@ -201,11 +201,20 @@ def runs_are_converted_by_satisfying_matching_paths():
 
 
 @istest
-def docx_hyperlink_is_converted_to_anchor_tag():
+def docx_hyperlink_with_href_is_converted_to_anchor_tag():
     result = convert_document_element_to_html(
         documents.hyperlink(href="http://example.com", children=[documents.Text("Hello")]),
     )
     assert_equal('<a href="http://example.com">Hello</a>', result.value)
+
+
+@istest
+def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
+    result = convert_document_element_to_html(
+        documents.hyperlink(anchor="start", children=[documents.Text("Hello")]),
+        id_prefix="doc-42",
+    )
+    assert_equal('<a href="#doc-42-start">Hello</a>', result.value)
 
 
 @istest
