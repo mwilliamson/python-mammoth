@@ -4,14 +4,20 @@ import re
 
 
 class _WriterOutput(object):
-    def __init__(self, start, end, anchor_position=None):
-        if not callable(end):
-            end_output = end
-            end = lambda: end_output
+    def __init__(self, start, end=None, generate_end=None, anchor_position=None):
+        if generate_end is None:
+            generate_end = _constant(end)
         
         self.start = start
-        self.end = end
+        self.generate_end = generate_end
         self.anchor_position = anchor_position
+
+
+def _constant(value):
+    def get():
+        return value
+    
+    return get
 
 
 class _MarkdownState(object):
@@ -79,7 +85,7 @@ def _list(ordered):
             end_text = ""
             indentation = markdown_state.list_state.indentation + 1
         
-        def end():
+        def generate_end():
             markdown_state.pop_list_state()
             return end_text
         
@@ -88,7 +94,7 @@ def _list(ordered):
             indentation=indentation,
         ))
         
-        return _WriterOutput(start, end)
+        return _WriterOutput(start, generate_end=generate_end)
     
     return call
 
@@ -104,14 +110,17 @@ def _list_item(attributes, markdown_state):
     else:
         bullet = "-"
     
-    def end():
+    def generate_end():
         if markdown_state.list_item_has_closed:
             return ""
         else:
             markdown_state.list_item_has_closed = True
             return "\n"
     
-    return _WriterOutput(("\t" * list_state.indentation) + bullet + " ", end)
+    return _WriterOutput(
+        start=("\t" * list_state.indentation) + bullet + " ",
+        generate_end=generate_end
+    )
 
 
 def _init_writers():
@@ -154,7 +163,7 @@ class MarkdownWriter(object):
             attributes = {}
         
         output = _writers.get(name, _default_writer)(attributes, self._markdown_state)
-        self._element_stack.append(output.end)
+        self._element_stack.append(output.generate_end)
         
         anchor_before_start = output.anchor_position == "before"
         if anchor_before_start:
