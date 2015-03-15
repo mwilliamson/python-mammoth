@@ -135,7 +135,9 @@ def _init_writers():
 
 _writers = _init_writers()
 _default_output = _WriterOutput("", "")
-_default_writer = lambda attributes, markdown_state: _default_output
+
+def _default_writer(attributes, markdown_state):
+    return _default_output
 
 
 class MarkdownWriter(object):
