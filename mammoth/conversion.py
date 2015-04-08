@@ -227,7 +227,7 @@ def _document_matcher_matches(matcher, element, element_type):
             matcher.style_id == element.style_id
         ) and (
             matcher.style_name is None or
-            matcher.style_name == element.style_name
+            element.style_name is not None and (matcher.style_name.upper() == element.style_name.upper())
         ) and (
             element_type != "paragraph" or
             matcher.numbering is None or
