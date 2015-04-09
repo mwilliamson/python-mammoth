@@ -1,4 +1,3 @@
-import os
 import contextlib
 
 from .. import documents
@@ -220,7 +219,7 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     
     def _read_blip(element, alt_text):
         relationship_id = element.attributes["r:embed"]
-        image_path = os.path.join("word", relationships[relationship_id].target)
+        image_path = "word/" + relationships[relationship_id].target.lstrip("/")
         content_type = content_types.find_content_type(image_path)
         
         def open_image():
