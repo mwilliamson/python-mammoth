@@ -103,7 +103,7 @@ def _list_item(attributes, markdown_state):
     markdown_state.list_item_has_closed = False
     
     list_state = markdown_state.list_state or _MarkdownListState(ordered=False, indentation=0)
-    list_state.count += 1
+    list_state.count = list_state.count + 1
     
     if list_state.ordered:
         bullet = "{0}.".format(list_state.count)
