@@ -1,17 +1,79 @@
 import dodge
 
+#:type Node = Document | Paragraph | Run | Text | Hyperlink | Table | TableRow | TableCell | LineBreak
+Node = None
 
-Document = dodge.data_class("Document", ["children", "notes"])
-Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "style_name", "numbering"])
-Run = dodge.data_class("Run", [
-    "children", "style_id", "style_name", "is_bold", "is_italic",
-    "is_underline", "vertical_alignment",
+
+Document = dodge.data_class("Document", [
+    #:field list[Node]
+    "children",
+    #:field Notes
+    "notes"
 ])
-Text = dodge.data_class("Text", ["value"])
-Hyperlink = dodge.data_class("Hyperlink", ["href", "anchor", "children"])
-Table = dodge.data_class("Table", ["children"])
-TableRow = dodge.data_class("TableRow", ["children"])
-TableCell = dodge.data_class("TableCell", ["children"])
+
+Paragraph = dodge.data_class("Paragraph", [
+    #:field list[Node]
+    "children",
+    #:field str
+    "style_id",
+    #:field str
+    "style_name",
+    #:field Numbering
+    "numbering"
+])
+
+
+class Numbering(object):
+    def __init__(self, nums):
+        self._nums = nums
+    
+    def find_level(self, num_id, level):
+        num = self._nums.get(num_id)
+        if num is None:
+            return None
+        else:
+            return num[level]
+            
+Run = dodge.data_class("Run", [
+    #:field list[Node]
+    "children",
+    #:field str
+    "style_id",
+    #:field str
+    "style_name",
+    #:field bool
+    "is_bold",
+    #:field bool
+    "is_italic",
+    #:field bool
+    "is_underline",
+    #:field str 
+    "vertical_alignment",
+])
+Text = dodge.data_class("Text", [
+    #:field str
+    "value"
+])
+Hyperlink = dodge.data_class("Hyperlink", [
+    #:field str
+    "href",
+    #:field str
+    "anchor",
+    #:field list[Node]
+    "children"
+])
+Table = dodge.data_class("Table", [
+    #:field list[Node]
+    "children"
+])
+TableRow = dodge.data_class("TableRow", [
+    #:field list[Node]
+    "children"
+])
+TableCell = dodge.data_class("TableCell", [
+    #:field list[Node]
+    "children"
+])
 LineBreak = dodge.data_class("LineBreak", [])
 
 class Tab(object):
@@ -59,7 +121,11 @@ image = Image
 def hyperlink(children, href=None, anchor=None):
     return Hyperlink(href, anchor, children)
 
-bookmark = Bookmark = dodge.data_class("Bookmark", ["name"])
+Bookmark = dodge.data_class("Bookmark", [
+    #:field str
+    "name"
+])
+bookmark = Bookmark
     
 
 table = Table
@@ -70,10 +136,23 @@ line_break = LineBreak
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))
 
-_NumberingLevel = dodge.data_class("NumberingLevel", ["level_index", "is_ordered"])
+_NumberingLevel = dodge.data_class("_NumberingLevel", [
+    #:field int
+    "level_index",
+    #:field bool
+    "is_ordered"
+])
 
 
-note = Note = dodge.data_class("Note", ["note_type", "note_id", "body"])
+Note = dodge.data_class("Note", [
+    #:field str
+    "note_type",
+    #:field str
+    "note_id",
+    #:field list[Node]
+    "body"
+])
+note = Note
 
 
 class Notes(object):
@@ -101,4 +180,10 @@ def notes(notes_list):
 def _note_key(note):
     return (note.note_type, note.note_id)
 
-note_reference = NoteReference = dodge.data_class("NoteReference", ["note_type", "note_id"])
+NoteReference = dodge.data_class("NoteReference", [
+    #:field str
+    "note_type",
+    #:field str
+    "note_id"
+])
+note_reference = NoteReference

@@ -1,11 +1,12 @@
 import zipfile
 import contextlib
 
+from ..documents import Numbering
 from .xmlparser import parse_xml
 from .document_xml import read_document_xml_element
 from .content_types_xml import read_content_types_xml_element
 from .relationships_xml import read_relationships_xml_element
-from .numbering_xml import read_numbering_xml_element, Numbering
+from .numbering_xml import read_numbering_xml_element
 from .styles_xml import read_styles_xml_element
 from .notes_xml import read_footnotes_xml_element, read_endnotes_xml_element
 

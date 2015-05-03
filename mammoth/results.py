@@ -14,7 +14,12 @@ class Result(object):
         return Result(result.value, self.messages + result.messages)
 
 
-Message = collections.namedtuple("Message", ["type", "message"])
+Message = collections.namedtuple("Message", [
+    #:field str
+    "type",
+    #:field Message
+    "message"
+])
 
 
 def warning(message):

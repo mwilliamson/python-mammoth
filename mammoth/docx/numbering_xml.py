@@ -1,4 +1,4 @@
-from ..documents import numbering_level
+from ..documents import numbering_level, Numbering
 
 
 def read_numbering_xml_element(element):
@@ -45,15 +45,3 @@ def _read_num(element, abstract_nums):
     num_id = element.attributes.get("w:numId")
     abstract_num_id = element.find_child_or_null("w:abstractNumId").attributes["w:val"]
     return num_id, abstract_nums[abstract_num_id]
-
-
-class Numbering(object):
-    def __init__(self, nums):
-        self._nums = nums
-    
-    def find_level(self, num_id, level):
-        num = self._nums.get(num_id)
-        if num is None:
-            return None
-        else:
-            return num[level]

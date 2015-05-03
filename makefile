@@ -1,9 +1,12 @@
-.PHONY: test upload clean bootstrap setup
+.PHONY: test type-check upload clean bootstrap setup
 
-test:
-	_virtualenv/bin/pyflakes mammoth tests
+test: type-check
+	#_virtualenv/bin/pyflakes mammoth tests
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
-	
+
+type-check:
+	nope check mammoth/conversion.py
+
 upload: setup assert-converted-readme
 	python setup.py sdist upload
 	make clean
