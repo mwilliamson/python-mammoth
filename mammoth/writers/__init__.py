@@ -3,7 +3,12 @@ from .html import HtmlWriter
 
 
 #:structural-type Writer:
+#:  start: str, ?attributes: dict[str, str] -> none
+#:  end: str -> none
+#:  self_closing: str, ?attributes: dict[str, str] | none -> none
 #:  text: str -> none
+#:  append: str -> none
+#:  as_string: -> str
 Writer = None
 
 

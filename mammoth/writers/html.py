@@ -22,7 +22,7 @@ class HtmlWriter(object):
     def end(self, name):
         self._fragments.append("</{0}>".format(name))
     
-    #:: Self, str, ?attributes: dict[str, str] -> none
+    #:: Self, str, ?attributes: dict[str, str] | none -> none
     def self_closing(self, name, attributes=None):
         attribute_string = _generate_attribute_string(attributes)
         self._fragments.append("<{0}{1} />".format(name, attribute_string))
