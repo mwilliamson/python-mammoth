@@ -4,6 +4,7 @@ from . import style_reader, lists
 def read_options(options):
     custom_style_map = _read_style_map(options.get("style_map") or "")
     include_default_style_map = options.get("include_default_style_map", True)
+    options["ignore_empty_paragraphs"] = options.get("ignore_empty_paragraphs", True)
     
     options["style_map"] = custom_style_map + \
         (_default_style_map if include_default_style_map else [])

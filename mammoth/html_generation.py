@@ -9,14 +9,14 @@ class HtmlGenerator(object):
     
     def text(self, text):
         if text:
-            self._write_all()
+            self.write_all()
             self._writer.text(text)
     
     def start(self, name, attributes=None, always_write=False):
         self._stack.append(_Element(name, attributes))
         
         if always_write:
-            self._write_all()
+            self.write_all()
 
     def end(self):
         element = self._stack.pop()
@@ -30,7 +30,7 @@ class HtmlGenerator(object):
     def self_closing(self, name, attributes=None):
         self._writer.self_closing(name, attributes)
     
-    def _write_all(self):
+    def write_all(self):
         for element in self._stack:
             if not element.written:
                 element.written = True
@@ -42,7 +42,7 @@ class HtmlGenerator(object):
     def append(self, other):
         other_string = other.as_string()
         if other_string:
-            self._write_all()
+            self.write_all()
             self._writer.append(other_string)
     
     def as_string(self):

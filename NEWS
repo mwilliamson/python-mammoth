@@ -1,3 +1,7 @@
+# 0.3.14
+
+* Add ignore_empty_paragraphs option, which defaults to True.
+
 # 0.3.13
 
 * Always use forward slashes in ZIP paths. This should fix image handling on

@@ -26,6 +26,22 @@ def can_read_xml_files_with_utf8_bom():
 
 
 @istest
+def empty_paragraphs_are_ignored_by_default():
+    with open(test_path("empty.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
+def empty_paragraphs_are_preserved_if_ignore_empty_paragraphs_is_false():
+    with open(test_path("empty.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, ignore_empty_paragraphs=False)
+        assert_equal("<p></p>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
 def inline_images_are_included_in_output():
     with open(test_path("tiny-picture.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)

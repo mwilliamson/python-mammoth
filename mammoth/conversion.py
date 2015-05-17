@@ -14,7 +14,8 @@ def convert_document_element_to_html(element,
         convert_image=None,
         convert_underline=None,
         id_prefix=None,
-        output_format=None):
+        output_format=None,
+        ignore_empty_paragraphs=True):
             
     if style_map is None:
         style_map = []
@@ -26,17 +27,19 @@ def convert_document_element_to_html(element,
     converter = DocumentConverter(style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,
-        id_prefix=id_prefix)
+        id_prefix=id_prefix,
+        ignore_empty_paragraphs=ignore_empty_paragraphs)
     converter.convert_element_to_html(element, html_generator,)
     html_generator.end_all()
     return results.Result(html_generator.as_string(), converter.messages)
 
 
 class DocumentConverter(object):
-    def __init__(self, style_map, convert_image, convert_underline, id_prefix):
+    def __init__(self, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs):
         self.messages = []
         self._style_map = style_map
         self._id_prefix = id_prefix
+        self._ignore_empty_paragraphs = ignore_empty_paragraphs
         self._note_references = []
         self._converters = {
             documents.Document: self._convert_document,
@@ -76,6 +79,8 @@ class DocumentConverter(object):
     def _convert_paragraph(self, paragraph, html_generator):
         html_path = self._find_html_path_for_paragraph(paragraph)
         satisfy_html_path(html_generator, html_path)
+        if not self._ignore_empty_paragraphs:
+            html_generator.write_all()
         self._convert_elements_to_html(paragraph.children, html_generator)
 
 
