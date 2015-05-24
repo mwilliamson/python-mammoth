@@ -33,7 +33,7 @@ def read_styles_xml_element(element):
 
 def _read_style_element(element):
     style_id = element.attributes["w:styleId"]
-    name = element.find_child("w:name").attributes["w:val"]
+    name = element.find_child_or_null("w:name").attributes.get("w:val")
     return Style(style_id=style_id, name=name)
 
 

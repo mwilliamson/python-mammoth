@@ -58,6 +58,17 @@ def styles_include_names():
     )
 
 
+@istest
+def style_name_is_none_if_name_element_does_not_exist():
+    element = xml_element("w:styles", {}, [
+        _style_without_name_element("paragraph", "Heading1"),
+        _style_without_name_element("character", "Heading1Char")
+    ])
+    styles = read_styles_xml_element(element)
+    assert_equal(None, styles.find_paragraph_style_by_id("Heading1").name)
+    assert_equal(None, styles.find_character_style_by_id("Heading1Char").name)
+
+
 def _paragraph_style_element(style_id, name):
     return _style_element("paragraph", style_id, name)
 
@@ -65,6 +76,12 @@ def _character_style_element(style_id, name):
     return _style_element("character", style_id, name)
 
 def _style_element(element_type, style_id, name):
-    return xml_element("w:style", {"w:type": element_type, "w:styleId": style_id}, [
-        xml_element("w:name", {"w:val": name}, [])
-    ])
+    children = [xml_element("w:name", {"w:val": name}, [])]
+    return _style_element_with_children(element_type, style_id, children)
+
+def _style_without_name_element(element_type, style_id):
+    return _style_element_with_children(element_type, style_id, [])
+
+def _style_element_with_children(element_type, style_id, children):
+    attributes = {"w:type": element_type, "w:styleId": style_id}
+    return xml_element("w:style", attributes, children)
