@@ -63,6 +63,29 @@ def namespace_of_attributes_is_mapped_to_prefix():
 def whitespace_between_xml_declaration_and_root_tag_is_ignored():
     xml = _parse_xml_string(b'<?xml version="1.0" ?>\n<body/>')
     assert_equal("body", xml.name)
+    
+
+@istest
+class FindChildTests(object):
+    @istest
+    def returns_none_if_no_children(self):
+        xml = xml_element("a")
+        assert_equal(None, xml.find_child("b"))
+        
+    @istest
+    def returns_none_if_no_matching_children(self):
+        xml = xml_element("a", {}, [xml_element("c")])
+        assert_equal(None, xml.find_child("b"))
+        
+    @istest
+    def returns_first_matching_child(self):
+        xml = xml_element("a", {}, [xml_element("b", {"id": 1}), xml_element("b", {"id": 2})])
+        assert_equal(1, xml.find_child("b").attributes["id"])
+        
+    @istest
+    def ignores_text_nodes(self):
+        xml = xml_element("a", {}, [xml_text("Hello!")])
+        assert_equal(None, xml.find_child("b"))
 
 
 def _parse_xml_string(string, namespace_mapping=None):

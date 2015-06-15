@@ -9,7 +9,7 @@ class XmlElement(XmlElementBase):
     
     def find_child(self, name):
         for child in self.children:
-            if child.name == name:
+            if isinstance(child, XmlElement) and child.name == name:
                 return child
         
     
