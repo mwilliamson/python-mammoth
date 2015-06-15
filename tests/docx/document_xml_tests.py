@@ -409,12 +409,31 @@ class ReadXmlElementTests(object):
             documents.run([documents.Text("Hello!")]),
             read_document_xml_element(element).value
         )
+    
+    @istest
+    def alternate_content_is_read_using_fallback(self):
+        element = xml_element("mc:AlternateContent", {}, [
+            xml_element("mc:Choice", {"Requires": "wps"}, [
+                _paragraph_with_style_id("first")
+            ]),
+            xml_element("mc:Fallback", {}, [
+                _paragraph_with_style_id("second")
+            ])
+        ])
+        result = _read_and_get_document_xml_element(element)
+        assert_equal("second", result[0].style_id)
+
 
 def _read_and_get_document_xml_element(*args, **kwargs):
-    result = read_document_xml_element(*args, **kwargs)
+    styles = kwargs.pop("styles", FakeStyles())
+    result = read_document_xml_element(*args, styles=styles, **kwargs)
     assert_equal([], result.messages)
     return result.value
 
+
+class FakeStyles(object):
+    def find_paragraph_style_by_id(self, style_id):
+        return Style(style_id, style_id)
 
 def _document_element_with_text(text):
     return xml_element("w:document", {}, [
@@ -425,6 +444,10 @@ def _document_element_with_text(text):
 def _paragraph_element_with_text(text):
     return xml_element("w:p", {}, [_run_element_with_text(text)])
 
+def _paragraph_with_style_id(style_id):
+    style_xml = xml_element("w:pStyle", {"w:val": style_id})
+    properties_xml = xml_element("w:pPr", {}, [style_xml])
+    return xml_element("w:p", {}, [properties_xml])
 
 def _run_element_with_text(text):
     return xml_element("w:r", {}, [_text_element(text)])

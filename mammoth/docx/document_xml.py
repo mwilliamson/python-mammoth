@@ -248,6 +248,10 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     note_reference_reader("footnote")
     note_reference_reader("endnote")
     
+    @handler("mc:AlternateContent")
+    def alternate_content(element):
+        return read_child_elements(element.find_child("mc:Fallback"))
+    
     def read(element):
         handler = _handlers.get(element.name)
         if handler is None:
