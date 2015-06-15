@@ -103,6 +103,13 @@ def endnotes_are_appended_to_text():
 
 
 @istest
+def text_boxes_are_read():
+    with open(test_path("text-box.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal('<p>Datum plane</p>', result.value)
+
+
+@istest
 def transform_document_is_applied_to_document_before_conversion():
     def transform_document(document):
         document.children[0].style_id = "Heading1"

@@ -18,6 +18,8 @@ _namespaces = [
     ("content-types", "http://schemas.openxmlformats.org/package/2006/content-types"),
     ("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships"),
     ("relationships", "http://schemas.openxmlformats.org/package/2006/relationships"),
+    ("v", "urn:schemas-microsoft-com:vml"),
+    ("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006"),
 ]
 
 def read(fileobj):

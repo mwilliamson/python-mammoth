@@ -25,7 +25,8 @@ def read_document_xml_element(element,
         note_elements=note_elements,
         docx_file=docx_file,
     )
-    return reader(element)
+    result = reader(element)
+    return results.Result(result.value, result.messages)
 
 def _create_reader(numbering, content_types, relationships, styles, note_elements, docx_file):
     _handlers = {}
@@ -57,7 +58,7 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
 
     @handler("w:t")
     def text(element):
-        return results.success(documents.Text(_inner_text(element)))
+        return _success(documents.Text(_inner_text(element)))
 
 
     @handler("w:r")
@@ -116,7 +117,8 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
                 style_id=style_id,
                 style_name=style_name,
                 numbering=numbering,
-            ))
+            )) \
+            .append_extra()
 
     def _read_numbering_properties(element):
         num_id = element.find_child("w:numId").attributes["w:val"]
@@ -133,7 +135,7 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     def document(element):
         body_element = _find_child(element, "w:body")
         children_result = _read_xml_elements(body_element.children)
-        notes_result = results.combine(map(_read_note, note_elements)).map(documents.notes)
+        notes_result = _combine_results(map(_read_note, note_elements)).map(documents.notes)
         return results.map(documents.document, children_result, notes_result)
     
     
@@ -144,7 +146,7 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     
     @handler("w:tab")
     def tab(element):
-        return results.success(documents.tab())
+        return _success(documents.tab())
     
     
     @handler("w:tbl")
@@ -168,8 +170,16 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     @handler("w:ins")
     @handler("w:smartTag")
     @handler("w:drawing")
+    @handler("v:shape")
+    @handler("v:textbox")
+    @handler("w:txbxContent")
     def read_child_elements(element):
         return _read_xml_elements(element.children)
+    
+    
+    @handler("w:pict")
+    def pict(element):
+        return read_child_elements(element).to_extra()
     
     
     @handler("w:hyperlink")
@@ -189,9 +199,9 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
     def bookmark_start(element):
         name = element.attributes.get("w:name")
         if name == "_GoBack":
-            return results.success(None)
+            return _empty_result
         else:
-            return results.success(documents.bookmark(name))
+            return _success(documents.bookmark(name))
     
     
     @handler("w:br")
@@ -199,9 +209,9 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
         break_type = element.attributes.get("w:type")
         if break_type:
             warning = results.warning("Unsupported break type: {0}".format(break_type))
-            return results.Result(None, [warning])
+            return _empty_result_with_messages([warning])
         else:
-            return results.success(documents.line_break())
+            return _success(documents.line_break())
     
     @handler("wp:inline")
     @handler("wp:anchor")
@@ -215,7 +225,7 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
         return _read_blips(blips, alt_text)
     
     def _read_blips(blips, alt_text):
-        return results.combine(map(lambda blip: _read_blip(blip, alt_text), blips))
+        return _combine_results(map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
         relationship_id = element.attributes["r:embed"]
@@ -236,12 +246,12 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
         else:
             messages = [results.warning("Image of type {0} is unlikely to display in web browsers".format(content_type))]
             
-        return results.Result(image, messages)
+        return _element_result_with_messages(image, messages)
     
     def note_reference_reader(note_type):
         @handler("w:{0}Reference".format(note_type))
         def note_reference(element):
-            return results.success(documents.note_reference(note_type, element.attributes["w:id"]))
+            return _success(documents.note_reference(note_type, element.attributes["w:id"]))
         
         return note_reference
     
@@ -257,15 +267,15 @@ def _create_reader(numbering, content_types, relationships, styles, note_element
         if handler is None:
             if element.name not in _ignored_elements:
                 warning = results.warning("An unrecognised element was ignored: {0}".format(element.name))
-                return results.Result(None, [warning])
+                return _empty_result_with_messages([warning])
             else:
-                return results.success(None)
+                return _success(None)
         else:
             return handler(element)
         
 
     def _read_xml_elements(elements):
-        return results.combine(map(read, elements)) \
+        return _combine_results(map(read, elements)) \
             .map(lambda values: lists.collect(values))
     
     return read
@@ -286,3 +296,68 @@ def _inner_text(node):
         return node.value
     else:
         return "".join(_inner_text(child) for child in node.children)
+
+
+
+class _ReadResult(object):
+    def __init__(self, value, extra, messages):
+        if extra is None:
+            extra = []
+        self._result = results.Result((value, extra), messages)
+    
+    @property
+    def value(self):
+        return self._result.value[0]
+    
+    @property
+    def extra(self):
+        return self._result.value[1]
+    
+    @property
+    def messages(self):
+        return self._result.messages
+    
+    def map(self, func):
+        result = self._result.map(lambda value: func(value[0]))
+        return _ReadResult(result.value, self.extra, result.messages)
+    
+    def to_extra(self):
+        return _ReadResult(None, _concat(self.extra, self.value), self.messages)
+    
+    def append_extra(self):
+        return _ReadResult(_concat(self.value, self.extra), None, self.messages)
+
+def _success(element):
+    return _ReadResult(element, None, [])
+
+def _element_result_with_messages(element, messages):
+    return _ReadResult(element, None, messages)
+
+def _combine_results(read_results):
+    combined = results.combine(result._result for result in read_results)
+    if combined.value:
+        value, extras = map(list, zip(*combined.value))
+        extra = sum(extras, [])
+    else:
+        value, extra = [], None
+    return _ReadResult(value, extra, combined.messages)
+
+_empty_result = _success(None)
+
+def _empty_result_with_messages(messages):
+    return _ReadResult(None, None, messages)
+
+def _concat(*values):
+    valid_values = list(filter(None, values))
+    if not valid_values:
+        return None
+    elif len(valid_values) == 1:
+        return valid_values[0]
+    else:
+        return sum(list(map(_to_list, valid_values)), [])
+
+def _to_list(value):
+    if isinstance(value, list):
+        return value
+    else:
+        return [value]

@@ -409,6 +409,23 @@ class ReadXmlElementTests(object):
             documents.run([documents.Text("Hello!")]),
             read_document_xml_element(element).value
         )
+        
+    @istest
+    def text_boxes_have_content_appended_after_containing_paragraph(self):
+        text_box = xml_element("w:pict", {}, [
+            xml_element("v:shape", {}, [
+                xml_element("v:textbox", {}, [
+                    xml_element("w:txbxContent", {}, [
+                        _paragraph_with_style_id("textbox-content")
+                    ])
+                ])
+            ])
+        ])
+        paragraph = xml_element("w:p", {}, [
+            xml_element("w:r", {}, [text_box])
+        ])
+        result = _read_and_get_document_xml_element(paragraph)
+        assert_equal(result[1].style_id, "textbox-content")
     
     @istest
     def alternate_content_is_read_using_fallback(self):
