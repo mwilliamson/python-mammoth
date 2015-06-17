@@ -19,3 +19,7 @@ RunMatcher.element_type = "run"
 
 class underline(object):
     element_type = "underline"
+
+
+class strikethrough(object):
+    element_type = "strikethrough"

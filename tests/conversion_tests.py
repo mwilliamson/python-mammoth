@@ -211,6 +211,17 @@ def strikethrough_runs_are_wrapped_in_s_elements_by_default():
 
 
 @istest
+def strikethrough_runs_can_be_configured_with_style_mapping():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_strikethrough=True),
+        style_map=[
+            style_reader.read_style("strike => del")
+        ]
+    )
+    assert_equal("<del>Hello</del>", result.value)
+
+
+@istest
 def superscript_runs_are_wrapped_in_sup_tags():
     result = convert_document_element_to_html(
         documents.run(

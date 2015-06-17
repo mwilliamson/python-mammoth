@@ -100,7 +100,7 @@ class DocumentConverter(object):
         if run.is_underline:
             self._convert_underline(run_generator)
         if run.is_strikethrough:
-            run_generator.start("s")
+            self._convert_strikethrough(run_generator)
         self._convert_elements_to_html(run.children, run_generator)
         run_generator.end_all()
         html_generator.append(run_generator)
@@ -110,6 +110,15 @@ class DocumentConverter(object):
         style = self._find_style(None, "underline")
         if style is not None:
             append_html_path(run_generator, style.html_path)
+    
+    
+    def _convert_strikethrough(self, run_generator):
+        style = self._find_style(None, "strikethrough")
+        if style is None:
+            run_generator.start("s")
+        else:
+            append_html_path(run_generator, style.html_path)
+        
     
 
     def _convert_text(self, text, html_generator):
@@ -238,8 +247,8 @@ class DocumentConverter(object):
         
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type == "underline":
-        return element_type == "underline"
+    if matcher.element_type in ["underline", "strikethrough"]:
+        return matcher.element_type == element_type
     else:
         return (
             matcher.element_type == element_type and (

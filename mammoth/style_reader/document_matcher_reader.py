@@ -16,6 +16,8 @@ def read_document_matcher_node(root_node):
         return _read_run_node(element_node)
     elif element_node.expr_name == "underline":
         return document_matchers.underline
+    elif element_node.expr_name == "strikethrough":
+        return document_matchers.strikethrough
     
 
 def _read_paragraph_node(paragraph_node):
@@ -55,9 +57,11 @@ def _read_list_node(list_node):
         return None
 
 grammar_text = r"""
-document_matcher = paragraph / run / underline
+document_matcher = paragraph / run / underline / strikethrough
 
 underline = "u"
+
+strikethrough = "strike"
 
 paragraph = "p" style_id? style_name_specifier? list?
 
