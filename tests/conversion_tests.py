@@ -172,13 +172,35 @@ def underline_runs_are_ignored_by_default():
     
 
 @istest
-def underline_runs_can_be_wrapped_in_tags():
+def underline_runs_can_be_wrapped_in_tags_using_convert_underline_argument():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_underline=True),
         convert_underline=mammoth.underline.element("u")
     )
     assert_equal("<u>Hello</u>", result.value)
     
+
+@istest
+def underline_runs_can_be_mapped_using_style_mapping():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_underline=True),
+        style_map=[
+            style_reader.read_style("u => em")
+        ]
+    )
+    assert_equal("<em>Hello</em>", result.value)
+
+
+@istest
+def style_mapping_for_underline_runs_does_not_close_parent_elements():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_underline=True, is_bold=True),
+        style_map=[
+            style_reader.read_style("u => em")
+        ]
+    )
+    assert_equal("<strong><em>Hello</em></strong>", result.value)
+
 
 @istest
 def superscript_runs_are_wrapped_in_sup_tags():

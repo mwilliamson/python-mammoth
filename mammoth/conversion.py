@@ -6,7 +6,7 @@ import base64
 import random
 
 from . import documents, results, html_paths, images, writers
-from .html_generation import HtmlGenerator, satisfy_html_path
+from .html_generation import HtmlGenerator, satisfy_html_path, append_html_path
 
 
 def convert_document_element_to_html(element,
@@ -57,7 +57,7 @@ class DocumentConverter(object):
             documents.NoteReference: self._convert_note_reference,
             documents.Note: self._convert_note,
         }
-        self._convert_underline = convert_underline
+        self._convert_underline = convert_underline or self._default_convert_underline
 
 
     def convert_element_to_html(self, element, html_generator):
@@ -97,12 +97,18 @@ class DocumentConverter(object):
             run_generator.start("sup")
         if run.vertical_alignment == documents.VerticalAlignment.subscript:
             run_generator.start("sub")
-        if run.is_underline and self._convert_underline is not None:
+        if run.is_underline:
             self._convert_underline(run_generator)
         self._convert_elements_to_html(run.children, run_generator)
         run_generator.end_all()
         html_generator.append(run_generator)
-
+    
+    
+    def _default_convert_underline(self, run_generator):
+        style = self._find_style(None, "underline")
+        if style is not None:
+            append_html_path(run_generator, style.html_path)
+    
 
     def _convert_text(self, text, html_generator):
         html_generator.text(text.value)
@@ -201,10 +207,9 @@ class DocumentConverter(object):
         
     
     def _find_html_path(self, element, element_type, default):
-        for style in self._style_map:
-            document_matcher = style.document_matcher
-            if _document_matcher_matches(document_matcher, element, element_type):
-                return style.html_path
+        style = self._find_style(element, element_type)
+        if style is not None:
+            return style.html_path
         
         if element.style_id is not None:
             self.messages.append(results.warning(
@@ -213,7 +218,12 @@ class DocumentConverter(object):
             ))
         
         return default
-        
+    
+    def _find_style(self, element, element_type):
+        for style in self._style_map:
+            document_matcher = style.document_matcher
+            if _document_matcher_matches(document_matcher, element, element_type):
+                return style
 
     def _note_html_id(self, note):
         return self._html_id("{0}-{1}".format(note.note_type, note.note_id))
@@ -226,18 +236,21 @@ class DocumentConverter(object):
         
 
 def _document_matcher_matches(matcher, element, element_type):
-    return (
-        matcher.element_type == element_type and (
-            matcher.style_id is None or
-            matcher.style_id == element.style_id
-        ) and (
-            matcher.style_name is None or
-            element.style_name is not None and (matcher.style_name.upper() == element.style_name.upper())
-        ) and (
-            element_type != "paragraph" or
-            matcher.numbering is None or
-            matcher.numbering == element.numbering
+    if matcher.element_type == "underline":
+        return element_type == "underline"
+    else:
+        return (
+            matcher.element_type == element_type and (
+                matcher.style_id is None or
+                matcher.style_id == element.style_id
+            ) and (
+                matcher.style_name is None or
+                element.style_name is not None and (matcher.style_name.upper() == element.style_name.upper())
+            ) and (
+                element_type != "paragraph" or
+                matcher.numbering is None or
+                matcher.numbering == element.numbering
+            )
         )
-    )
 
 _up_arrow = "↑"

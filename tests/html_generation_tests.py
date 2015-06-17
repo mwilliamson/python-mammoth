@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from mammoth.html_generation import HtmlGenerator, satisfy_html_path
+from mammoth.html_generation import HtmlGenerator, satisfy_html_path, append_html_path
 from mammoth import html_paths, writers
 
 
@@ -169,6 +169,18 @@ class SatisfyPathTests(object):
         satisfy_html_path(generator, path)
         generator.text("Tip")
         assert_equal('<p class="tip">HelpTip', generator.as_string())
+
+
+@istest
+class AppendPathTests(object):
+    @istest
+    def already_opened_elements_are_not_closed(self):
+        generator = _create_html_generator()
+        generator.start("strong")
+        path = html_paths.path([html_paths.element(["em"])])
+        append_html_path(generator, path)
+        generator.text("Hello!")
+        assert_equal('<strong><em>Hello!', generator.as_string())
 
 
 def _create_html_generator():

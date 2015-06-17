@@ -68,11 +68,21 @@ def satisfy_html_path(generator, path):
         generator.end()
     
     for element in path.elements[first_unsatisfied_index:]:
-        attributes = {}
-        if element.class_names:
-            attributes["class"] = _generate_class_attribute(element)
-        generator.start(element.names[0], attributes=attributes)
+        _append_element(generator, element)
+
+
+def append_html_path(generator, path):
+    for element in path.elements:
+        _append_element(generator, element)
+
+
+def _append_element(generator, element):
+    attributes = {}
+    if element.class_names:
+        attributes["class"] = _generate_class_attribute(element)
+    generator.start(element.names[0], attributes=attributes)
     
+
 
 def _find_first_unsatisfied_index(generator, path):
     for index, (generated_element, path_element) in enumerate(zip(generator._stack, path.elements)):

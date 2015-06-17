@@ -15,3 +15,7 @@ def run(style_id=None, style_name=None):
 
 RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
 RunMatcher.element_type = "run"
+
+
+class underline(object):
+    element_type = "underline"

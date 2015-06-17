@@ -134,6 +134,13 @@ class ReadDocumentMatcherTests(object):
             read_document_matcher("r[style-name='Emphasis']")
         )
 
+    @istest
+    def reads_underline(self):
+        assert_equal(
+            document_matchers.underline,
+            read_document_matcher("u")
+        )
+
 
 @istest
 def document_matcher_is_mapped_to_html_path_using_fat_arrow():
