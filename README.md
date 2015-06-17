@@ -30,7 +30,7 @@ The following features are currently supported:
   
 * Images.
 
-* Bold, italics, underlines, superscript and subscript.
+* Bold, italics, underlines, strikethrough, superscript and subscript.
 
 * Links.
 
@@ -188,6 +188,19 @@ The following behaves as the example above:
 
 ```python
 mammoth.convert_to_html(docx_file, convert_underline=mammoth.underline.element("em"))
+```
+
+### Strikethrough
+
+By default, strikethrough text is wrapped in `<s>` tags.
+This behaviour can be changed by adding a style mapping for `strike`.
+For instance, to wrap strikethrough text in `<del>` tags:
+
+```python
+style_map = "strike => del"
+
+with open("document.docx", "rb") as docx_file:
+    result = mammoth.convert_to_html(docx_file, style_map=style_map)
 ```
 
 ### API
@@ -364,6 +377,17 @@ u
 
 Note that this matches text that has had underline explicitly applied to it.
 It will not match any text that is underlined because of its paragraph or run style.
+
+#### Strikethough
+
+Match explicitly struckthrough text:
+
+```
+strike
+```
+
+Note that this matches text that has had strikethrough explicitly applied to it.
+It will not match any text that is struckthrough because of its paragraph or run style.
 
 ### HTML paths
 
