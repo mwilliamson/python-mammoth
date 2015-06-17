@@ -110,6 +110,20 @@ def text_boxes_are_read():
 
 
 @istest
+def underline_is_ignored_by_defualt():
+    with open(test_path("underline.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal('<p><strong>The </strong><strong>Sunset</strong><strong> Tree</strong></p>', result.value)
+
+
+@istest
+def underline_can_be_configured_with_convert_underline_option():
+    with open(test_path("underline.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, convert_underline=mammoth.underline.element("em"))
+        assert_equal('<p><strong>The </strong><strong><em>Sunset</em></strong><strong> Tree</strong></p>', result.value)
+
+
+@istest
 def transform_document_is_applied_to_document_before_conversion():
     def transform_document(document):
         document.children[0].style_id = "Heading1"
