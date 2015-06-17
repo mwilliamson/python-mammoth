@@ -5,7 +5,7 @@ Document = dodge.data_class("Document", ["children", "notes"])
 Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "style_name", "numbering"])
 Run = dodge.data_class("Run", [
     "children", "style_id", "style_name", "is_bold", "is_italic",
-    "is_underline", "vertical_alignment",
+    "is_underline", "is_strikethrough", "vertical_alignment",
 ])
 Text = dodge.data_class("Text", ["value"])
 Hyperlink = dodge.data_class("Hyperlink", ["href", "anchor", "children"])
@@ -33,12 +33,12 @@ def document(children, notes=None):
 def paragraph(children, style_id=None, style_name=None, numbering=None):
     return Paragraph(children, style_id, style_name, numbering)
 
-def run(children, style_id=None, style_name=None, is_bold=None, is_italic=None, is_underline=None, vertical_alignment=None):
+def run(children, style_id=None, style_name=None, is_bold=None, is_italic=None, is_underline=None, is_strikethrough=None, vertical_alignment=None):
     if vertical_alignment is None:
         vertical_alignment = VerticalAlignment.baseline
     return Run(
         children, style_id, style_name, bool(is_bold), bool(is_italic),
-        bool(is_underline), vertical_alignment,
+        bool(is_underline), bool(is_strikethrough), vertical_alignment,
     )
 
 class VerticalAlignment(object):

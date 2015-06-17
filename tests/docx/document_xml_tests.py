@@ -142,6 +142,16 @@ class ReadXmlElementTests(object):
     def run_is_underlined_if_underline_element_is_present(self):
         run = self._read_run_with_properties([xml_element("w:u")])
         assert_equal(True, run.is_underline)
+        
+    @istest
+    def run_is_not_struckthrough_if_strikethrough_element_is_not_present(self):
+        run = self._read_run_with_properties([])
+        assert_equal(False, run.is_strikethrough)
+    
+    @istest
+    def run_is_struckthrough_if_strikethrough_element_is_present(self):
+        run = self._read_run_with_properties([xml_element("w:strike")])
+        assert_equal(True, run.is_strikethrough)
     
     @istest
     def run_has_baseline_vertical_alignment_if_vertical_alignment_element_is_not_present(self):

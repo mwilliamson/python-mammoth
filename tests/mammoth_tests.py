@@ -131,6 +131,13 @@ def underline_can_be_configured_with_style_mapping():
 
 
 @istest
+def strikethrough_is_converted_to_s_element_by_default():
+    with open(test_path("strikethrough.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("<p><s>Today's Special: Salmon</s> Sold out</p>", result.value)
+
+
+@istest
 def transform_document_is_applied_to_document_before_conversion():
     def transform_document(document):
         document.children[0].style_id = "Heading1"

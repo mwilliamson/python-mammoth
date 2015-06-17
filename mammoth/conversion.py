@@ -99,6 +99,8 @@ class DocumentConverter(object):
             run_generator.start("sub")
         if run.is_underline:
             self._convert_underline(run_generator)
+        if run.is_strikethrough:
+            run_generator.start("s")
         self._convert_elements_to_html(run.children, run_generator)
         run_generator.end_all()
         html_generator.append(run_generator)

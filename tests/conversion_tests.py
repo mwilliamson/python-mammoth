@@ -200,6 +200,14 @@ def style_mapping_for_underline_runs_does_not_close_parent_elements():
         ]
     )
     assert_equal("<strong><em>Hello</em></strong>", result.value)
+    
+
+@istest
+def strikethrough_runs_are_wrapped_in_s_elements_by_default():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_strikethrough=True),
+    )
+    assert_equal("<s>Hello</s>", result.value)
 
 
 @istest
