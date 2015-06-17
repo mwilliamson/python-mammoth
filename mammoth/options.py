@@ -41,6 +41,8 @@ p[style-name='heading 3'] => h3:fresh
 p[style-name='heading 4'] => h4:fresh
 p[style-name='heading 4'] => h4:fresh
 
+r[style-name='Strong'] => strong
+
 p[style-name='footnote text'] => p
 r[style-name='footnote reference'] =>
 p[style-name='endnote text'] => p
