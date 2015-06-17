@@ -170,10 +170,21 @@ mammoth.convert_to_html(docx_file, convert_image=mammoth.images.inline(convert_i
 #### Underline
 
 By default, the underlining of any text is ignored since underlining can be confused with links in HTML documents.
-This behaviour can be changed by setting the `convert_underline` argument to `mammoth.underline.element(name)`.
-
+This behaviour can be changed by adding a style mapping for `u`.
 For instance, suppose that a source document uses underlining for emphasis.
-The following will wrap any underlined source text in `<em>` tags:
+The following will wrap any explicitly underlined source text in `<em>` tags:
+
+```python
+import mammoth
+
+style_map = "u => em"
+
+with open("document.docx", "rb") as docx_file:
+    result = mammoth.convert_to_html(docx_file, style_map=style_map)
+```
+
+The `convert_underline` argument is deprecated, and will be removed in Mammoth 1.0.
+The following behaves as the example above:
 
 ```python
 mammoth.convert_to_html(docx_file, convert_underline=mammoth.underline.element("em"))
@@ -198,7 +209,7 @@ Converts the source document to HTML.
 * `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
   Set this argument to an [image converter](#image-converters) to override the default behaviour.
   
-* `convert_underline`: by default, the underlining of any text is ignored.
+* `convert_underline`: deprecated in favour of using style mappings to describe how to convert underlined text.
   Set this argument to [`mammoth.underline.element(name)`](#underline) to override the default behaviour.
   
 * `ignore_empty_paragraphs`: by default, empty paragraphs are ignored.
@@ -342,6 +353,17 @@ For instance, to match a paragraph with the style ID `Heading1`:
 ```
 p.Heading1
 ```
+
+#### Underline
+
+Match explicitly underlined text:
+
+```
+u
+```
+
+Note that this matches text that has had underline explicitly applied to it.
+It will not match any text that is underlined because of its paragraph or run style.
 
 ### HTML paths
 
