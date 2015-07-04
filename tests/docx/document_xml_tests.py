@@ -4,6 +4,7 @@ from mammoth import documents
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
 from mammoth.docx.notes_xml import NoteElement
+from mammoth.docx import body_xml
 
 
 @istest
@@ -31,7 +32,8 @@ class ReadXmlElementTests(object):
     
 
 def _read_and_get_document_xml_element(*args, **kwargs):
-    result = read_document_xml_element(*args, **kwargs)
+    body_reader = body_xml.reader()
+    result = read_document_xml_element(*args, body_reader=body_reader, **kwargs)
     assert_equal([], result.messages)
     return result.value
 

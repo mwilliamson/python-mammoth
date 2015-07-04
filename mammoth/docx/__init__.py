@@ -8,6 +8,7 @@ from .relationships_xml import read_relationships_xml_element
 from .numbering_xml import read_numbering_xml_element, Numbering
 from .styles_xml import read_styles_xml_element
 from .notes_xml import read_footnotes_xml_element, read_endnotes_xml_element
+from . import body_xml
 
 
 _namespaces = [
@@ -25,17 +26,8 @@ _namespaces = [
 def read(fileobj):
     zip_file = zipfile.ZipFile(fileobj)
     
-    with _open_entry(zip_file, "[Content_Types].xml") as content_types_fileobj:
-        content_types = read_content_types_xml_element(_parse_docx_xml(content_types_fileobj))
-    
-    with _open_entry(zip_file, "word/_rels/document.xml.rels") as relationships_fileobj:
-        relationships = read_relationships_xml_element(_parse_docx_xml(relationships_fileobj))
-
-    numbering = _try_read_entry_or_default(
-        zip_file, "word/numbering.xml", read_numbering_xml_element, default=Numbering({}))
-    
-    with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
-        styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
+    body_readers = _body_readers(zip_file)
+    body_reader = body_readers("document")
     
     footnote_elements = _try_read_entry_or_default(
         zip_file, "word/footnotes.xml", read_footnotes_xml_element, default=[])
@@ -47,14 +39,35 @@ def read(fileobj):
         document_xml = _parse_docx_xml(document_fileobj)
         return read_document_xml_element(
             document_xml,
-            content_types=content_types,
-            relationships=relationships,
-            docx_file=zip_file,
-            numbering=numbering,
-            styles=styles,
+            body_reader=body_reader,
             footnote_elements=footnote_elements,
             endnote_elements=endnote_elements,
         )
+
+
+def _body_readers(zip_file):
+    with _open_entry(zip_file, "[Content_Types].xml") as content_types_fileobj:
+        content_types = read_content_types_xml_element(_parse_docx_xml(content_types_fileobj))
+
+    numbering = _try_read_entry_or_default(
+        zip_file, "word/numbering.xml", read_numbering_xml_element, default=Numbering({}))
+    
+    with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
+        styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
+    
+    def for_name(name):
+        with _open_entry(zip_file, "word/_rels/{0}.xml.rels".format(name)) as relationships_fileobj:
+            relationships = read_relationships_xml_element(_parse_docx_xml(relationships_fileobj))
+        
+        return body_xml.reader(
+            numbering=numbering,
+            content_types=content_types,
+            relationships=relationships,
+            styles=styles,
+            docx_file=zip_file,
+        )
+    
+    return for_name
 
 
 def _parse_docx_xml(fileobj):
