@@ -103,6 +103,18 @@ def endnotes_are_appended_to_text():
 
 
 @istest
+def relationships_are_handled_properly_in_footnotes():
+    expected_html = (
+        '<p><sup><a href="#doc-42-footnote-1" id="doc-42-footnote-ref-1">[1]</a></sup></p>' +
+        '<ol><li id="doc-42-footnote-1"><p> <a href="http://www.example.com">Example</a> <a href="#doc-42-footnote-ref-1">↑</a></p></li></ol>')
+    
+    with open(test_path("footnote-hyperlink.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, id_prefix="doc-42")
+        assert_equal([], result.messages)
+        assert_equal(expected_html, result.value)
+
+
+@istest
 def text_boxes_are_read():
     with open(test_path("text-box.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)

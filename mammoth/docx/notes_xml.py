@@ -1,13 +1,17 @@
+import functools
+
 from .. import lists
+from .. import documents
+from .. import results
 
 
-def create_reader(note_type):
+def create_reader(note_type, body_reader):
     def read_notes_xml_element(element):
         note_elements = lists.filter(
             _is_note_element,
             element.find_children("w:" + note_type),
         )
-        return lists.map(_read_note_element, note_elements)
+        return results.combine(lists.map(_read_note_element, note_elements))
 
 
     def _is_note_element(element):
@@ -15,16 +19,14 @@ def create_reader(note_type):
 
 
     def _read_note_element(element):
-        return NoteElement(note_type, element.attributes["w:id"], element.children)
+        return body_reader.read_all(element.children).map(lambda body: 
+            documents.note(
+                note_type=note_type,
+                note_id=element.attributes["w:id"],
+                body=body
+            ))
     
     return read_notes_xml_element
 
-class NoteElement(object):
-    def __init__(self, note_type, id, body):
-        self.note_type = note_type
-        self.id = id
-        self.body = body
-
-
-read_footnotes_xml_element = create_reader("footnote")
-read_endnotes_xml_element = create_reader("endnote")
+create_footnotes_reader = functools.partial(create_reader, "footnote")
+create_endnotes_reader = functools.partial(create_reader, "endnote")

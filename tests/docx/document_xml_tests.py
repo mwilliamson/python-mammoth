@@ -3,7 +3,6 @@ from nose.tools import istest, assert_equal
 from mammoth import documents
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx.document_xml import read_document_xml_element
-from mammoth.docx.notes_xml import NoteElement
 from mammoth.docx import body_xml
 
 
@@ -19,13 +18,12 @@ class ReadXmlElementTests(object):
         
     @istest
     def footnotes_of_document_are_read(self):
-        paragraph_xml = xml_element("w:p")
-        footnotes = [NoteElement("footnote", "4", [paragraph_xml])]
+        notes = [documents.note("footnote", "4", [documents.paragraph([])])]
         
         body_xml = xml_element("w:body")
         document_xml = xml_element("w:document", {}, [body_xml])
         
-        document = _read_and_get_document_xml_element(document_xml, footnote_elements=footnotes)
+        document = _read_and_get_document_xml_element(document_xml, notes=notes)
         footnote = document.notes.find_note("footnote", "4")
         assert_equal("4", footnote.note_id)
         assert isinstance(footnote.body[0], documents.Paragraph)
