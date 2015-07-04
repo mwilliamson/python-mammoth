@@ -64,5 +64,7 @@ p:ordered-list(2) => ul|ol > li > ol > li:fresh
 p:ordered-list(3) => ul|ol > li > ul|ol > li > ol > li:fresh
 p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
 p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
+
+r[style-name='Hyperlink'] =>
 """)
 
