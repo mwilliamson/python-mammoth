@@ -274,7 +274,7 @@ class ReadXmlElementTests(object):
     @funk.with_context
     def can_read_inline_pictures(self, context):
         drawing_element = _create_inline_image(
-            relationship_id="rId5",
+            blip=_embedded_blip("rId5"),
             description="It's a hat",
         )
         
@@ -306,7 +306,7 @@ class ReadXmlElementTests(object):
     @funk.with_context
     def can_read_anchored_pictures(self, context):
         drawing_element = _create_anchored_image(
-            relationship_id="rId5",
+            blip=_embedded_blip("rId5"),
             description="It's a hat",
         )
         
@@ -339,7 +339,7 @@ class ReadXmlElementTests(object):
     @funk.with_context
     def warning_if_unsupported_image_type(self, context):
         drawing_element = _create_inline_image(
-            relationship_id="rId5",
+            blip=_embedded_blip("rId5"),
             description="It's a hat",
         )
         
@@ -467,28 +467,31 @@ def _text_element(value):
     return xml_element("w:t", {}, [xml_text(value)])
     
 
-def _create_inline_image(description, relationship_id):
+def _create_inline_image(description, blip):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:inline", {}, _create_image_elements(description, relationship_id))
+        xml_element("wp:inline", {}, _create_image_elements(description, blip))
     ])
 
 
-def _create_anchored_image(description, relationship_id):
+def _create_anchored_image(description, blip):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:anchor", {}, _create_image_elements(description, relationship_id))
+        xml_element("wp:anchor", {}, _create_image_elements(description, blip))
     ])
 
     
-def _create_image_elements(description, relationship_id):
+def _create_image_elements(description, blip):
     return [
         xml_element("wp:docPr", {"descr": description}),
         xml_element("a:graphic", {}, [
             xml_element("a:graphicData", {}, [
                 xml_element("pic:pic", {}, [
                     xml_element("pic:blipFill", {}, [
-                        xml_element("a:blip", {"r:embed": relationship_id})
+                        blip
                     ])
                 ])
             ])
         ])
     ]
+
+def _embedded_blip(relationship_id):
+    return xml_element("a:blip", {"r:embed": relationship_id})
