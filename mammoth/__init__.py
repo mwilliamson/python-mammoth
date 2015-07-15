@@ -1,4 +1,5 @@
-from . import docx, conversion, options, documents, images, underline
+from . import docx, conversion, options, images, underline
+from .raw_text import extract_raw_text_from_element
 
 __all__ = ["convert_to_html", "extract_raw_text", "images", "underline"]
 
@@ -24,15 +25,4 @@ def convert(fileobj, transform_document=None, id_prefix=None, **kwargs):
     
 
 def extract_raw_text(fileobj):
-    return docx.read(fileobj).map(_extract_raw_text_from_element)
-
-
-def _extract_raw_text_from_element(element):
-    if isinstance(element, documents.Text):
-        return element.value
-    else:
-        text = "".join(map(_extract_raw_text_from_element, element.children))
-        if isinstance(element, documents.Paragraph):
-            return text + "\n\n"
-        else:
-            return text
+    return docx.read(fileobj).map(extract_raw_text_from_element)
