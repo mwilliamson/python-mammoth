@@ -1,3 +1,7 @@
+# 0.3.19
+
+* Fix: cannot extract raw text from elements without children
+
 # 0.3.18
 
 * Support links and images in footnotes and endnotes.
