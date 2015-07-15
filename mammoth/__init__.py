@@ -30,9 +30,11 @@ def extract_raw_text(fileobj):
 def _extract_raw_text_from_element(element):
     if isinstance(element, documents.Text):
         return element.value
-    else:
+    elif hasattr(element, 'children'):
         text = "".join(map(_extract_raw_text_from_element, element.children))
         if isinstance(element, documents.Paragraph):
             return text + "\n\n"
         else:
             return text
+    else:
+        return ''
