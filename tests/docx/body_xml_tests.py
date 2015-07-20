@@ -364,6 +364,39 @@ class ReadXmlElementTests(object):
         assert_equal("image/x-emf", result.value[0].content_type)
         expected_warning = results.warning("Image of type image/x-emf is unlikely to display in web browsers")
         assert_equal([expected_warning], result.messages)
+        
+        
+    @istest
+    @funk.with_context
+    def can_read_linked_pictures(self, context):
+        drawing_element = _create_inline_image(
+            blip=_linked_blip("rId5"),
+            description="It's a hat",
+        )
+        
+        image_bytes = b"Not an image at all!"
+        
+        relationships = Relationships({
+            "rId5": Relationship(target="file:///media/hat.png")
+        })
+        
+        files = context.mock()
+        funk.allows(files).open("file:///media/hat.png").returns(io.BytesIO(image_bytes))
+        
+        content_types = context.mock()
+        funk.allows(content_types).find_content_type("file:///media/hat.png").returns("image/png")
+        
+        image = _read_and_get_document_xml_element(
+            drawing_element,
+            content_types=content_types,
+            relationships=relationships,
+            files=files,
+        )[0]
+        assert_equal(documents.Image, type(image))
+        assert_equal("It's a hat", image.alt_text)
+        assert_equal("image/png", image.content_type)
+        with image.open() as image_file:
+            assert_equal(image_bytes, image_file.read())
     
     @istest
     def footnote_reference_has_id_read(self):
@@ -494,4 +527,10 @@ def _create_image_elements(description, blip):
     ]
 
 def _embedded_blip(relationship_id):
-    return xml_element("a:blip", {"r:embed": relationship_id})
+    return _blip({"r:embed": relationship_id})
+
+def _linked_blip(relationship_id):
+    return _blip({"r:link": relationship_id})
+
+def _blip(attributes):
+    return xml_element("a:blip", attributes)

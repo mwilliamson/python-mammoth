@@ -1,5 +1,6 @@
 import zipfile
 import contextlib
+import os
 
 from .. import results, lists
 from .xmlparser import parse_xml
@@ -9,6 +10,7 @@ from .relationships_xml import read_relationships_xml_element, Relationships
 from .numbering_xml import read_numbering_xml_element, Numbering
 from .styles_xml import read_styles_xml_element
 from .notes_xml import create_footnotes_reader, create_endnotes_reader
+from .files import Files
 from . import body_xml
 
 
@@ -26,7 +28,7 @@ _namespaces = [
 
 def read(fileobj):
     zip_file = zipfile.ZipFile(fileobj)
-    body_readers = _body_readers(zip_file)
+    body_readers = _body_readers(getattr(fileobj, "name"), zip_file)
     
     return _read_notes(zip_file, body_readers).bind(lambda notes:
         _read_document(zip_file, body_readers, notes))
@@ -55,7 +57,7 @@ def _read_document(zip_file, body_readers, notes):
         )
 
 
-def _body_readers(zip_file):
+def _body_readers(document_path, zip_file):
     with _open_entry(zip_file, "[Content_Types].xml") as content_types_fileobj:
         content_types = read_content_types_xml_element(_parse_docx_xml(content_types_fileobj))
 
@@ -77,6 +79,7 @@ def _body_readers(zip_file):
             relationships=relationships,
             styles=styles,
             docx_file=zip_file,
+            files=Files(os.path.dirname(document_path)),
         )
     
     return for_name

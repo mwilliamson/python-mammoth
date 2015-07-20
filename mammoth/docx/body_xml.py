@@ -10,7 +10,8 @@ def reader(numbering=None,
         content_types=None,
         relationships=None,
         styles=None,
-        docx_file=None):
+        docx_file=None,
+        files=None):
     
     read, read_all = _create_reader(
         numbering=numbering,
@@ -18,6 +19,7 @@ def reader(numbering=None,
         relationships=relationships,
         styles=styles,
         docx_file=docx_file,
+        files=files,
     )
     return _BodyReader(read, read_all)
 
@@ -37,7 +39,7 @@ class _BodyReader(object):
         return results.Result(result.value, result.messages)
 
 
-def _create_reader(numbering, content_types, relationships, styles, docx_file):
+def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
     _handlers = {}
     _ignored_elements = set([
         "w:bookmarkStart",
@@ -221,16 +223,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
         return _combine_results(map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
-        relationship_id = element.attributes["r:embed"]
-        image_path = "word/" + relationships[relationship_id].target.lstrip("/")
+        image_path, open_image = _read_blip_image(element)
         content_type = content_types.find_content_type(image_path)
-        
-        def open_image():
-            image_file = docx_file.open(image_path)
-            if hasattr(image_file, "__exit__"):
-                return image_file
-            else:
-                return contextlib.closing(image_file)
         
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
         
@@ -240,6 +234,35 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file):
             messages = [results.warning("Image of type {0} is unlikely to display in web browsers".format(content_type))]
             
         return _element_result_with_messages(image, messages)
+    
+    def _read_blip_image(element):
+        embed_relationship_id = element.attributes.get("r:embed")
+        link_relationship_id = element.attributes.get("r:link")
+        if embed_relationship_id is not None:
+            return _read_embedded_blip_image(embed_relationship_id)
+        elif link_relationship_id is not None:
+            return _read_linked_blip_image(link_relationship_id)
+    
+    def _read_embedded_blip_image(relationship_id):
+        image_path = "word/" + relationships[relationship_id].target.lstrip("/")
+        
+        def open_image():
+            image_file = docx_file.open(image_path)
+            if hasattr(image_file, "__exit__"):
+                return image_file
+            else:
+                return contextlib.closing(image_file)
+        
+        return image_path, open_image
+    
+    
+    def _read_linked_blip_image(relationship_id):
+        image_path = relationships[relationship_id].target
+        
+        def open_image():
+            return files.open(image_path)
+        
+        return image_path, open_image
     
     def note_reference_reader(note_type):
         @handler("w:{0}Reference".format(note_type))
