@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
+from .abc import Writer
+
 import cgi
 
 
-class HtmlWriter(object):
+class HtmlWriter(Writer):
     def __init__(self):
         self._fragments = []
     

@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from .abc import Writer
+
 import re
 
 
@@ -149,7 +151,7 @@ def _default_writer(attributes, markdown_state):
     return _default_output
 
 
-class MarkdownWriter(object):
+class MarkdownWriter(Writer):
     def __init__(self):
         self._fragments = []
         self._element_stack = []
