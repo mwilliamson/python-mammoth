@@ -18,7 +18,7 @@ if sys.version_info[:2] <= (2, 6):
 
 setup(
     name='mammoth',
-    version='0.3.20',
+    version='0.3.21',
     description='Convert Word documents from docx to simple and clean HTML and Markdown',
     long_description=read("README"),
     author='Michael Williamson',
