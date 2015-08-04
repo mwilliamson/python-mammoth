@@ -68,18 +68,43 @@ class ReadXmlElementTests(object):
         
     @istest
     def paragraph_has_numbering_properties_from_paragraph_properties_if_present(self):
-        numbering_properties_xml = xml_element("w:numPr", {}, [
+        paragraph_xml = self._paragraph_with_numbering_properties([
             xml_element("w:ilvl", {"w:val": "1"}),
             xml_element("w:numId", {"w:val": "42"}),
         ])
-        properties_xml = xml_element("w:pPr", {}, [numbering_properties_xml])
-        paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
         numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
         
         assert_equal("1", paragraph.numbering.level_index)
         assert_equal(True, paragraph.numbering.is_ordered)
+        
+    @istest
+    def numbering_properties_are_ignored_if_lvl_is_missing(self):
+        paragraph_xml = self._paragraph_with_numbering_properties([
+            xml_element("w:numId", {"w:val": "42"}),
+        ])
+        
+        numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
+        
+        assert_equal(None, paragraph.numbering)
+        
+    @istest
+    def numbering_properties_are_ignored_if_num_id_is_missing(self):
+        paragraph_xml = self._paragraph_with_numbering_properties([
+            xml_element("w:ilvl", {"w:val": "1"}),
+        ])
+        
+        numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
+        
+        assert_equal(None, paragraph.numbering)
+    
+    def _paragraph_with_numbering_properties(self, children):
+        numbering_properties_xml = xml_element("w:numPr", {}, children)
+        properties_xml = xml_element("w:pPr", {}, [numbering_properties_xml])
+        return xml_element("w:p", {}, [properties_xml])
     
     @istest
     def run_has_no_style_if_it_has_no_properties(self):

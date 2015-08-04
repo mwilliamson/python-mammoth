@@ -118,11 +118,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             style_name = styles.find_paragraph_style_by_id(style_id).name
         
-        numbering_properties = properties.find_child("w:numPr")
-        if numbering_properties is None:
-            numbering = None
-        else:
-            numbering = _read_numbering_properties(numbering_properties)
+        numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         
         return _read_xml_elements(element.children) \
             .map(lambda children: documents.paragraph(
@@ -134,9 +130,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             .append_extra()
 
     def _read_numbering_properties(element):
-        num_id = element.find_child("w:numId").attributes["w:val"]
-        level_index = element.find_child("w:ilvl").attributes["w:val"]
-        return numbering.find_level(num_id, level_index)
+        num_id = element.find_child_or_null("w:numId").attributes.get("w:val")
+        level_index = element.find_child_or_null("w:ilvl").attributes.get("w:val")
+        if num_id is None or level_index is None:
+            return None
+        else:
+            return numbering.find_level(num_id, level_index)
 
 
     @handler("w:tab")
