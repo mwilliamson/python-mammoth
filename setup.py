@@ -10,7 +10,7 @@ def read(fname):
 
 _install_requires = [
     "parsimonious>=0.5,<0.6",
-    "dodge>=0.1.5,<0.2",
+    "cobble>=0.1.0,<0.2",
 ]
 
 if sys.version_info[:2] <= (2, 6):

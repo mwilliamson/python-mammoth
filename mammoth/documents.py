@@ -1,22 +1,59 @@
-import dodge
+import cobble
 
 
-Document = dodge.data_class("Document", ["children", "notes"])
-Paragraph = dodge.data_class("Paragraph", ["children", "style_id", "style_name", "numbering"])
-Run = dodge.data_class("Run", [
-    "children", "style_id", "style_name", "is_bold", "is_italic",
-    "is_underline", "is_strikethrough", "vertical_alignment",
-])
-Text = dodge.data_class("Text", ["value"])
-Hyperlink = dodge.data_class("Hyperlink", ["href", "anchor", "children"])
-Table = dodge.data_class("Table", ["children"])
-TableRow = dodge.data_class("TableRow", ["children"])
-TableCell = dodge.data_class("TableCell", ["children"])
-LineBreak = dodge.data_class("LineBreak", [])
+class HasChildren(object):
+    children = cobble.field()
 
-class Tab(object):
+
+@cobble.data
+class Document(HasChildren):
+    notes = cobble.field()
+
+@cobble.data
+class Paragraph(HasChildren):
+    style_id = cobble.field()
+    style_name = cobble.field()
+    numbering = cobble.field()
+
+@cobble.data
+class Run(HasChildren):
+    style_id = cobble.field()
+    style_name = cobble.field()
+    is_bold = cobble.field()
+    is_italic = cobble.field()
+    is_underline = cobble.field()
+    is_strikethrough = cobble.field()
+    vertical_alignment = cobble.field()
+
+@cobble.data
+class Text(object):
+    value = cobble.field()
+
+@cobble.data
+class Hyperlink(HasChildren):
+    href = cobble.field()
+    anchor = cobble.field()
+
+@cobble.data
+class Table(HasChildren):
     pass
 
+@cobble.data
+class TableRow(HasChildren):
+    pass
+
+@cobble.data
+class TableCell(HasChildren):
+    pass
+
+@cobble.data
+class LineBreak(object):
+    pass
+
+@cobble.data
+class Tab(object):
+    pass
+    
 
 class Image(object):
     def __init__(self, alt_text, content_type, open):
@@ -57,9 +94,14 @@ def tab():
 image = Image
 
 def hyperlink(children, href=None, anchor=None):
-    return Hyperlink(href, anchor, children)
+    return Hyperlink(href=href, anchor=anchor, children=children)
 
-bookmark = Bookmark = dodge.data_class("Bookmark", ["name"])
+
+@cobble.data
+class Bookmark(object):
+    name = cobble.field()
+
+bookmark = Bookmark
     
 
 table = Table
@@ -70,10 +112,19 @@ line_break = LineBreak
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))
 
-_NumberingLevel = dodge.data_class("NumberingLevel", ["level_index", "is_ordered"])
+@cobble.data
+class _NumberingLevel(object):
+    level_index = cobble.field()
+    is_ordered = cobble.field()
+
+@cobble.data
+class Note(object):
+    note_type = cobble.field()
+    note_id = cobble.field()
+    body = cobble.field()
 
 
-note = Note = dodge.data_class("Note", ["note_type", "note_id", "body"])
+note = Note
 
 
 class Notes(object):
@@ -101,4 +152,9 @@ def notes(notes_list):
 def _note_key(note):
     return (note.note_type, note.note_id)
 
-note_reference = NoteReference = dodge.data_class("NoteReference", ["note_type", "note_id"])
+@cobble.data
+class NoteReference(object):
+    note_type = cobble.field()
+    note_id = cobble.field()
+
+note_reference = NoteReference
