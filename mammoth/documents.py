@@ -1,7 +1,11 @@
 import cobble
 
 
-class HasChildren(object):
+class Element(object):
+    pass
+
+
+class HasChildren(Element):
     children = cobble.field()
 
 
@@ -26,7 +30,7 @@ class Run(HasChildren):
     vertical_alignment = cobble.field()
 
 @cobble.data
-class Text(object):
+class Text(Element):
     value = cobble.field()
 
 @cobble.data
@@ -47,15 +51,16 @@ class TableCell(HasChildren):
     pass
 
 @cobble.data
-class LineBreak(object):
+class LineBreak(Element):
     pass
 
 @cobble.data
-class Tab(object):
+class Tab(Element):
     pass
     
 
-class Image(object):
+@cobble.visitable
+class Image(Element):
     def __init__(self, alt_text, content_type, open):
         self.alt_text = alt_text
         self.content_type = content_type
@@ -98,7 +103,7 @@ def hyperlink(children, href=None, anchor=None):
 
 
 @cobble.data
-class Bookmark(object):
+class Bookmark(Element):
     name = cobble.field()
 
 bookmark = Bookmark
@@ -118,7 +123,7 @@ class _NumberingLevel(object):
     is_ordered = cobble.field()
 
 @cobble.data
-class Note(object):
+class Note(Element):
     note_type = cobble.field()
     note_id = cobble.field()
     body = cobble.field()
@@ -153,8 +158,11 @@ def _note_key(note):
     return (note.note_type, note.note_id)
 
 @cobble.data
-class NoteReference(object):
+class NoteReference(Element):
     note_type = cobble.field()
     note_id = cobble.field()
 
 note_reference = NoteReference
+
+
+ElementVisitor = cobble.visitor(Element)

@@ -24,68 +24,65 @@ def convert_document_element_to_html(element,
         id_prefix = str(random.randint(0, 1000000000000000))
     
     html_generator = HtmlGenerator(lambda: writers.writer(output_format))
-    converter = DocumentConverter(style_map,
+    converter = _DocumentConverter(style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,
         id_prefix=id_prefix,
-        ignore_empty_paragraphs=ignore_empty_paragraphs)
-    converter.convert_element_to_html(element, html_generator,)
+        ignore_empty_paragraphs=ignore_empty_paragraphs,
+        html_generator=html_generator,
+        note_references=[])
+    converter.visit(element)
     html_generator.end_all()
     return results.Result(html_generator.as_string(), converter.messages)
 
 
-class DocumentConverter(object):
-    def __init__(self, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs):
+class _DocumentConverter(documents.ElementVisitor):
+    def __init__(self, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs, html_generator, note_references):
         self.messages = []
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
-        self._note_references = []
-        self._converters = {
-            documents.Document: self._convert_document,
-            documents.Paragraph: self._convert_paragraph,
-            documents.Run: self._convert_run,
-            documents.Text: self._convert_text,
-            documents.Hyperlink: self._convert_hyperlink,
-            documents.Bookmark: self._convert_bookmark,
-            documents.Tab: self._convert_tab,
-            documents.Table: self._convert_table,
-            documents.TableRow: self._convert_table_row,
-            documents.TableCell: self._convert_table_cell,
-            documents.LineBreak: self._line_break,
-            documents.Image: convert_image or images.inline(self._convert_image),
-            documents.NoteReference: self._convert_note_reference,
-            documents.Note: self._convert_note,
-        }
+        self._note_references = note_references
         self._convert_underline = convert_underline or self._default_convert_underline
+        self._convert_image = convert_image or images.inline(self._generate_image_attributes)
+        self._html_generator = html_generator
+    
+    def _with_html_generator(self, html_generator):
+        return _DocumentConverter(
+            style_map=self._style_map,
+            convert_image=self._convert_image,
+            convert_underline=self._convert_underline,
+            id_prefix=self._id_prefix,
+            ignore_empty_paragraphs=self._ignore_empty_paragraphs,
+            html_generator=html_generator,
+            note_references=self._note_references
+        )
 
+    def visit_image(self, image):
+        self._convert_image(image, self._html_generator)
 
-    def convert_element_to_html(self, element, html_generator):
-        self._converters[type(element)](element, html_generator)
-
-
-    def _convert_document(self, document, html_generator):
-        self._convert_elements_to_html(document.children, html_generator)
-        html_generator.end_all()
-        html_generator.start("ol")
+    def visit_document(self, document):
+        self._visit_all(document.children)
+        self._html_generator.end_all()
+        self._html_generator.start("ol")
         notes = [
             document.notes.resolve(reference)
             for reference in self._note_references
         ]
-        self._convert_elements_to_html(notes, html_generator)
-        html_generator.end()
+        self._visit_all(notes)
+        self._html_generator.end()
 
 
-    def _convert_paragraph(self, paragraph, html_generator):
+    def visit_paragraph(self, paragraph):
         html_path = self._find_html_path_for_paragraph(paragraph)
-        satisfy_html_path(html_generator, html_path)
+        satisfy_html_path(self._html_generator, html_path)
         if not self._ignore_empty_paragraphs:
-            html_generator.write_all()
-        self._convert_elements_to_html(paragraph.children, html_generator)
+            self._html_generator.write_all()
+        self._visit_all(paragraph.children)
 
 
-    def _convert_run(self, run, html_generator):
-        run_generator = html_generator.child()
+    def visit_run(self, run):
+        run_generator = self._html_generator.child()
         html_path = self._find_html_path_for_run(run)
         if html_path:
             satisfy_html_path(run_generator, html_path)
@@ -101,9 +98,9 @@ class DocumentConverter(object):
             self._convert_underline(run_generator)
         if run.is_strikethrough:
             self._convert_strikethrough(run_generator)
-        self._convert_elements_to_html(run.children, run_generator)
+        self._with_html_generator(run_generator)._visit_all(run.children)
         run_generator.end_all()
-        html_generator.append(run_generator)
+        self._html_generator.append(run_generator)
     
     
     def _default_convert_underline(self, run_generator):
@@ -121,58 +118,58 @@ class DocumentConverter(object):
         
     
 
-    def _convert_text(self, text, html_generator):
-        html_generator.text(text.value)
+    def visit_text(self, text):
+        self._html_generator.text(text.value)
     
     
-    def _convert_hyperlink(self, hyperlink, html_generator):
+    def visit_hyperlink(self, hyperlink):
         if hyperlink.anchor is None:
             href = hyperlink.href
         else:
             href = "#{0}".format(self._html_id(hyperlink.anchor))
-        html_generator.start("a", {"href": href})
-        self._convert_elements_to_html(hyperlink.children, html_generator)
-        html_generator.end()
+        self._html_generator.start("a", {"href": href})
+        self._visit_all(hyperlink.children)
+        self._html_generator.end()
     
     
-    def _convert_bookmark(self, bookmark, html_generator):
-        html_generator.start("a", {"id": self._html_id(bookmark.name)}, always_write=True)
-        html_generator.end()
+    def visit_bookmark(self, bookmark):
+        self._html_generator.start("a", {"id": self._html_id(bookmark.name)}, always_write=True)
+        self._html_generator.end()
     
     
-    def _convert_tab(self, tab, html_generator):
-        html_generator.text("\t")
+    def visit_tab(self, tab):
+        self._html_generator.text("\t")
     
     
-    def _convert_table(self, table, html_generator):
-        html_generator.end_all()
-        html_generator.start("table")
-        self._convert_elements_to_html(table.children, html_generator)
-        html_generator.end()
+    def visit_table(self, table):
+        self._html_generator.end_all()
+        self._html_generator.start("table")
+        self._visit_all(table.children)
+        self._html_generator.end()
     
     
-    def _convert_table_row(self, table_row, html_generator):
-        html_generator.start("tr")
-        self._convert_elements_to_html(table_row.children, html_generator)
-        html_generator.end()
+    def visit_table_row(self, table_row):
+        self._html_generator.start("tr")
+        self._visit_all(table_row.children)
+        self._html_generator.end()
     
     
-    def _convert_table_cell(self, table_cell, html_generator):
-        html_generator.start("td", always_write=True)
+    def visit_table_cell(self, table_cell):
+        self._html_generator.start("td", always_write=True)
         for child in table_cell.children:
-            child_generator = html_generator.child()
-            self.convert_element_to_html(child, child_generator)
+            child_generator = self._html_generator.child()
+            self._with_html_generator(child_generator).visit(child)
             child_generator.end_all()
-            html_generator.append(child_generator)
+            self._html_generator.append(child_generator)
             
-        html_generator.end()
+        self._html_generator.end()
     
     
-    def _line_break(self, line_break, html_generator):
-        html_generator.self_closing("br")
+    def visit_line_break(self, line_break):
+        self._html_generator.self_closing("br")
     
     
-    def _convert_image(self, image):
+    def _generate_image_attributes(self, image):
         with image.open() as image_bytes:
             encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
         
@@ -180,33 +177,33 @@ class DocumentConverter(object):
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
         }
     
-    def _convert_note_reference(self, note_reference, html_generator):
-        html_generator.start("sup")
-        html_generator.start("a", {
+    def visit_note_reference(self, note_reference):
+        self._html_generator.start("sup")
+        self._html_generator.start("a", {
             "href": "#" + self._note_html_id(note_reference),
             "id": self._note_ref_html_id(note_reference),
         })
         self._note_references.append(note_reference);
         note_number = len(self._note_references)
-        html_generator.text("[{0}]".format(note_number))
-        html_generator.end()
-        html_generator.end()
+        self._html_generator.text("[{0}]".format(note_number))
+        self._html_generator.end()
+        self._html_generator.end()
     
-    def _convert_note(self, note, html_generator):
-        html_generator.start("li", {"id": self._note_html_id(note)})
-        note_generator = html_generator.child()
-        self._convert_elements_to_html(note.body, note_generator)
+    def visit_note(self, note):
+        self._html_generator.start("li", {"id": self._note_html_id(note)})
+        note_generator = self._html_generator.child()
+        self._with_html_generator(note_generator)._visit_all(note.body)
         note_generator.text(" ")
         note_generator.start("a", {"href": "#" + self._note_ref_html_id(note)})
         note_generator.text(_up_arrow)
         note_generator.end_all()
-        html_generator.append(note_generator)
-        html_generator.end()
+        self._html_generator.append(note_generator)
+        self._html_generator.end()
 
 
-    def _convert_elements_to_html(self, elements, html_generator):
+    def _visit_all(self, elements):
         for element in elements:
-            self.convert_element_to_html(element, html_generator)
+            self.visit(element)
 
 
     def _find_html_path_for_paragraph(self, paragraph):
