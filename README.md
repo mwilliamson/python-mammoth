@@ -295,6 +295,7 @@ mammoth.images.inline(convert_image)
 ## Writing style maps
 
 A style map is made up of a number of style mappings separated by new lines.
+Blank lines and lines starting with `#` are ignored.
 
 A style mapping has two parts:
 
