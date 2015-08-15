@@ -25,3 +25,12 @@ def default_style_mappings_are_ignored_if_include_default_style_map_is_false():
         "include_default_style_map": False
     })["style_map"]
     assert_equal([style_reader.read_style("p.SectionTitle => h2")], style_map)
+
+
+@istest
+def lines_starting_with_hash_in_custom_style_map_are_ignored():
+    style_map = read_options({
+        "style_map": "#p.SectionTitle => h3\np.SectionTitle => h2",
+        "include_default_style_map": False
+    })["style_map"]
+    assert_equal([style_reader.read_style("p.SectionTitle => h2")], style_map)
