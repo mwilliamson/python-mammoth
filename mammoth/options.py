@@ -1,19 +1,20 @@
-from . import style_reader, lists
+from . import style_reader, lists, results
 
 
 def read_options(options):
-    custom_style_map = _read_style_map(options.get("style_map") or "")
+    custom_style_map_result = _read_style_map(options.get("style_map") or "")
     include_default_style_map = options.get("include_default_style_map", True)
     options["ignore_empty_paragraphs"] = options.get("ignore_empty_paragraphs", True)
     
-    options["style_map"] = custom_style_map + \
+    options["style_map"] = custom_style_map_result.value + \
         (_default_style_map if include_default_style_map else [])
-    return options
+    return custom_style_map_result.map(lambda _: options)
 
 
 def _read_style_map(style_text):
     lines = filter(None, map(_get_line, style_text.split("\n")))
-    return lists.map(style_reader.read_style, lines)
+    return results.combine(lists.map(style_reader.read_style, lines)) \
+        .map(lambda style_mappings: filter(None, style_mappings))
     
 
 def _get_line(line):
@@ -24,7 +25,7 @@ def _get_line(line):
         return line
 
 
-_default_style_map = _read_style_map("""
+_default_style_map_result = _read_style_map("""
 p[style-name='Normal'] => p:fresh
 
 p.Heading1 => h1:fresh
@@ -68,3 +69,6 @@ p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li
 r[style-name='Hyperlink'] =>
 """)
 
+
+assert not _default_style_map_result.messages
+_default_style_map = _default_style_map_result.value

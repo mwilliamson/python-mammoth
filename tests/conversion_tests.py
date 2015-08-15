@@ -46,7 +46,7 @@ def style_mappings_using_style_ids_can_be_used_to_map_paragraphs():
             _run_with_text("Tip")
         ]),
         style_map=[
-            style_reader.read_style("p.TipsParagraph => p.tip")
+            _style_mapping("p.TipsParagraph => p.tip")
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)
@@ -59,7 +59,7 @@ def style_mappings_using_style_names_can_be_used_to_map_paragraphs():
             _run_with_text("Tip")
         ]),
         style_map=[
-            style_reader.read_style("p[style-name='Tips Paragraph'] => p.tip")
+            _style_mapping("p[style-name='Tips Paragraph'] => p.tip")
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)
@@ -72,7 +72,7 @@ def style_names_in_style_mappings_are_case_insensitive():
             _run_with_text("Tip")
         ]),
         style_map=[
-            style_reader.read_style("p[style-name='tips paragraph'] => p.tip")
+            _style_mapping("p[style-name='tips paragraph'] => p.tip")
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)
@@ -95,7 +95,7 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
             _run_with_text("Tip")
         ]),
         style_map=[
-            style_reader.read_style("p => p.tip")
+            _style_mapping("p => p.tip")
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)
@@ -128,7 +128,7 @@ def bulleted_paragraphs_are_converted_using_matching_styles():
             _run_with_text("Hello")
         ], numbering=documents.numbering_level(level_index=0, is_ordered=False)),
         style_map=[
-            style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
+            _style_mapping("p:unordered-list(1) => ul > li:fresh")
         ]
     )
     assert_equal('<ul><li>Hello</li></ul>', result.value)
@@ -141,7 +141,7 @@ def bulleted_styles_dont_match_plain_paragraph():
             _run_with_text("Hello")
         ]),
         style_map=[
-            style_reader.read_style("p:unordered-list(1) => ul > li:fresh")
+            _style_mapping("p:unordered-list(1) => ul > li:fresh")
         ]
     )
     assert_equal('<p>Hello</p>', result.value)
@@ -185,7 +185,7 @@ def underline_runs_can_be_mapped_using_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_underline=True),
         style_map=[
-            style_reader.read_style("u => em")
+            _style_mapping("u => em")
         ]
     )
     assert_equal("<em>Hello</em>", result.value)
@@ -196,7 +196,7 @@ def style_mapping_for_underline_runs_does_not_close_parent_elements():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_underline=True, is_bold=True),
         style_map=[
-            style_reader.read_style("u => em")
+            _style_mapping("u => em")
         ]
     )
     assert_equal("<strong><em>Hello</em></strong>", result.value)
@@ -215,7 +215,7 @@ def strikethrough_runs_can_be_configured_with_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_strikethrough=True),
         style_map=[
-            style_reader.read_style("strike => del")
+            _style_mapping("strike => del")
         ]
     )
     assert_equal("<del>Hello</del>", result.value)
@@ -248,7 +248,7 @@ def runs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(
         documents.run(style_id="TipsRun", children=[documents.Text("Tip")]),
         style_map=[
-            style_reader.read_style("r.TipsRun => span.tip")
+            _style_mapping("r.TipsRun => span.tip")
         ]
     )
     assert_equal('<span class="tip">Tip</span>', result.value)
@@ -393,3 +393,9 @@ def _paragraph_with_text(text):
 
 def _run_with_text(text):
     return documents.run(children=[documents.text(text)])
+
+
+def _style_mapping(text):
+    result = style_reader.read_style(text)
+    assert not result.messages
+    return result.value

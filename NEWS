@@ -1,3 +1,8 @@
+# 0.3.22
+
+* Generate warnings for not-understood style mappings and continue, rather than
+  stopping with an error.
+
 # 0.3.21
 
 * Ignore w:numPr elements without w:numId or w:ilvl children.

@@ -7,6 +7,7 @@ from nose.tools import istest, assert_equal
 from .testing import test_path
 
 import mammoth
+from mammoth import results
 
 
 @istest
@@ -39,6 +40,17 @@ def empty_paragraphs_are_preserved_if_ignore_empty_paragraphs_is_false():
         result = mammoth.convert_to_html(fileobj=fileobj, ignore_empty_paragraphs=False)
         assert_equal("<p></p>", result.value)
         assert_equal([], result.messages)
+
+@istest
+def warning_if_style_mapping_is_not_understood():
+    style_map = """
+!!!!
+p => h1"""
+    with open(test_path("single-paragraph.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, style_map=style_map)
+        assert_equal("<h1>Walking on imported air</h1>", result.value)
+        warning = "Did not understand this style mapping, so ignored it: !!!!"
+        assert_equal([results.warning(warning)], result.messages)
 
 
 @istest

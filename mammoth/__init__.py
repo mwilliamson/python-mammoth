@@ -15,11 +15,13 @@ def convert_to_markdown(*args, **kwargs):
 def convert(fileobj, transform_document=None, id_prefix=None, **kwargs):
     if transform_document is None:
         transform_document = lambda x: x
-    return docx.read(fileobj).map(transform_document).bind(lambda document: 
-        conversion.convert_document_element_to_html(
-            document,
-            id_prefix=id_prefix,
-            **options.read_options(kwargs)
+    return options.read_options(kwargs).bind(lambda convert_options:
+        docx.read(fileobj).map(transform_document).bind(lambda document:
+            conversion.convert_document_element_to_html(
+                document,
+                id_prefix=id_prefix,
+                **convert_options
+            )
         )
     )
     

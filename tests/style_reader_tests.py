@@ -151,7 +151,9 @@ class ReadDocumentMatcherTests(object):
 
 @istest
 def document_matcher_is_mapped_to_html_path_using_fat_arrow():
+    style_result = read_style("p => h1")
     assert_equal(
         styles.style(document_matchers.paragraph(), html_paths.path([html_paths.element(["h1"])])),
-        read_style("p => h1")
+        style_result.value
     )
+    assert_equal([], style_result.messages)
