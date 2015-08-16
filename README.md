@@ -205,7 +205,7 @@ with open("document.docx", "rb") as docx_file:
 
 ### API
 
-#### `mammoth.convert_to_html(fileobj, style_map=None, include_default_style_map=True)`
+#### `mammoth.convert_to_html(fileobj, **kwargs)`
 
 Converts the source document to HTML.
 
@@ -234,7 +234,7 @@ Converts the source document to HTML.
 
   * `messages`: any messages, such as errors and warnings, generated during the conversion
 
-#### `mammoth.convert_to_markdown(*args, **kwargs)`
+#### `mammoth.convert_to_markdown(fileobj, **kwargs)`
 
 Converts the source document to Markdown.
 This behaves the same as `convert_to_html`,
