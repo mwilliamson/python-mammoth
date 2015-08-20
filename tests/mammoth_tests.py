@@ -2,6 +2,9 @@
 
 from __future__ import unicode_literals
 
+import io
+import shutil
+
 from nose.tools import istest, assert_equal
 
 from .testing import test_path
@@ -67,6 +70,17 @@ def images_stored_outside_of_document_are_included_in_output():
         result = mammoth.convert_to_html(fileobj=fileobj)
         assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
         assert_equal([], result.messages)
+
+
+@istest
+def warn_if_images_stored_outside_of_document_are_specified_when_passing_fileobj_without_name():
+    fileobj = io.BytesIO()
+    with open(test_path("external-picture.docx"), "rb") as source_fileobj:
+        shutil.copyfileobj(source_fileobj, fileobj)
+    
+    result = mammoth.convert_to_html(fileobj=fileobj)
+    assert_equal("", result.value)
+    assert_equal([results.warning("could not find external image 'tiny-picture.png', fileobj has no name")], result.messages)
         
 
 @istest

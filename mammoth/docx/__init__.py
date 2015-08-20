@@ -28,7 +28,7 @@ _namespaces = [
 
 def read(fileobj):
     zip_file = zipfile.ZipFile(fileobj)
-    body_readers = _body_readers(getattr(fileobj, "name"), zip_file)
+    body_readers = _body_readers(getattr(fileobj, "name", None), zip_file)
     
     return _read_notes(zip_file, body_readers).bind(lambda notes:
         _read_document(zip_file, body_readers, notes))
@@ -79,7 +79,7 @@ def _body_readers(document_path, zip_file):
             relationships=relationships,
             styles=styles,
             docx_file=zip_file,
-            files=Files(os.path.dirname(document_path)),
+            files=Files(None if document_path is None else os.path.dirname(document_path)),
         )
     
     return for_name

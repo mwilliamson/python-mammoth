@@ -4,6 +4,7 @@ from .. import documents
 from .. import results
 from .. import lists
 from .xmlparser import node_types
+from .files import InvalidFileReferenceError
 
 
 def reader(numbering=None,
@@ -222,7 +223,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _combine_results(map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
-        image_path, open_image = _read_blip_image(element)
+        try:
+            image_path, open_image = _read_blip_image(element)
+        except InvalidFileReferenceError as error:
+            return _empty_result_with_messages([results.warning(str(error))])
+        
         content_type = content_types.find_content_type(image_path)
         
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
@@ -260,6 +265,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         
         def open_image():
             return files.open(image_path)
+        
+        files.verify(image_path)
         
         return image_path, open_image
     

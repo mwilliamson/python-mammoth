@@ -406,6 +406,7 @@ class ReadXmlElementTests(object):
         })
         
         files = context.mock()
+        funk.allows(files).verify("file:///media/hat.png")
         funk.allows(files).open("file:///media/hat.png").returns(io.BytesIO(image_bytes))
         
         content_types = context.mock()
