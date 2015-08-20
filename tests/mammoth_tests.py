@@ -96,8 +96,10 @@ def warn_if_images_stored_outside_of_document_are_not_found():
         with open(document_path, "rb") as fileobj:
             result = mammoth.convert_to_html(fileobj=fileobj)
             assert_equal("", result.value)
-            expected_warning = "could not find external image 'tiny-picture.png' from document directory '{0}'".format(temp_dir.path)
-            assert_equal([results.warning(expected_warning)], result.messages)
+            expected_warning = "could not open external image 'tiny-picture.png' from document directory '{0}'\n[Errno 2] No such file or directory".format(temp_dir.path)
+            assert_equal("warning", result.messages[0].type)
+            assert result.messages[0].message.startswith(expected_warning), "message was: " + result.messages[0].message
+            assert_equal(1, len(result.messages))
         
 
 @istest
