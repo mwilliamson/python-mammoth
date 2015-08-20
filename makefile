@@ -3,8 +3,11 @@
 test:
 	_virtualenv/bin/pyflakes mammoth tests
 	sh -c '. _virtualenv/bin/activate; nosetests tests'
-	
-upload: setup assert-converted-readme
+
+test-all:
+	tox
+
+upload: setup assert-converted-readme test-all
 	python setup.py sdist upload
 	make clean
 	

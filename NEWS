@@ -1,3 +1,7 @@
+# 0.3.24
+
+* Fix Python 3 support.
+
 # 0.3.23
 
 * Support file objects without a name attribute again (broken since 0.3.20).

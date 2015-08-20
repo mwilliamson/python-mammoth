@@ -14,7 +14,7 @@ def read_options(options):
 def _read_style_map(style_text):
     lines = filter(None, map(_get_line, style_text.split("\n")))
     return results.combine(lists.map(style_reader.read_style, lines)) \
-        .map(lambda style_mappings: filter(None, style_mappings))
+        .map(lambda style_mappings: lists.filter(None, style_mappings))
     
 
 def _get_line(line):
