@@ -4,7 +4,9 @@ from __future__ import unicode_literals
 
 import io
 import shutil
+import os
 
+import tempman
 from nose.tools import istest, assert_equal
 
 from .testing import test_path
@@ -81,6 +83,21 @@ def warn_if_images_stored_outside_of_document_are_specified_when_passing_fileobj
     result = mammoth.convert_to_html(fileobj=fileobj)
     assert_equal("", result.value)
     assert_equal([results.warning("could not find external image 'tiny-picture.png', fileobj has no name")], result.messages)
+
+
+@istest
+def warn_if_images_stored_outside_of_document_are_not_found():
+    with tempman.create_temp_dir() as temp_dir:
+        document_path = os.path.join(temp_dir.path, "document.docx")
+        with open(document_path, "wb") as fileobj:
+            with open(test_path("external-picture.docx"), "rb") as source_fileobj:
+                shutil.copyfileobj(source_fileobj, fileobj)
+    
+        with open(document_path, "rb") as fileobj:
+            result = mammoth.convert_to_html(fileobj=fileobj)
+            assert_equal("", result.value)
+            expected_warning = "could not find external image 'tiny-picture.png' from document directory '{0}'".format(temp_dir.path)
+            assert_equal([results.warning(expected_warning)], result.messages)
         
 
 @istest

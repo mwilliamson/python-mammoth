@@ -22,7 +22,10 @@ class Files(object):
         if _is_absolute(uri):
             return contextlib.closing(urlopen(uri))
         elif self._base is not None:
-            return open(os.path.join(self._base, uri), "rb")
+            path = os.path.join(self._base, uri)
+            if not os.path.exists(path):
+                raise InvalidFileReferenceError("could not find external image '{0}' from document directory '{1}'".format(uri, self._base))
+            return open(path, "rb")
         else:
             raise InvalidFileReferenceError("could not find external image '{0}', fileobj has no name".format(uri))
 
