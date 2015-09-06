@@ -19,17 +19,17 @@ class Files(object):
             pass
     
     def open(self, uri):
-        if _is_absolute(uri):
-            return contextlib.closing(urlopen(uri))
-        elif self._base is not None:
-            try:
+        try:
+            if _is_absolute(uri):
+                return contextlib.closing(urlopen(uri))
+            elif self._base is not None:
                 return open(os.path.join(self._base, uri), "rb")
-            except IOError as error:
-                message = "could not open external image '{0}' from document directory '{1}'\n{2}".format(
-                    uri, self._base, str(error))
-                raise InvalidFileReferenceError(message)
-        else:
-            raise InvalidFileReferenceError("could not find external image '{0}', fileobj has no name".format(uri))
+            else:
+                raise InvalidFileReferenceError("could not find external image '{0}', fileobj has no name".format(uri))
+        except IOError as error:
+            message = "could not open external image: '{0}' (document directory: '{1}')\n{2}".format(
+                uri, self._base, str(error))
+            raise InvalidFileReferenceError(message)
 
 
 def _is_absolute(url):
