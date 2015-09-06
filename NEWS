@@ -1,3 +1,7 @@
+# 0.3.25
+
+* Continue with warning if external images cannot be found.
+
 # 0.3.24
 
 * Fix Python 3 support.
