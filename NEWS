@@ -1,19 +1,17 @@
-# 0.3.25
+# 0.3.24
 
 * Continue with warning if external images cannot be found.
 
-# 0.3.24
-
-* Fix Python 3 support.
-
 # 0.3.23
 
-* Support file objects without a name attribute again (broken since 0.3.20).
+* Fix Python 3 support.
 
 # 0.3.22
 
 * Generate warnings for not-understood style mappings and continue, rather than
   stopping with an error.
+
+* Support file objects without a name attribute again (broken since 0.3.20).
 
 # 0.3.21
 
