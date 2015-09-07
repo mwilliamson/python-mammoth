@@ -26,6 +26,16 @@ def can_open_files_with_relative_uri():
 
 
 @istest
+def given_base_is_not_set_when_opening_relative_uri_then_error_is_raised():
+    files = Files(None)
+    error = assert_raises(InvalidFileReferenceError, lambda: files.open("not-a-real-file.png"))
+    expected_message = (
+        "could not find external image 'not-a-real-file.png', fileobj has no name"
+    )
+    assert_equal(expected_message, str(error))
+
+
+@istest
 def error_is_raised_if_relative_uri_cannot_be_opened():
     files = Files("/tmp")
     error = assert_raises(InvalidFileReferenceError, lambda: files.open("not-a-real-file.png"))
