@@ -42,7 +42,7 @@ def update_zip(fileobj, files):
             names = set(source.namelist()) | set(files.keys())
             for name in names:
                 if name in files:
-                    contents = files[name].encode("utf8")
+                    contents = files[name]
                 else:
                     contents = source.read(name)
                 destination.writestr(name, contents)

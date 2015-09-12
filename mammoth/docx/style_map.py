@@ -15,7 +15,7 @@ def write_style_map(fileobj, style_map):
         content_types_xml = _generate_content_types_xml(zip_file.read_str(_content_types_path))
     
     update_zip(fileobj, {
-        _style_map_path: style_map,
+        _style_map_path: style_map.encode("utf8"),
         _relationships_path: relationships_xml,
         _content_types_path: content_types_xml,
     })
