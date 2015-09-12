@@ -1,5 +1,3 @@
-import zipfile
-import contextlib
 import os
 
 from .. import results, lists
@@ -12,6 +10,7 @@ from .styles_xml import read_styles_xml_element
 from .notes_xml import create_footnotes_reader, create_endnotes_reader
 from .files import Files
 from . import body_xml
+from ..zips import open_zip
 
 
 _namespaces = [
@@ -27,7 +26,7 @@ _namespaces = [
 ]
 
 def read(fileobj):
-    zip_file = zipfile.ZipFile(fileobj)
+    zip_file = open_zip(fileobj, "r")
     body_readers = _body_readers(getattr(fileobj, "name", None), zip_file)
     
     return _read_notes(zip_file, body_readers).bind(lambda notes:
@@ -48,7 +47,7 @@ def _read_notes(zip_file, body_readers):
     return results.combine([footnotes, endnotes]).map(lists.collect)
     
 def _read_document(zip_file, body_readers, notes):
-    with _open_entry(zip_file, "word/document.xml") as document_fileobj:
+    with zip_file.open("word/document.xml") as document_fileobj:
         document_xml = _parse_docx_xml(document_fileobj)
         return read_document_xml_element(
             document_xml,
@@ -58,13 +57,13 @@ def _read_document(zip_file, body_readers, notes):
 
 
 def _body_readers(document_path, zip_file):
-    with _open_entry(zip_file, "[Content_Types].xml") as content_types_fileobj:
+    with zip_file.open("[Content_Types].xml") as content_types_fileobj:
         content_types = read_content_types_xml_element(_parse_docx_xml(content_types_fileobj))
 
     numbering = _try_read_entry_or_default(
         zip_file, "word/numbering.xml", read_numbering_xml_element, default=Numbering({}))
     
-    with _open_entry(zip_file, "word/styles.xml") as styles_fileobj:
+    with zip_file.open("word/styles.xml") as styles_fileobj:
         styles = read_styles_xml_element(_parse_docx_xml(styles_fileobj))
     
     def for_name(name):
@@ -89,26 +88,9 @@ def _parse_docx_xml(fileobj):
     return parse_xml(fileobj, _namespaces)
 
 
-@contextlib.contextmanager
-def _open_entry(zip_file, name):
-    entry = zip_file.open(name)
-    try:
-        yield entry
-    finally:
-        entry.close()
-
-
 def _try_read_entry_or_default(zip_file, name, reader, default):
-    if _has_entry(zip_file, name):
-        with _open_entry(zip_file, name) as fileobj:
+    if zip_file.exists(name):
+        with zip_file.open(name) as fileobj:
             return reader(_parse_docx_xml(fileobj))
     else:
         return default
-
-
-def _has_entry(zip_file, name):
-    try:
-        zip_file.getinfo(name)
-        return True
-    except KeyError:
-        return False
