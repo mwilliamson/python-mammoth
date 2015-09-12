@@ -46,6 +46,23 @@ def empty_paragraphs_are_preserved_if_ignore_empty_paragraphs_is_false():
         assert_equal("<p></p>", result.value)
         assert_equal([], result.messages)
 
+
+@istest
+def embedded_style_map_is_used_if_present():
+    with _copy_of_test_data("single-paragraph.docx") as fileobj:
+        mammoth.embed_style_map(fileobj, "p => h1")
+        result = mammoth.convert_to_html(fileobj=fileobj, ignore_empty_paragraphs=False)
+        assert_equal("<h1>Walking on imported air</h1>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
+def embedded_style_map_can_be_retrieved():
+    with _copy_of_test_data("single-paragraph.docx") as fileobj:
+        mammoth.embed_style_map(fileobj, "p => h1")
+        assert_equal("p => h1", mammoth.read_embedded_style_map(fileobj))
+
+
 @istest
 def warning_if_style_mapping_is_not_understood():
     style_map = """
@@ -236,3 +253,9 @@ def can_extract_raw_text():
         assert_equal([], result.messages)
         assert_equal("Apple\n\nBanana\n\n", result.value)
         
+
+def _copy_of_test_data(path):
+    destination = io.BytesIO()
+    with open(test_path(path), "rb") as source:
+        shutil.copyfileobj(source, destination)
+    return destination
