@@ -5,6 +5,7 @@ from nose.tools import istest, assert_equal
 
 from mammoth.docx.style_map import write_style_map, read_style_map
 from mammoth.zips import open_zip
+from mammoth.docx import xmlparser as xml
 
 
 @istest
@@ -36,6 +37,13 @@ def embedded_style_map_is_written_to_separate_file():
 
 
 @istest
+def embedded_style_map_is_referenced_in_relationships():
+    fileobj = _normal_docx()
+    write_style_map(fileobj, "p => h1")
+    assert_equal(expected_relationships_xml, _read_relationships_xml(fileobj))
+
+
+@istest
 def can_overwrite_existing_style_map():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
@@ -43,6 +51,26 @@ def can_overwrite_existing_style_map():
     with open_zip(fileobj, "r") as zip_file:
         assert_equal("p => h2", read_style_map(fileobj))
         _assert_no_duplicates(zip_file._zip_file.namelist())
+        assert_equal(expected_relationships_xml, _read_relationships_xml(fileobj))
+
+
+def _read_relationships_xml(fileobj):
+    with open_zip(fileobj, "r") as zip_file:
+        return xml.parse_xml(
+            io.StringIO(zip_file.read_str("word/_rels/document.xml.rels")),
+            [("r", "http://schemas.openxmlformats.org/package/2006/relationships")],
+        )
+
+
+original_relationships_xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' +
+    '</Relationships>')
+
+expected_relationships_xml = xml.element("r:Relationships", {}, [
+    xml.element("r:Relationship", {"Id": "rId3", "Type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings", "Target": "settings.xml"}),
+    xml.element("r:Relationship", {"Id": "rMammothStyleMap", "Type": "http://schemas.zwobble.org/mammoth/style-map", "Target": "/mammoth/style-map"}),
+])
 
 
 def _normal_docx():
@@ -50,6 +78,8 @@ def _normal_docx():
     zip_file = ZipFile(fileobj, "w")
     try:
         zip_file.writestr("placeholder", "placeholder")
+        zip_file.writestr("word/_rels/document.xml.rels", original_relationships_xml)
+        expected_relationships_xml
     finally:
         zip_file.close()
     return fileobj
