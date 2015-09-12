@@ -255,6 +255,19 @@ Each paragraph is followed by two newlines.
 
   * `messages`: any messages, such as errors and warnings
 
+#### `mammoth.embed_style_map(fileobj, style_map)`
+
+Embeds the style map `style_map` into `fileobj`.
+When Mammoth reads a file object,
+it will use the embedded style if no explicit style map is provided.
+
+* `fileobj`: a file-like object containing the source document.
+  Files should be opened in binary mode.
+
+* `style_map`: the style map to embed.
+
+* Returns `None`.
+
 #### Messages
 
 Each message has the following properties:
