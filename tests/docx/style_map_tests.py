@@ -41,6 +41,12 @@ def embedded_style_map_is_referenced_in_relationships():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     assert_equal(expected_relationships_xml, _read_relationships_xml(fileobj))
+    
+@istest
+def embedded_style_map_has_override_content_type_in_content_types_xml():
+    fileobj = _normal_docx()
+    write_style_map(fileobj, "p => h1")
+    assert_equal(expected_content_types_xml, _read_content_types_xml(fileobj))
 
 
 @istest
@@ -52,6 +58,7 @@ def can_overwrite_existing_style_map():
         assert_equal("p => h2", read_style_map(fileobj))
         _assert_no_duplicates(zip_file._zip_file.namelist())
         assert_equal(expected_relationships_xml, _read_relationships_xml(fileobj))
+        assert_equal(expected_content_types_xml, _read_content_types_xml(fileobj))
 
 
 def _read_relationships_xml(fileobj):
@@ -59,6 +66,14 @@ def _read_relationships_xml(fileobj):
         return xml.parse_xml(
             io.StringIO(zip_file.read_str("word/_rels/document.xml.rels")),
             [("r", "http://schemas.openxmlformats.org/package/2006/relationships")],
+        )
+
+
+def _read_content_types_xml(fileobj):
+    with open_zip(fileobj, "r") as zip_file:
+        return xml.parse_xml(
+            io.StringIO(zip_file.read_str("[Content_Types].xml")),
+            [("ct", "http://schemas.openxmlformats.org/package/2006/content-types")],
         )
 
 
@@ -72,6 +87,17 @@ expected_relationships_xml = xml.element("r:Relationships", {}, [
     xml.element("r:Relationship", {"Id": "rMammothStyleMap", "Type": "http://schemas.zwobble.org/mammoth/style-map", "Target": "/mammoth/style-map"}),
 ])
 
+original_content_types_xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="png" ContentType="image/png"/>' +
+    '</Types>'
+)
+
+expected_content_types_xml = xml.element("ct:Types", {}, [
+    xml.element("ct:Default", {"Extension": "png", "ContentType": "image/png"}),
+    xml.element("ct:Override", {"PartName": "/mammoth/style-map", "ContentType": "text/prs.mammoth.style-map"}),
+])
+
 
 def _normal_docx():
     fileobj = io.BytesIO()
@@ -79,6 +105,7 @@ def _normal_docx():
     try:
         zip_file.writestr("placeholder", "placeholder")
         zip_file.writestr("word/_rels/document.xml.rels", original_relationships_xml)
+        zip_file.writestr("[Content_Types].xml", original_content_types_xml)
         expected_relationships_xml
     finally:
         zip_file.close()
