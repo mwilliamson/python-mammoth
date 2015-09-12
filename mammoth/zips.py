@@ -1,4 +1,6 @@
 import contextlib
+import io
+import shutil
 
 from zipfile import ZipFile
 
@@ -27,8 +29,28 @@ class _Zip(object):
         except KeyError:
             return False
 
-    def write_str(self, name, value):
-        self._zip_file.writestr(name, value)
-    
     def read_str(self, name):
         return self._zip_file.read(name).decode("utf8")
+
+
+def update_zip(fileobj, files):
+    source = ZipFile(fileobj, "r")
+    try:
+        destination_fileobj = io.BytesIO()
+        destination = ZipFile(destination_fileobj, "w")
+        try:
+            names = set(source.namelist()) | set(files.keys())
+            for name in names:
+                if name in files:
+                    contents = files[name]
+                else:
+                    contents = source.read(name)
+                destination.writestr(name, contents)
+        finally:
+            destination.close()
+    finally:
+        source.close()
+    
+    fileobj.seek(0)
+    destination_fileobj.seek(0)
+    shutil.copyfileobj(destination_fileobj, fileobj)
