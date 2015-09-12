@@ -262,7 +262,7 @@ When Mammoth reads a file object,
 it will use the embedded style if no explicit style map is provided.
 
 * `fileobj`: a file-like object containing the source document.
-  Files should be opened in binary mode.
+  Files should be opened for reading and writing in binary mode.
 
 * `style_map`: the style map to embed.
 
