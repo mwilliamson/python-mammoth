@@ -41,7 +41,6 @@ class _BodyReader(object):
 
 
 def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
-    _handlers = {}
     _ignored_elements = set([
         "w:bookmarkStart",
         "w:bookmarkEnd",
@@ -61,19 +60,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:tcPr",
     ])
 
-    def handler(name):
-        def add(func):
-            _handlers[name] = func
-            return func
-            
-        return add
-
-    @handler("w:t")
     def text(element):
         return _success(documents.Text(_inner_text(element)))
 
 
-    @handler("w:r")
     def run(element):
         properties = element.find_child_or_null("w:rPr")
         style_id = properties \
@@ -107,7 +97,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             ))
 
 
-    @handler("w:p")
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
         style_id = properties \
@@ -139,45 +128,33 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return numbering.find_level(num_id, level_index)
 
 
-    @handler("w:tab")
     def tab(element):
         return _success(documents.tab())
     
     
-    @handler("w:tbl")
     def table(element):
         return _read_xml_elements(element.children) \
             .map(documents.table)
     
     
-    @handler("w:tr")
     def table_row(element):
         return _read_xml_elements(element.children) \
             .map(documents.table_row)
     
     
-    @handler("w:tc")
     def table_cell(element):
         return _read_xml_elements(element.children) \
             .map(documents.table_cell)
     
     
-    @handler("w:ins")
-    @handler("w:smartTag")
-    @handler("w:drawing")
-    @handler("v:shape")
-    @handler("v:textbox")
-    @handler("w:txbxContent")
     def read_child_elements(element):
         return _read_xml_elements(element.children)
     
     
-    @handler("w:pict")
     def pict(element):
         return read_child_elements(element).to_extra()
     
     
-    @handler("w:hyperlink")
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
         anchor = element.attributes.get("w:anchor")
@@ -190,7 +167,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             return children_result
     
-    @handler("w:bookmarkStart")
     def bookmark_start(element):
         name = element.attributes.get("w:name")
         if name == "_GoBack":
@@ -199,7 +175,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _success(documents.bookmark(name))
     
     
-    @handler("w:br")
     def br(element):
         break_type = element.attributes.get("w:type")
         if break_type:
@@ -208,8 +183,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             return _success(documents.line_break())
     
-    @handler("wp:inline")
-    @handler("wp:anchor")
     def inline(element):
         alt_text = element.find_child_or_null("wp:docPr").attributes.get("descr")
         blips = element.find_children("a:graphic") \
@@ -271,21 +244,41 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return image_path, open_image
     
     def note_reference_reader(note_type):
-        @handler("w:{0}Reference".format(note_type))
         def note_reference(element):
             return _success(documents.note_reference(note_type, element.attributes["w:id"]))
         
         return note_reference
     
-    note_reference_reader("footnote")
-    note_reference_reader("endnote")
-    
-    @handler("mc:AlternateContent")
     def alternate_content(element):
         return read_child_elements(element.find_child("mc:Fallback"))
     
+    handlers = {
+        "w:t": text,
+        "w:r": run,
+        "w:p": paragraph,
+        "w:tab": tab,
+        "w:tbl": table,
+        "w:tr": table_row,
+        "w:tc": table_cell,
+        "w:ins": read_child_elements,
+        "w:smartTag": read_child_elements,
+        "w:drawing": read_child_elements,
+        "v:shape": read_child_elements,
+        "v:textbox": read_child_elements,
+        "w:txbxContent": read_child_elements,
+        "w:pict": pict,
+        "w:hyperlink": hyperlink,
+        "w:bookmarkStart": bookmark_start,
+        "w:br": br,
+        "wp:inline": inline,
+        "wp:anchor": inline,
+        "w:footnoteReference": note_reference_reader("footnote"),
+        "w:endnoteReference": note_reference_reader("endnote"),
+        "mc:AlternateContent": alternate_content,
+    }
+    
     def read(element):
-        handler = _handlers.get(element.name)
+        handler = handlers.get(element.name)
         if handler is None:
             if element.name not in _ignored_elements:
                 warning = results.warning("An unrecognised element was ignored: {0}".format(element.name))
