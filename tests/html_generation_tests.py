@@ -1,7 +1,8 @@
 from nose.tools import istest, assert_equal
 
 from mammoth.html_generation import HtmlGenerator, satisfy_html_path, append_html_path
-from mammoth import html_paths, writers
+from mammoth import html_paths
+from mammoth.writers import HtmlWriter
 
 
 @istest
@@ -184,4 +185,4 @@ class AppendPathTests(object):
 
 
 def _create_html_generator():
-    return HtmlGenerator(writers.writer)
+    return HtmlGenerator(HtmlWriter)
