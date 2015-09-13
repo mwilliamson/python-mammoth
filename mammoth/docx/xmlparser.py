@@ -1,9 +1,14 @@
-import collections
 import xml.sax
 
+import cobble
 
-XmlElementBase = collections.namedtuple("XmlElement", ["name", "attributes", "children"])
-class XmlElement(XmlElementBase):
+
+@cobble.data
+class XmlElement(object):
+    name = cobble.field()
+    attributes = cobble.field()
+    children = cobble.field()
+    
     def find_child_or_null(self, name):
         return self.find_child(name) or _null_xml_element
     
@@ -48,7 +53,9 @@ class NullXmlElement(object):
 _null_xml_element = NullXmlElement()
 
 
-XmlText = collections.namedtuple("XmlText", ["value"])
+@cobble.data
+class XmlText(object):
+    value = cobble.field()
 
 
 def element(name, attributes=None, children=None):
