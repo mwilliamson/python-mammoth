@@ -23,6 +23,9 @@ def convert_document_element_to_html(element,
     if id_prefix is None:
         id_prefix = str(random.randint(0, 1000000000000000))
     
+    if convert_image is None:
+        convert_image = images.inline(_generate_image_attributes)
+    
     html_generator = HtmlGenerator(lambda: writers.writer(output_format))
     converter = _DocumentConverter(style_map,
         convert_image=convert_image,
@@ -34,6 +37,15 @@ def convert_document_element_to_html(element,
     converter.visit(element)
     html_generator.end_all()
     return results.Result(html_generator.as_string(), converter.messages)
+    
+    
+def _generate_image_attributes(image):
+    with image.open() as image_bytes:
+        encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
+    
+    return {
+        "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
+    }
 
 
 class _DocumentConverter(documents.ElementVisitor):
@@ -44,7 +56,7 @@ class _DocumentConverter(documents.ElementVisitor):
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
         self._note_references = note_references
         self._convert_underline = convert_underline or self._default_convert_underline
-        self._convert_image = convert_image or images.inline(self._generate_image_attributes)
+        self._convert_image = convert_image
         self._html_generator = html_generator
     
     def _with_html_generator(self, html_generator):
@@ -167,15 +179,6 @@ class _DocumentConverter(documents.ElementVisitor):
     
     def visit_line_break(self, line_break):
         self._html_generator.self_closing("br")
-    
-    
-    def _generate_image_attributes(self, image):
-        with image.open() as image_bytes:
-            encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
-        
-        return {
-            "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
-        }
     
     def visit_note_reference(self, note_reference):
         self._html_generator.start("sup")
