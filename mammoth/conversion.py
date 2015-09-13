@@ -26,7 +26,10 @@ def convert_document_element_to_html(element,
     if convert_image is None:
         convert_image = images.inline(_generate_image_attributes)
     
-    html_generator = HtmlGenerator(lambda: writers.writer(output_format))
+    def create_writer():
+        return writers.writer(output_format)
+    
+    html_generator = HtmlGenerator(create_writer)
     converter = _DocumentConverter(style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,
