@@ -7,10 +7,7 @@ def read_content_types_xml_element(element):
         _read_override,
         element.find_children("content-types:Override")
     ))
-    return _ContentTypes([
-        _XmlContentTypes(extension_defaults, overrides),
-        _FallbackContentTypes(),
-    ])
+    return _ContentTypes(extension_defaults, overrides)
 
 
 def _read_default(element):
@@ -26,17 +23,6 @@ def _read_override(element):
 
 
 class _ContentTypes(object):
-    def __init__(self, finders):
-        self._finders = finders
-    
-    def find_content_type(self, path):
-        for finder in self._finders:
-            content_type = finder.find_content_type(path)
-            if content_type is not None:
-                return content_type
-
-
-class _FallbackContentTypes(object):
     _image_content_types = {
         "png": "png",
         "gif": "gif",
@@ -47,15 +33,6 @@ class _FallbackContentTypes(object):
         "bmp": "bmp",
     }
     
-    def find_content_type(self, path):
-        extension = _get_extension(path).lower()
-        if extension in self._image_content_types:
-            return "image/" + self._image_content_types[extension]
-        else:
-            return None
-
-
-class _XmlContentTypes(object):
     def __init__(self, extension_defaults, overrides):
         self._extension_defaults = extension_defaults
         self._overrides = overrides
@@ -63,9 +40,17 @@ class _XmlContentTypes(object):
     def find_content_type(self, path):
         if path in self._overrides:
             return self._overrides[path]
-        else:
-            extension = _get_extension(path)
-            return self._extension_defaults.get(extension)
+
+        extension = _get_extension(path)
+        default_type = self._extension_defaults.get(extension)
+        if default_type is not None:
+            return default_type
+
+        image_type = self._image_content_types.get(extension.lower())
+        if image_type is not None:
+            return "image/" + image_type
+        
+        return None
 
 
 def _get_extension(path):
