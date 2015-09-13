@@ -6,7 +6,6 @@ import io
 
 from nose.tools import istest, assert_equal
 
-import mammoth
 from mammoth import documents, style_reader, results, html
 from mammoth.conversion import convert_document_element_to_html
 from mammoth.docx.xmlparser import parse_xml
@@ -187,15 +186,6 @@ def underline_runs_are_ignored_by_default():
         documents.run(children=[documents.text("Hello")], is_underline=True),
     )
     assert_equal("Hello", result.value)
-    
-
-@istest
-def underline_runs_can_be_wrapped_in_tags_using_convert_underline_argument():
-    result = convert_document_element_to_html(
-        documents.run(children=[documents.text("Hello")], is_underline=True),
-        convert_underline=mammoth.underline.element("u")
-    )
-    assert_equal("<u>Hello</u>", result.value)
     
 
 @istest

@@ -12,7 +12,6 @@ from .docx.files import InvalidFileReferenceError
 def convert_document_element_to_html(element,
         style_map=None,
         convert_image=None,
-        convert_underline=None,
         id_prefix=None,
         output_format=None,
         ignore_empty_paragraphs=True):
@@ -31,7 +30,6 @@ def convert_document_element_to_html(element,
         messages=messages,
         style_map=style_map,
         convert_image=convert_image,
-        convert_underline=convert_underline,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
         note_references=[])
@@ -52,13 +50,12 @@ def _generate_image_attributes(image):
 
 
 class _DocumentConverter(documents.ElementVisitor):
-    def __init__(self, messages, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs, note_references):
+    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
         self._note_references = note_references
-        self._convert_underline = convert_underline or self._default_convert_underline
         self._convert_image = convert_image
     
     def visit_image(self, image):
@@ -109,7 +106,7 @@ class _DocumentConverter(documents.ElementVisitor):
         return nodes
     
     
-    def _default_convert_underline(self, nodes):
+    def _convert_underline(self, nodes):
         return self._find_style_for_run_property("underline").wrap(nodes)
     
     
