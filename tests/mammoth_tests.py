@@ -192,7 +192,7 @@ def text_boxes_are_read():
 
 
 @istest
-def underline_is_ignored_by_defualt():
+def underline_is_ignored_by_default():
     with open(test_path("underline.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)
         assert_equal('<p><strong>The </strong><strong>Sunset</strong><strong> Tree</strong></p>', result.value)
