@@ -107,6 +107,17 @@ class SatisfyPathTests(object):
     
     
     @istest
+    def no_elements_are_generated_if_all_path_elements_are_already_satisfied(self):
+        generator = _create_html_generator()
+        generator.start("p")
+        generator.text("Hello")
+        path = html_paths.path([html_paths.element(["p"])])
+        satisfy_html_path(generator, path)
+        generator.text("there")
+        assert_equal('<p>Hellothere', generator.as_string())
+    
+    
+    @istest
     def only_missing_elements_are_generated_to_satisfy_plain_path_elements(self):
         generator = _create_html_generator()
         generator.start("blockquote")
