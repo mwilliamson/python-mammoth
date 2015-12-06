@@ -199,7 +199,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _combine_results(map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
-        return _read_image(lambda: _read_blip_image(element), alt_text)
+        return _read_image(lambda: _find_blip_image(element), alt_text)
     
     def _read_image(find_image, alt_text):
         try:
@@ -218,15 +218,15 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             
         return _element_result_with_messages(image, messages)
     
-    def _read_blip_image(element):
+    def _find_blip_image(element):
         embed_relationship_id = element.attributes.get("r:embed")
         link_relationship_id = element.attributes.get("r:link")
         if embed_relationship_id is not None:
-            return _read_embedded_blip_image(embed_relationship_id)
+            return _find_embedded_image(embed_relationship_id)
         elif link_relationship_id is not None:
-            return _read_linked_blip_image(link_relationship_id)
+            return _find_linked_image(link_relationship_id)
     
-    def _read_embedded_blip_image(relationship_id):
+    def _find_embedded_image(relationship_id):
         image_path = "word/" + relationships[relationship_id].target.lstrip("/")
         
         def open_image():
@@ -239,7 +239,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return image_path, open_image
     
     
-    def _read_linked_blip_image(relationship_id):
+    def _find_linked_image(relationship_id):
         image_path = relationships[relationship_id].target
         
         def open_image():
@@ -251,7 +251,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     def read_imagedata(element):
         title = element.attributes.get("o:title")
-        return _read_image(lambda: _read_embedded_blip_image(element.attributes["r:id"]), title)
+        return _read_image(lambda: _find_embedded_image(element.attributes["r:id"]), title)
     
     def note_reference_reader(note_type):
         def note_reference(element):
