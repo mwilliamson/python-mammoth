@@ -34,12 +34,22 @@ def main():
             convert_image=convert_image,
             output_format=args.output_format,
         )
-        for message in result.messages:
-            sys.stderr.write(message.message)
+        for message in _unique([message.message for message in result.messages]):
+            sys.stderr.write(message)
             sys.stderr.write("\n")
         
         with _open_output(output_path) as output:
             output.write(result.value)
+
+
+def _unique(values):
+    output = []
+    seen = set()
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            output.append(value)
+    return output
 
 
 class ImageWriter(object):
