@@ -14,10 +14,6 @@ class Files(object):
     def __init__(self, base):
         self._base = base
     
-    def verify(self, uri):
-        with self.open(uri):
-            pass
-    
     def open(self, uri):
         try:
             if _is_absolute(uri):

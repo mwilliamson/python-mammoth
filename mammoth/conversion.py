@@ -7,6 +7,7 @@ import random
 
 from . import documents, results, html_paths, images, writers
 from .html_generation import HtmlGenerator, satisfy_html_path, append_html_path
+from .docx.files import InvalidFileReferenceError
 
 
 def convert_document_element_to_html(element,
@@ -78,7 +79,10 @@ class _DocumentConverter(documents.ElementVisitor):
         )
 
     def visit_image(self, image):
-        self._convert_image(image, self._html_generator)
+        try:
+            self._convert_image(image, self._html_generator)
+        except InvalidFileReferenceError as error:
+            self._messages.append(results.warning(str(error)))
 
     def visit_document(self, document):
         self._visit_all(document.children)
