@@ -30,7 +30,10 @@ def convert_document_element_to_html(element,
         return writers.writer(output_format)
     
     html_generator = HtmlGenerator(create_writer)
-    converter = _DocumentConverter(style_map,
+    messages = []
+    converter = _DocumentConverter(
+        messages=messages,
+        style_map=style_map,
         convert_image=convert_image,
         convert_underline=convert_underline,
         id_prefix=id_prefix,
@@ -39,7 +42,7 @@ def convert_document_element_to_html(element,
         note_references=[])
     converter.visit(element)
     html_generator.end_all()
-    return results.Result(html_generator.as_string(), converter.messages)
+    return results.Result(html_generator.as_string(), messages)
     
     
 def _generate_image_attributes(image):
@@ -52,8 +55,8 @@ def _generate_image_attributes(image):
 
 
 class _DocumentConverter(documents.ElementVisitor):
-    def __init__(self, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs, html_generator, note_references):
-        self.messages = []
+    def __init__(self, messages, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs, html_generator, note_references):
+        self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
@@ -64,6 +67,7 @@ class _DocumentConverter(documents.ElementVisitor):
     
     def _with_html_generator(self, html_generator):
         return _DocumentConverter(
+            messages=self._messages,
             style_map=self._style_map,
             convert_image=self._convert_image,
             convert_underline=self._convert_underline,
@@ -226,7 +230,7 @@ class _DocumentConverter(documents.ElementVisitor):
             return style.html_path
         
         if element.style_id is not None:
-            self.messages.append(results.warning(
+            self._messages.append(results.warning(
                 "Unrecognised {0} style: {1} (Style ID: {2})".format(
                     element_type, element.style_name, element.style_id)
             ))
