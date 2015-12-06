@@ -1,10 +1,12 @@
 import collections
 
+from .lists import unique
+
 
 class Result(object):
     def __init__(self, value, messages):
         self.value = value
-        self.messages = messages
+        self.messages = unique(messages)
     
     def map(self, func):
         return Result(func(self.value), self.messages)

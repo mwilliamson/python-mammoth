@@ -14,6 +14,15 @@ def _collect(values, result):
         elif value is not None:
             result.append(value)
 
+def unique(values):
+    output = []
+    seen = set()
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            output.append(value)
+    return output
+
 
 if sys.version_info[0] == 2:
     map = map
