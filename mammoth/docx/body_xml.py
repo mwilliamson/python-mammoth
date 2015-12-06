@@ -263,6 +263,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:ins": read_child_elements,
         "w:smartTag": read_child_elements,
         "w:drawing": read_child_elements,
+        "v:roundrect": read_child_elements,
         "v:shape": read_child_elements,
         "v:textbox": read_child_elements,
         "w:txbxContent": read_child_elements,
