@@ -42,6 +42,7 @@ class _BodyReader(object):
 
 def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
     _ignored_elements = set([
+        "office-word:wrap",
         "v:shadow",
         "v:shapetype",
         "w:bookmarkStart",

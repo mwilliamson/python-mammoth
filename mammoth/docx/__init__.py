@@ -23,6 +23,7 @@ _namespaces = [
     ("relationships", "http://schemas.openxmlformats.org/package/2006/relationships"),
     ("v", "urn:schemas-microsoft-com:vml"),
     ("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006"),
+    ("office-word", "urn:schemas-microsoft-com:office:word"),
 ]
 
 def read(fileobj):
