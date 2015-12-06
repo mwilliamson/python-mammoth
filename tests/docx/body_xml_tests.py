@@ -297,6 +297,36 @@ class ReadXmlElementTests(object):
         
     @istest
     @funk.with_context
+    def can_read_imagedata_elements_with_rid_attribute(self, context):
+        imagedata_element = xml_element("v:imagedata", {"r:id": "rId5", "o:title": "It's a hat"})
+        
+        image_bytes = b"Not an image at all!"
+        
+        relationships = Relationships({
+            "rId5": Relationship(target="media/hat.png")
+        })
+        
+        docx_file = context.mock()
+        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
+        
+        content_types = context.mock()
+        funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
+        
+        image = _read_and_get_document_xml_element(
+            imagedata_element,
+            content_types=content_types,
+            relationships=relationships,
+            docx_file=docx_file,
+        )
+        assert_equal(documents.Image, type(image))
+        assert_equal("It's a hat", image.alt_text)
+        assert_equal("image/png", image.content_type)
+        with image.open() as image_file:
+            assert_equal(image_bytes, image_file.read())
+        
+        
+    @istest
+    @funk.with_context
     def can_read_inline_pictures(self, context):
         drawing_element = _create_inline_image(
             blip=_embedded_blip("rId5"),

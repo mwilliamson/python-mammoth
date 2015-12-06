@@ -199,8 +199,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _combine_results(map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
+        return _read_image(lambda: _read_blip_image(element), alt_text)
+    
+    def _read_image(find_image, alt_text):
         try:
-            image_path, open_image = _read_blip_image(element)
+            image_path, open_image = find_image()
         except InvalidFileReferenceError as error:
             return _empty_result_with_messages([results.warning(str(error))])
         
@@ -246,6 +249,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         
         return image_path, open_image
     
+    def read_imagedata(element):
+        title = element.attributes.get("o:title")
+        return _read_image(lambda: _read_embedded_blip_image(element.attributes["r:id"]), title)
+    
     def note_reference_reader(note_type):
         def note_reference(element):
             return _success(documents.note_reference(note_type, element.attributes["w:id"]))
@@ -276,6 +283,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:br": br,
         "wp:inline": inline,
         "wp:anchor": inline,
+        "v:imagedata": read_imagedata,
         "w:footnoteReference": note_reference_reader("footnote"),
         "w:endnoteReference": note_reference_reader("endnote"),
         "mc:AlternateContent": alternate_content,
