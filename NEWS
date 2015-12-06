@@ -4,6 +4,8 @@
 
 * Read children of v:roundrect.
 
+* Ignore v:shadow.
+
 # 0.3.24
 
 * Continue with warning if external images cannot be found.
