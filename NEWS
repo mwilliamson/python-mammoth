@@ -2,6 +2,8 @@
 
 * Remove duplicate messages from results.
 
+* Read children of v:roundrect.
+
 # 0.3.24
 
 * Continue with warning if external images cannot be found.
