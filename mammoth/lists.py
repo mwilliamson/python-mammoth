@@ -24,6 +24,14 @@ def unique(values):
     return output
 
 
+def flat_map(func, values):
+    return [
+        element
+        for value in values
+        for element in func(value)
+    ]
+
+
 if sys.version_info[0] == 2:
     map = map
     filter = filter
