@@ -98,7 +98,6 @@ def _parse_args():
         help="Output path for the generated document. Images will be stored inline in the output document. Output is written to stdout if not set.")
     output_group.add_argument(
         "--output-dir",
-        nargs="?",
         help="Output directory for generated HTML and images. Images will be stored in separate files. Mutually exclusive with output-path.")
     
     parser.add_argument(
