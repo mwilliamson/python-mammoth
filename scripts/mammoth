@@ -85,14 +85,31 @@ class Output(object):
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", metavar="docx-path")
+    parser.add_argument(
+        "path",
+        metavar="docx-path",
+        help="Path to the .docx file to convert.")
     
     output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument("output", nargs="?", metavar="output-path")
-    output_group.add_argument("--output-dir", nargs="?")
+    output_group.add_argument(
+        "output",
+        nargs="?",
+        metavar="output-path",
+        help="Output path for the generated document. Images will be stored inline in the output document. Output is written to stdout if not set.")
+    output_group.add_argument(
+        "--output-dir",
+        nargs="?",
+        help="Output directory for generated HTML and images. Images will be stored in separate files. Mutually exclusive with output-path.")
     
-    parser.add_argument("--output-format", required=False, choices=writers.formats())
-    parser.add_argument("--style-map", required=False)
+    parser.add_argument(
+        "--output-format",
+        required=False,
+        choices=writers.formats(),
+        help="Output format.")
+    parser.add_argument(
+        "--style-map",
+        required=False,
+        help="File containg a style map.")
     return parser.parse_args()
 
 
