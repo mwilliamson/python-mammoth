@@ -85,10 +85,10 @@ class Output(object):
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("path")
+    parser.add_argument("path", metavar="docx-path")
     
     output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument("output", nargs="?")
+    output_group.add_argument("output", nargs="?", metavar="output-path")
     output_group.add_argument("--output-dir", nargs="?")
     
     parser.add_argument("--output-format", required=False, choices=writers.formats())
