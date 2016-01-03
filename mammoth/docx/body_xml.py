@@ -3,7 +3,7 @@ import contextlib
 from .. import documents
 from .. import results
 from .. import lists
-from .xmlparser import node_types
+from .xmlparser import node_types, XmlElement
 
 
 def reader(numbering=None,
@@ -293,7 +293,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return handler(element)
         
 
-    def _read_xml_elements(elements):
+    def _read_xml_elements(nodes):
+        elements = filter(lambda node: isinstance(node, XmlElement), nodes)
         return _combine_results(map(read, elements)) \
             .map(lambda values: lists.collect(values))
     

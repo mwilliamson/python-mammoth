@@ -1,3 +1,7 @@
+# 0.3.27
+
+* Handle XML where the child nodes of an element contains text nodes.
+
 # 0.3.26
 
 * Always use mc:Fallback when reading mc:AlternateContent elements.

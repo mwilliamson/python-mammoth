@@ -516,6 +516,14 @@ class ReadXmlElementTests(object):
         ])
         result = _read_and_get_document_xml_element(element)
         assert_equal("second", result[0].style_id)
+    
+    @istest
+    def text_nodes_are_ignored_when_reading_children(self):
+        element = xml_element("w:r", {}, [xml_text("[text]")])
+        assert_equal(
+            documents.run([]),
+            _read_and_get_document_xml_element(element)
+        )
 
 
 def _read_and_get_document_xml_element(*args, **kwargs):
