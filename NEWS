@@ -1,3 +1,9 @@
+# 0.3.28
+
+* Improve support for lists made in LibreOffice. Specifically, this changes the
+  default style mapping for paragraphs with a style of "Normal" to have the
+  lowest precedence.
+
 # 0.3.27
 
 * Handle XML where the child nodes of an element contains text nodes.

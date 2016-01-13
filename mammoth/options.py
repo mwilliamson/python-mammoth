@@ -26,8 +26,6 @@ def _get_line(line):
 
 
 _default_style_map_result = _read_style_map("""
-p[style-name='Normal'] => p:fresh
-
 p.Heading1 => h1:fresh
 p.Heading2 => h2:fresh
 p.Heading3 => h3:fresh
@@ -67,6 +65,8 @@ p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
 p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
 
 r[style-name='Hyperlink'] =>
+
+p[style-name='Normal'] => p:fresh
 """)
 
 
