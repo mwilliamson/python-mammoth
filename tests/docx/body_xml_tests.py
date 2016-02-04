@@ -552,6 +552,9 @@ def _read_document_xml_element(element, *args, **kwargs):
 class FakeStyles(object):
     def find_paragraph_style_by_id(self, style_id):
         return Style(style_id, style_id)
+    
+    def find_character_style_by_id(self, style_id):
+        return None
 
 def _document_element_with_text(text):
     return xml_element("w:document", {}, [

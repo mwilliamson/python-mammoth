@@ -4,6 +4,7 @@ from .. import documents
 from .. import results
 from .. import lists
 from .xmlparser import node_types, XmlElement
+from .styles_xml import Styles
 
 
 def reader(numbering=None,
@@ -12,6 +13,9 @@ def reader(numbering=None,
         styles=None,
         docx_file=None,
         files=None):
+    
+    if styles is None:
+        styles = Styles({}, {})
     
     read, read_all = _create_reader(
         numbering=numbering,
@@ -69,19 +73,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def run(element):
         messages = []
         properties = element.find_child_or_null("w:rPr")
-        style_id = properties \
-            .find_child_or_null("w:rStyle") \
-            .attributes.get("w:val")
-        
-        if style_id is None:
-            style_name = None
-        else:
-            style = styles.find_character_style_by_id(style_id)
-            if style is None:
-                style_name = None
-                messages.append(_undefined_style_warning("Run", style_id))
-            else:
-                style_name = style.name
+        style_id, style_name = _read_run_style(properties, messages)
         
         vertical_alignment = properties \
             .find_child_or_null("w:vertAlign") \
@@ -110,20 +102,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def paragraph(element):
         messages = []
         properties = element.find_child_or_null("w:pPr")
-        style_id = properties \
-            .find_child_or_null("w:pStyle") \
-            .attributes.get("w:val")
         
-        if style_id is None:
-            style_name = None
-        else:
-            style = styles.find_paragraph_style_by_id(style_id)
-            if style is None:
-                style_name = None
-                messages.append(_undefined_style_warning("Paragraph", style_id))
-            else:
-                style_name = style.name
-        
+        style_id, style_name = _read_paragraph_style(properties, messages)
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         
         return _read_xml_elements(element.children) \
@@ -136,7 +116,30 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 ),
                 messages)) \
             .append_extra()
-
+    
+    def _read_paragraph_style(properties, messages):
+        return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id, messages)
+    
+    def _read_run_style(properties, messages):
+        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id, messages)
+    
+    def _read_style(properties, style_tag_name, style_type, find_style_by_id, messages):
+        style_id = properties \
+            .find_child_or_null(style_tag_name) \
+            .attributes.get("w:val")
+        
+        if style_id is None:
+            style_name = None
+        else:
+            style = find_style_by_id(style_id)
+            if style is None:
+                style_name = None
+                messages.append(_undefined_style_warning(style_type, style_id))
+            else:
+                style_name = style.name
+        
+        return style_id, style_name
+    
     def _undefined_style_warning(style_type, style_id):
         return results.warning("{0} style with ID {1} was referenced but not defined in the document".format(style_type, style_id))
 
