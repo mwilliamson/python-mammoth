@@ -100,6 +100,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
 
     def paragraph(element):
+        messages = []
         properties = element.find_child_or_null("w:pPr")
         style_id = properties \
             .find_child_or_null("w:pStyle") \
@@ -108,18 +109,28 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         if style_id is None:
             style_name = None
         else:
-            style_name = styles.find_paragraph_style_by_id(style_id).name
+            style = styles.find_paragraph_style_by_id(style_id)
+            if style is None:
+                style_name = None
+                messages.append(_undefined_style_warning("Paragraph", style_id))
+            else:
+                style_name = style.name
         
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         
         return _read_xml_elements(element.children) \
-            .map(lambda children: documents.paragraph(
-                children=children,
-                style_id=style_id,
-                style_name=style_name,
-                numbering=numbering,
-            )) \
+            .bind(lambda children: _element_result_with_messages(
+                documents.paragraph(
+                    children=children,
+                    style_id=style_id,
+                    style_name=style_name,
+                    numbering=numbering,
+                ),
+                messages)) \
             .append_extra()
+
+    def _undefined_style_warning(style_type, style_id):
+        return results.warning("{0} style with ID {1} was referenced but not defined in the document".format(style_type, style_id))
 
     def _read_numbering_properties(element):
         num_id = element.find_child_or_null("w:numId").attributes.get("w:val")
@@ -339,6 +350,10 @@ class _ReadResult(object):
     
     def map(self, func):
         result = self._result.map(lambda value: func(value[0]))
+        return _ReadResult(result.value, self.extra, result.messages)
+    
+    def bind(self, func):
+        result = self._result.bind(lambda value: func(value[0]))
         return _ReadResult(result.value, self.extra, result.messages)
     
     def to_extra(self):

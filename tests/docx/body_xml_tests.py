@@ -40,7 +40,7 @@ class ReadXmlElementTests(object):
         assert_equal(None, _read_and_get_document_xml_element(element).style_id)
         
     @istest
-    def paragraph_has_style_id_read_from_paragraph_properties_if_present(self):
+    def paragraph_has_style_id_and_name_read_from_paragraph_properties_if_present(self):
         style_xml = xml_element("w:pStyle", {"w:val": "Heading1"})
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
@@ -49,17 +49,21 @@ class ReadXmlElementTests(object):
         
         paragraph = _read_and_get_document_xml_element(paragraph_xml, styles=styles)
         assert_equal("Heading1", paragraph.style_id)
+        assert_equal("Heading 1", paragraph.style_name)
         
     @istest
-    def paragraph_has_style_name_read_from_paragraph_properties_and_styles(self):
+    def warning_is_emitted_when_paragraph_style_cannot_be_found(self):
         style_xml = xml_element("w:pStyle", {"w:val": "Heading1"})
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        styles = Styles({"Heading1": Style(style_id="Heading1", name="Heading 1")}, {})
+        styles = Styles({}, {})
         
-        paragraph = _read_and_get_document_xml_element(paragraph_xml, styles=styles)
-        assert_equal("Heading 1", paragraph.style_name)
+        result = _read_document_xml_element(paragraph_xml, styles=styles)
+        paragraph = result.value
+        assert_equal("Heading1", paragraph.style_id)
+        assert_equal(None, paragraph.style_name)
+        assert_equal([results.warning("Paragraph style with ID Heading1 was referenced but not defined in the document")], result.messages)
         
     @istest
     def paragraph_has_no_numbering_if_it_has_no_numbering_properties(self):
