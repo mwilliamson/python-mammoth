@@ -116,22 +116,29 @@ class ReadXmlElementTests(object):
         assert_equal(None, _read_and_get_document_xml_element(element).style_id)
         
     @istest
-    def run_has_style_id_read_from_run_properties_if_present(self):
+    def run_has_style_id_and_name_read_from_run_properties_if_present(self):
         style_xml = xml_element("w:rStyle", {"w:val": "Heading1Char"})
         
         styles = Styles({}, {"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")})
         
         run = self._read_run_with_properties([style_xml], styles=styles)
         assert_equal("Heading1Char", run.style_id)
+        assert_equal("Heading 1 Char", run.style_name)
         
     @istest
-    def run_has_style_name_read_from_run_properties_and_styles(self):
+    def warning_is_emitted_when_run_style_cannot_be_found(self):
         style_xml = xml_element("w:rStyle", {"w:val": "Heading1Char"})
+        properties_xml = xml_element("w:rPr", {}, [style_xml])
+        run_xml = xml_element("w:r", {}, [properties_xml])
         
-        styles = Styles({}, {"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")})
+        styles = Styles({}, {})
         
-        run = self._read_run_with_properties([style_xml], styles=styles)
-        assert_equal("Heading 1 Char", run.style_name)
+        result = _read_document_xml_element(run_xml, styles=styles)
+        run = result.value
+        assert_equal("Heading1Char", run.style_id)
+        assert_equal(None, run.style_name)
+        assert_equal([results.warning("Run style with ID Heading1Char was referenced but not defined in the document")], result.messages)
+        
         
     @istest
     def run_is_not_bold_if_bold_element_is_not_present(self):

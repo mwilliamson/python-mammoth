@@ -67,6 +67,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
 
     def run(element):
+        messages = []
         properties = element.find_child_or_null("w:rPr")
         style_id = properties \
             .find_child_or_null("w:rStyle") \
@@ -75,7 +76,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         if style_id is None:
             style_name = None
         else:
-            style_name = styles.find_character_style_by_id(style_id).name
+            style = styles.find_character_style_by_id(style_id)
+            if style is None:
+                style_name = None
+                messages.append(_undefined_style_warning("Run", style_id))
+            else:
+                style_name = style.name
         
         vertical_alignment = properties \
             .find_child_or_null("w:vertAlign") \
@@ -87,16 +93,18 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         is_strikethrough = properties.find_child("w:strike")
         
         return _read_xml_elements(element.children) \
-            .map(lambda children: documents.run(
-                children=children,
-                style_id=style_id,
-                style_name=style_name,
-                is_bold=is_bold,
-                is_italic=is_italic,
-                is_underline=is_underline,
-                is_strikethrough=is_strikethrough,
-                vertical_alignment=vertical_alignment,
-            ))
+            .bind(lambda children: _element_result_with_messages(
+                documents.run(
+                    children=children,
+                    style_id=style_id,
+                    style_name=style_name,
+                    is_bold=is_bold,
+                    is_italic=is_italic,
+                    is_underline=is_underline,
+                    is_strikethrough=is_strikethrough,
+                    vertical_alignment=vertical_alignment,
+                ),
+                messages))
 
 
     def paragraph(element):
