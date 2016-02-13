@@ -48,7 +48,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "office-word:wrap",
         "v:shadow",
         "v:shapetype",
-        "w:bookmarkStart",
         "w:bookmarkEnd",
         "w:sectPr",
         "w:proofErr",
