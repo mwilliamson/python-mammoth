@@ -322,12 +322,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     return read, _read_xml_elements
 
 
-def _find(predicate, iterable):
-    for item in iterable:
-        if predicate(item):
-            return item
-
-
 def _inner_text(node):
     if node.node_type == node_types.text:
         return node.value
