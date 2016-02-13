@@ -328,10 +328,6 @@ def _find(predicate, iterable):
             return item
 
 
-def _find_child(element, name):
-    return _find(lambda child: child.name == name, element.children)
-
-
 def _inner_text(node):
     if node.node_type == node_types.text:
         return node.value
