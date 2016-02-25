@@ -17,13 +17,17 @@ RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
 RunMatcher.element_type = "run"
 
 
+class bold(object):
+    element_type = "bold"
+
+
+class italic(object):
+    element_type = "italic"
+
+
 class underline(object):
     element_type = "underline"
 
 
 class strikethrough(object):
     element_type = "strikethrough"
-
-
-class bold(object):
-    element_type = "bold"
