@@ -110,7 +110,7 @@ class _DocumentConverter(documents.ElementVisitor):
         if html_path:
             satisfy_html_path(run_generator, html_path)
         if run.is_bold:
-            run_generator.start("strong")
+            self._convert_run_property(run_generator, "bold", default="strong")
         if run.is_italic:
             run_generator.start("em")
         if run.vertical_alignment == documents.VerticalAlignment.superscript:
@@ -120,7 +120,7 @@ class _DocumentConverter(documents.ElementVisitor):
         if run.is_underline:
             self._convert_underline(run_generator)
         if run.is_strikethrough:
-            self._convert_strikethrough(run_generator)
+            self._convert_run_property(run_generator, "strikethrough", default="s")
         self._with_html_generator(run_generator)._visit_all(run.children)
         run_generator.end_all()
         self._html_generator.append(run_generator)
@@ -132,13 +132,12 @@ class _DocumentConverter(documents.ElementVisitor):
             append_html_path(run_generator, style.html_path)
     
     
-    def _convert_strikethrough(self, run_generator):
-        style = self._find_style(None, "strikethrough")
+    def _convert_run_property(self, run_generator, element_type, default):
+        style = self._find_style(None, element_type)
         if style is None:
-            run_generator.start("s")
+            run_generator.start(default)
         else:
             append_html_path(run_generator, style.html_path)
-        
     
 
     def visit_text(self, text):
@@ -258,7 +257,7 @@ class _DocumentConverter(documents.ElementVisitor):
         
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type in ["underline", "strikethrough"]:
+    if matcher.element_type in ["underline", "strikethrough", "bold"]:
         return matcher.element_type == element_type
     else:
         return (

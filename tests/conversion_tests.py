@@ -148,11 +148,20 @@ def bulleted_styles_dont_match_plain_paragraph():
     
 
 @istest
-def bold_runs_are_wrapped_in_strong_tags():
+def bold_runs_are_wrapped_in_strong_tags_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_bold=True),
     )
     assert_equal("<strong>Hello</strong>", result.value)
+    
+
+@istest
+def bold_runs_can_be_configured_with_style_mapping():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_bold=True),
+        style_map=[_style_mapping("b => b")]
+    )
+    assert_equal("<b>Hello</b>", result.value)
     
 
 @istest
