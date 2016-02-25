@@ -183,13 +183,6 @@ with open("document.docx", "rb") as docx_file:
     result = mammoth.convert_to_html(docx_file, style_map=style_map)
 ```
 
-The `convert_underline` argument is deprecated, and will be removed in Mammoth 1.0.
-The following behaves as the example above:
-
-```python
-mammoth.convert_to_html(docx_file, convert_underline=mammoth.underline.element("em"))
-```
-
 #### Strikethrough
 
 By default, strikethrough text is wrapped in `<s>` tags.
@@ -221,9 +214,6 @@ Converts the source document to HTML.
     
 * `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
   Set this argument to an [image converter](#image-converters) to override the default behaviour.
-  
-* `convert_underline`: deprecated in favour of using style mappings to describe how to convert underlined text.
-  Set this argument to [`mammoth.underline.element(name)`](#underline) to override the default behaviour.
   
 * `ignore_empty_paragraphs`: by default, empty paragraphs are ignored.
   Set this option to `False` to preserve empty paragraphs in the output.
