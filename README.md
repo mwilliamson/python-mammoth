@@ -190,7 +190,7 @@ The following behaves as the example above:
 mammoth.convert_to_html(docx_file, convert_underline=mammoth.underline.element("em"))
 ```
 
-### Strikethrough
+#### Strikethrough
 
 By default, strikethrough text is wrapped in `<s>` tags.
 This behaviour can be changed by adding a style mapping for `strike`.
