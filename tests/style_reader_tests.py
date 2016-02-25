@@ -135,6 +135,13 @@ class ReadDocumentMatcherTests(object):
         )
 
     @istest
+    def reads_bold(self):
+        assert_equal(
+            document_matchers.bold,
+            read_document_matcher("b")
+        )
+
+    @istest
     def reads_underline(self):
         assert_equal(
             document_matchers.underline,

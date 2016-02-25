@@ -23,3 +23,7 @@ class underline(object):
 
 class strikethrough(object):
     element_type = "strikethrough"
+
+
+class bold(object):
+    element_type = "bold"
