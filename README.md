@@ -176,6 +176,32 @@ def convert_image(image):
 mammoth.convert_to_html(docx_file, convert_image=mammoth.images.inline(convert_image))
 ```
 
+#### Bold
+
+By default, bold text is wrapped in `<strong>` tags.
+This behaviour can be changed by adding a style mapping for `b`.
+For instance, to wrap bold text in `<em>` tags:
+
+```python
+style_map = "b => em"
+
+with open("document.docx", "rb") as docx_file:
+    result = mammoth.convert_to_html(docx_file, style_map=style_map)
+```
+
+#### Italic
+
+By default, italic text is wrapped in `<em>` tags.
+This behaviour can be changed by adding a style mapping for `i`.
+For instance, to wrap italic text in `<strong>` tags:
+
+```python
+style_map = "i => strong"
+
+with open("document.docx", "rb") as docx_file:
+    result = mammoth.convert_to_html(docx_file, style_map=style_map)
+```
+
 #### Underline
 
 By default, the underlining of any text is ignored since underlining can be confused with links in HTML documents.
@@ -379,6 +405,28 @@ For instance, to match a paragraph with the style ID `Heading1`:
 ```
 p.Heading1
 ```
+
+#### Bold
+
+Match explicitly bold text:
+
+```
+b
+```
+
+Note that this matches text that has had bold explicitly applied to it.
+It will not match any text that is bold because of its paragraph or run style.
+
+#### Italic
+
+Match explicitly italic text:
+
+```
+i
+```
+
+Note that this matches text that has had italic explicitly applied to it.
+It will not match any text that is italic because of its paragraph or run style.
 
 #### Underline
 

@@ -1,3 +1,7 @@
+# 0.3.30
+
+* Allow bold and italic style mappings to be configured.
+
 # 0.3.29
 
 * Handle references to missing styles when reading documents.
