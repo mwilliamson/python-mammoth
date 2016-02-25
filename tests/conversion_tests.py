@@ -159,9 +159,9 @@ def bold_runs_are_wrapped_in_strong_tags_by_default():
 def bold_runs_can_be_configured_with_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_bold=True),
-        style_map=[_style_mapping("b => b")]
+        style_map=[_style_mapping("b => em")]
     )
-    assert_equal("<b>Hello</b>", result.value)
+    assert_equal("<em>Hello</em>", result.value)
     
 
 @istest
@@ -176,9 +176,9 @@ def italic_runs_are_wrapped_in_emphasis_tags_by_default():
 def italic_runs_can_be_configured_with_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_italic=True),
-        style_map=[_style_mapping("i => i")]
+        style_map=[_style_mapping("i => strong")]
     )
-    assert_equal("<i>Hello</i>", result.value)
+    assert_equal("<strong>Hello</strong>", result.value)
     
 
 @istest
