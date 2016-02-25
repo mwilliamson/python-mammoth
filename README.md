@@ -39,6 +39,15 @@ The following features are currently supported:
 * Text boxes. The contents of the text box are treated as a separate paragraph
   that appears after the paragraph containing the text box.
 
+## Other supported platforms
+
+* [JavaScript](https://github.com/mwilliamson/mammoth.js), both the browser and node.js.
+  Available [on npm](https://www.npmjs.com/package/mammoth).
+
+* [WordPress](https://wordpress.org/plugins/mammoth-docx-converter/).
+
+* [Java](https://github.com/mwilliamson/java-mammoth).
+
 ## Installation
 
     pip install mammoth
