@@ -165,11 +165,20 @@ def bold_runs_can_be_configured_with_style_mapping():
     
 
 @istest
-def italic_runs_are_wrapped_in_emphasis_tags():
+def italic_runs_are_wrapped_in_emphasis_tags_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_italic=True),
     )
     assert_equal("<em>Hello</em>", result.value)
+    
+
+@istest
+def italic_runs_can_be_configured_with_style_mapping():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_italic=True),
+        style_map=[_style_mapping("i => i")]
+    )
+    assert_equal("<i>Hello</i>", result.value)
     
 
 @istest

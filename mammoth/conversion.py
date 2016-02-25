@@ -112,7 +112,7 @@ class _DocumentConverter(documents.ElementVisitor):
         if run.is_bold:
             self._convert_run_property(run_generator, "bold", default="strong")
         if run.is_italic:
-            run_generator.start("em")
+            self._convert_run_property(run_generator, "italic", default="em")
         if run.vertical_alignment == documents.VerticalAlignment.superscript:
             run_generator.start("sup")
         if run.vertical_alignment == documents.VerticalAlignment.subscript:
@@ -257,7 +257,7 @@ class _DocumentConverter(documents.ElementVisitor):
         
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type in ["underline", "strikethrough", "bold"]:
+    if matcher.element_type in ["underline", "strikethrough", "bold", "italic"]:
         return matcher.element_type == element_type
     else:
         return (
