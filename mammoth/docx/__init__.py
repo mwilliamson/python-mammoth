@@ -31,7 +31,7 @@ def _read_notes(zip_file, body_readers):
     endnotes = _try_read_entry_or_default(
         zip_file, "word/endnotes.xml", read_endnotes_xml, default=empty_result)
     
-    return results.combine([footnotes, endnotes]).map(lists.collect)
+    return results.combine([footnotes, endnotes]).map(lists.flatten)
     
 def _read_document(zip_file, body_readers, notes):
     with zip_file.open("word/document.xml") as document_fileobj:
