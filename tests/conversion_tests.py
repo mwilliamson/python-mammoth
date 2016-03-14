@@ -7,7 +7,7 @@ import io
 from nose.tools import istest, assert_equal
 
 import mammoth
-from mammoth import documents, style_reader, results
+from mammoth import documents, style_reader, results, html
 from mammoth.conversion import convert_document_element_to_html
 from mammoth.docx.xmlparser import parse_xml
 
@@ -365,9 +365,9 @@ def images_have_alt_tags_if_available():
 
 @istest
 def can_define_custom_conversion_for_images():
-    def convert_image(image, html_generator):
+    def convert_image(image):
         with image.open() as image_file:
-            html_generator.self_closing("img", {"alt": image_file.read().decode("ascii")})
+            return [html.self_closing_element("img", {"alt": image_file.read().decode("ascii")})]
         
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)

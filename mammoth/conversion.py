@@ -5,8 +5,7 @@ from __future__ import unicode_literals
 import base64
 import random
 
-from . import documents, results, html_paths, images, writers
-from .html_generation import HtmlGenerator, satisfy_html_path, append_html_path
+from . import documents, results, html_paths, images, writers, html, lists
 from .docx.files import InvalidFileReferenceError
 
 
@@ -27,10 +26,6 @@ def convert_document_element_to_html(element,
     if convert_image is None:
         convert_image = images.inline(_generate_image_attributes)
     
-    def create_writer():
-        return writers.writer(output_format)
-    
-    html_generator = HtmlGenerator(create_writer)
     messages = []
     converter = _DocumentConverter(
         messages=messages,
@@ -39,11 +34,12 @@ def convert_document_element_to_html(element,
         convert_underline=convert_underline,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
-        html_generator=html_generator,
         note_references=[])
-    converter.visit(element)
-    html_generator.end_all()
-    return results.Result(html_generator.as_string(), messages)
+    nodes = converter.visit(element)
+    
+    writer = writers.writer(output_format)
+    html.write(writer, html.collapse(html.strip_empty(nodes)))
+    return results.Result(writer.as_string(), messages)
     
     
 def _generate_image_attributes(image):
@@ -56,7 +52,7 @@ def _generate_image_attributes(image):
 
 
 class _DocumentConverter(documents.ElementVisitor):
-    def __init__(self, messages, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs, html_generator, note_references):
+    def __init__(self, messages, style_map, convert_image, convert_underline, id_prefix, ignore_empty_paragraphs, note_references):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
@@ -64,84 +60,70 @@ class _DocumentConverter(documents.ElementVisitor):
         self._note_references = note_references
         self._convert_underline = convert_underline or self._default_convert_underline
         self._convert_image = convert_image
-        self._html_generator = html_generator
     
-    def _with_html_generator(self, html_generator):
-        return _DocumentConverter(
-            messages=self._messages,
-            style_map=self._style_map,
-            convert_image=self._convert_image,
-            convert_underline=self._convert_underline,
-            id_prefix=self._id_prefix,
-            ignore_empty_paragraphs=self._ignore_empty_paragraphs,
-            html_generator=html_generator,
-            note_references=self._note_references
-        )
-
     def visit_image(self, image):
         try:
-            self._convert_image(image, self._html_generator)
+            return self._convert_image(image)
         except InvalidFileReferenceError as error:
             self._messages.append(results.warning(str(error)))
+            return []
 
     def visit_document(self, document):
-        self._visit_all(document.children)
-        self._html_generator.end_all()
-        self._html_generator.start("ol")
+        nodes = self._visit_all(document.children)
         notes = [
             document.notes.resolve(reference)
             for reference in self._note_references
         ]
-        self._visit_all(notes)
-        self._html_generator.end()
+        notes_list = html.element("ol", {}, self._visit_all(notes))
+        return nodes + [notes_list]
 
 
     def visit_paragraph(self, paragraph):
+        content = self._visit_all(paragraph.children)
+        if self._ignore_empty_paragraphs:
+            children = content
+        else:
+            children = [html.force_write] + content
+        
         html_path = self._find_html_path_for_paragraph(paragraph)
-        satisfy_html_path(self._html_generator, html_path)
-        if not self._ignore_empty_paragraphs:
-            self._html_generator.write_all()
-        self._visit_all(paragraph.children)
+        return html_path.wrap(children)
 
 
     def visit_run(self, run):
-        run_generator = self._html_generator.child()
+        nodes = self._visit_all(run.children)
+        if run.is_strikethrough:
+            nodes = self._find_style_for_run_property("strikethrough", default="s").wrap(nodes)
+        if run.is_underline:
+            nodes = self._convert_underline(nodes)
+        if run.vertical_alignment == documents.VerticalAlignment.subscript:
+            nodes = html_paths.element(["sub"], fresh=False).wrap(nodes)
+        if run.vertical_alignment == documents.VerticalAlignment.superscript:
+            nodes = html_paths.element(["sup"], fresh=False).wrap(nodes)
+        if run.is_italic:
+            nodes = self._find_style_for_run_property("italic", default="em").wrap(nodes)
+        if run.is_bold:
+            nodes = self._find_style_for_run_property("bold", default="strong").wrap(nodes)
         html_path = self._find_html_path_for_run(run)
         if html_path:
-            satisfy_html_path(run_generator, html_path)
-        if run.is_bold:
-            self._convert_run_property(run_generator, "bold", default="strong")
-        if run.is_italic:
-            self._convert_run_property(run_generator, "italic", default="em")
-        if run.vertical_alignment == documents.VerticalAlignment.superscript:
-            run_generator.start("sup")
-        if run.vertical_alignment == documents.VerticalAlignment.subscript:
-            run_generator.start("sub")
-        if run.is_underline:
-            self._convert_underline(run_generator)
-        if run.is_strikethrough:
-            self._convert_run_property(run_generator, "strikethrough", default="s")
-        self._with_html_generator(run_generator)._visit_all(run.children)
-        run_generator.end_all()
-        self._html_generator.append(run_generator)
+            nodes = html_path.wrap(nodes)
+        return nodes
     
     
-    def _default_convert_underline(self, run_generator):
-        style = self._find_style(None, "underline")
-        if style is not None:
-            append_html_path(run_generator, style.html_path)
+    def _default_convert_underline(self, nodes):
+        return self._find_style_for_run_property("underline").wrap(nodes)
     
     
-    def _convert_run_property(self, run_generator, element_type, default):
+    def _find_style_for_run_property(self, element_type, default=None):
         style = self._find_style(None, element_type)
-        if style is None:
-            run_generator.start(default)
+        if style is not None:
+            return style.html_path
+        elif default is not None:
+            return html_paths.element(default, fresh=False)
         else:
-            append_html_path(run_generator, style.html_path)
-    
+            return html_paths.empty
 
     def visit_text(self, text):
-        self._html_generator.text(text.value)
+        return [html.text(text.value)]
     
     
     def visit_hyperlink(self, hyperlink):
@@ -149,60 +131,65 @@ class _DocumentConverter(documents.ElementVisitor):
             href = hyperlink.href
         else:
             href = "#{0}".format(self._html_id(hyperlink.anchor))
-        self._html_generator.start("a", {"href": href})
-        self._visit_all(hyperlink.children)
-        self._html_generator.end()
+        
+        nodes = self._visit_all(hyperlink.children)
+        return [html.collapsible_element("a", {"href": href}, nodes)]
     
     
     def visit_bookmark(self, bookmark):
-        self._html_generator.start("a", {"id": self._html_id(bookmark.name)}, always_write=True)
-        self._html_generator.end()
+        element = html.collapsible_element(
+            "a",
+            {"id": self._html_id(bookmark.name)},
+            [html.force_write])
+        return [element]
     
     
     def visit_tab(self, tab):
-        self._html_generator.text("\t")
+        return [html.text("\t")]
     
     
     def visit_table(self, table):
-        self._html_generator.end_all()
-        self._html_generator.start("table")
-        self._visit_all(table.children)
-        self._html_generator.end()
+        return [html.element("table", {}, self._visit_all(table.children))]
     
     
     def visit_table_row(self, table_row):
-        self._html_generator.start("tr")
-        self._visit_all(table_row.children)
-        self._html_generator.end()
+        return [html.element("tr", {}, self._visit_all(table_row.children))]
     
     
     def visit_table_cell(self, table_cell):
-        self._html_generator.start("td", always_write=True)
-        for child in table_cell.children:
-            child_generator = self._html_generator.child()
-            self._with_html_generator(child_generator).visit(child)
-            child_generator.end_all()
-            self._html_generator.append(child_generator)
-            
-        self._html_generator.end()
+        nodes = [html.force_write] + self._visit_all(table_cell.children)
+        return [
+            html.element("td", {}, nodes)
+        ]
     
     
     def visit_line_break(self, line_break):
-        self._html_generator.self_closing("br")
+        return [html.self_closing_element("br")]
     
     def visit_note_reference(self, note_reference):
-        self._html_generator.start("sup")
-        self._html_generator.start("a", {
-            "href": "#" + self._note_html_id(note_reference),
-            "id": self._note_ref_html_id(note_reference),
-        })
         self._note_references.append(note_reference);
         note_number = len(self._note_references)
-        self._html_generator.text("[{0}]".format(note_number))
-        self._html_generator.end()
-        self._html_generator.end()
+        return [
+            html.element("sup", {}, [
+                html.element("a", {
+                    "href": "#" + self._note_html_id(note_reference),
+                    "id": self._note_ref_html_id(note_reference),
+                }, [html.text("[{0}]".format(note_number))])
+            ])
+        ]
     
     def visit_note(self, note):
+        note_body = self._visit_all(note.body) + [
+            html.collapsible_element("p", {}, [
+                html.text(" "),
+                html.element("a", {"href": "#" + self._note_ref_html_id(note)}, [
+                    html.text(_up_arrow)
+                ]),
+            ])
+        ]
+        return [
+            html.element("li", {"id": self._note_html_id(note)}, note_body)
+        ]
         self._html_generator.start("li", {"id": self._note_html_id(note)})
         note_generator = self._html_generator.child()
         self._with_html_generator(note_generator)._visit_all(note.body)
@@ -215,8 +202,7 @@ class _DocumentConverter(documents.ElementVisitor):
 
 
     def _visit_all(self, elements):
-        for element in elements:
-            self.visit(element)
+        return lists.flat_map(self.visit, elements)
 
 
     def _find_html_path_for_paragraph(self, paragraph):

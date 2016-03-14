@@ -6,15 +6,7 @@ def text(value):
     return TextNode(value)
 
 
-def element(tag_name, attributes=None, children=None):
-    return _element(tag_name, attributes, children, collapsible=False)
-
-
-def collapsible_element(tag_name, attributes=None, children=None):
-    return _element(tag_name, attributes, children, collapsible=True)
-
-
-def _element(tag_names, attributes, children, collapsible):
+def element(tag_names, attributes=None, children=None, collapsible=False):
     if not isinstance(tag_names, list):
         tag_names = [tag_names]
     if attributes is None:
@@ -22,6 +14,10 @@ def _element(tag_names, attributes, children, collapsible):
     if children is None:
         children = []
     return Element(tag_names, attributes, children, collapsible=collapsible)
+
+
+def collapsible_element(tag_names, attributes=None, children=None):
+    return element(tag_names, attributes, children, collapsible=True)
     
 
 def self_closing_element(tag_name, attributes=None):
@@ -120,3 +116,31 @@ def _try_collapse(collapsed, node):
 
 def _is_match(first, second):
     return first.tag_name in second.tag_names and first.attributes == second.attributes
+
+
+def write(writer, nodes):
+    visitor = _NodeWriter(writer)
+    visitor.visit_all(nodes)
+        
+
+class _NodeWriter(NodeVisitor):
+    def __init__(self, writer):
+        self._writer = writer
+    
+    def visit_text_node(self, node):
+        self._writer.text(node.value)
+    
+    def visit_element(self, element):
+        self._writer.start(element.tag_name, element.attributes)
+        self.visit_all(element.children)
+        self._writer.end(element.tag_name)
+    
+    def visit_self_closing_element(self, element):
+        self._writer.self_closing(element.tag_name, element.attributes)
+    
+    def visit_force_write(self, element):
+        pass
+    
+    def visit_all(self, nodes):
+        for node in nodes:
+            self.visit(node)
