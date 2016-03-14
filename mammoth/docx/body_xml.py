@@ -36,11 +36,15 @@ class _BodyReader(object):
     
     def read(self, element):
         result = self._read(element)
-        return results.Result(result.value, result.messages)
+        if result.elements:
+            element = result.elements[0]
+        else:
+            element = None
+        return results.Result(element, result.messages)
     
     def read_all(self, elements):
         result = self._read_all(elements)
-        return results.Result(result.value, result.messages)
+        return results.Result(result.elements, result.messages)
 
 
 def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
@@ -70,10 +74,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
 
     def run(element):
-        messages = []
         properties = element.find_child_or_null("w:rPr")
-        style_id, style_name = _read_run_style(properties, messages)
-        
         vertical_alignment = properties \
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
@@ -83,46 +84,43 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         is_underline = properties.find_child("w:u")
         is_strikethrough = properties.find_child("w:strike")
         
-        return _read_xml_elements(element.children) \
-            .bind(lambda children: _element_result_with_messages(
-                documents.run(
-                    children=children,
-                    style_id=style_id,
-                    style_name=style_name,
-                    is_bold=is_bold,
-                    is_italic=is_italic,
-                    is_underline=is_underline,
-                    is_strikethrough=is_strikethrough,
-                    vertical_alignment=vertical_alignment,
-                ),
-                messages))
+        return _ReadResult.map_results(
+            _read_run_style(properties),
+            _read_xml_elements(element.children),
+            lambda style, children: documents.run(
+                children=children,
+                style_id=style[0],
+                style_name=style[1],
+                is_bold=is_bold,
+                is_italic=is_italic,
+                is_underline=is_underline,
+                is_strikethrough=is_strikethrough,
+                vertical_alignment=vertical_alignment,
+            ))
 
 
     def paragraph(element):
-        messages = []
         properties = element.find_child_or_null("w:pPr")
-        
-        style_id, style_name = _read_paragraph_style(properties, messages)
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         
-        return _read_xml_elements(element.children) \
-            .bind(lambda children: _element_result_with_messages(
-                documents.paragraph(
-                    children=children,
-                    style_id=style_id,
-                    style_name=style_name,
-                    numbering=numbering,
-                ),
-                messages)) \
-            .append_extra()
+        return _ReadResult.map_results(
+            _read_paragraph_style(properties),
+            _read_xml_elements(element.children),
+            lambda style, children: documents.paragraph(
+                children=children,
+                style_id=style[0],
+                style_name=style[1],
+                numbering=numbering,
+            )).append_extra()
     
-    def _read_paragraph_style(properties, messages):
-        return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id, messages)
+    def _read_paragraph_style(properties):
+        return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id)
     
-    def _read_run_style(properties, messages):
-        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id, messages)
+    def _read_run_style(properties):
+        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
     
-    def _read_style(properties, style_tag_name, style_type, find_style_by_id, messages):
+    def _read_style(properties, style_tag_name, style_type, find_style_by_id):
+        messages = []
         style_id = properties \
             .find_child_or_null(style_tag_name) \
             .attributes.get("w:val")
@@ -137,7 +135,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             else:
                 style_name = style.name
         
-        return style_id, style_name
+        return _ReadResult([style_id, style_name], [], messages)
     
     def _undefined_style_warning(style_type, style_id):
         return results.warning("{0} style with ID {1} was referenced but not defined in the document".format(style_type, style_id))
@@ -202,7 +200,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         break_type = element.attributes.get("w:type")
         if break_type:
             warning = results.warning("Unsupported break type: {0}".format(break_type))
-            return _empty_result_with_messages([warning])
+            return _empty_result_with_message(warning)
         else:
             return _success(documents.line_break())
     
@@ -216,7 +214,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _read_blips(blips, alt_text)
     
     def _read_blips(blips, alt_text):
-        return _combine_results(map(lambda blip: _read_blip(blip, alt_text), blips))
+        return _ReadResult.concat(map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
         return _read_image(lambda: _find_blip_image(element), alt_text)
@@ -307,17 +305,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         if handler is None:
             if element.name not in _ignored_elements:
                 warning = results.warning("An unrecognised element was ignored: {0}".format(element.name))
-                return _empty_result_with_messages([warning])
+                return _empty_result_with_message(warning)
             else:
-                return _success(None)
+                return _empty_result
         else:
             return handler(element)
         
 
     def _read_xml_elements(nodes):
         elements = filter(lambda node: isinstance(node, XmlElement), nodes)
-        return _combine_results(map(read, elements)) \
-            .map(lambda values: lists.collect(values))
+        return _ReadResult.concat(map(read, elements))
     
     return read, _read_xml_elements
 
@@ -331,68 +328,52 @@ def _inner_text(node):
 
 
 class _ReadResult(object):
-    def __init__(self, value, extra, messages):
-        if extra is None:
-            extra = []
-        self._result = results.Result((value, extra), messages)
+    @staticmethod
+    def concat(results):
+        return _ReadResult(
+            lists.flat_map(lambda result: result.elements, results),
+            lists.flat_map(lambda result: result.extra, results),
+            lists.flat_map(lambda result: result.messages, results))
     
-    @property
-    def value(self):
-        return self._result.value[0]
     
-    @property
-    def extra(self):
-        return self._result.value[1]
+    @staticmethod
+    def map_results(first, second, func):
+        return _ReadResult(
+            [func(first.elements, second.elements)],
+            first.extra + second.extra,
+            first.messages + second.messages)
     
-    @property
-    def messages(self):
-        return self._result.messages
+    def __init__(self, elements, extra, messages):
+        self.elements = elements
+        self.extra = extra
+        self.messages = messages
     
     def map(self, func):
-        result = self._result.map(lambda value: func(value[0]))
-        return _ReadResult(result.value, self.extra, result.messages)
-    
-    def bind(self, func):
-        result = self._result.bind(lambda value: func(value[0]))
-        return _ReadResult(result.value, self.extra, result.messages)
+        return _ReadResult(
+            [func(self.elements)],
+            self.extra,
+            self.messages)
     
     def to_extra(self):
-        return _ReadResult(None, _concat(self.extra, self.value), self.messages)
+        return _ReadResult([], _concat(self.extra, self.elements), self.messages)
     
     def append_extra(self):
-        return _ReadResult(_concat(self.value, self.extra), None, self.messages)
+        return _ReadResult(_concat(self.elements, self.extra), [], self.messages)
 
 def _success(element):
-    return _ReadResult(element, None, [])
+    return _ReadResult([element], [], [])
 
 def _element_result_with_messages(element, messages):
-    return _ReadResult(element, None, messages)
+    return _ReadResult([element], [], messages)
 
-def _combine_results(read_results):
-    combined = results.combine(result._result for result in read_results)
-    if combined.value:
-        value, extras = map(list, zip(*combined.value))
-        extra = sum(extras, [])
-    else:
-        value, extra = [], None
-    return _ReadResult(value, extra, combined.messages)
+_empty_result = _ReadResult([], [], [])
 
-_empty_result = _success(None)
-
-def _empty_result_with_messages(messages):
-    return _ReadResult(None, None, messages)
+def _empty_result_with_message(message):
+    return _ReadResult([], [], [message])
 
 def _concat(*values):
-    valid_values = list(filter(None, values))
-    if not valid_values:
-        return None
-    elif len(valid_values) == 1:
-        return valid_values[0]
-    else:
-        return sum(list(map(_to_list, valid_values)), [])
-
-def _to_list(value):
-    if isinstance(value, list):
-        return value
-    else:
-        return [value]
+    result = []
+    for value in values:
+        for element in value:
+            result.append(element)
+    return result

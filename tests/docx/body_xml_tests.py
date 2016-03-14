@@ -273,7 +273,7 @@ class ReadXmlElementTests(object):
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {}, [run_element])
         assert_equal(
-            [documents.run([])],
+            documents.run([]),
             _read_and_get_document_xml_element(element)
         )
         
@@ -361,7 +361,7 @@ class ReadXmlElementTests(object):
             content_types=content_types,
             relationships=relationships,
             docx_file=docx_file,
-        )[0]
+        )
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
@@ -393,7 +393,7 @@ class ReadXmlElementTests(object):
             content_types=content_types,
             relationships=relationships,
             docx_file=docx_file,
-        )[0]
+        )
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
@@ -427,7 +427,7 @@ class ReadXmlElementTests(object):
             relationships=relationships,
             docx_file=docx_file,
         )
-        assert_equal("image/x-emf", result.value[0].content_type)
+        assert_equal("image/x-emf", result.value.content_type)
         expected_warning = results.warning("Image of type image/x-emf is unlikely to display in web browsers")
         assert_equal([expected_warning], result.messages)
         
@@ -458,7 +458,7 @@ class ReadXmlElementTests(object):
             content_types=content_types,
             relationships=relationships,
             files=files,
-        )[0]
+        )
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
@@ -512,7 +512,7 @@ class ReadXmlElementTests(object):
         paragraph = xml_element("w:p", {}, [
             xml_element("w:r", {}, [text_box])
         ])
-        result = _read_and_get_document_xml_element(paragraph)
+        result = _read_and_get_document_xml_elements(paragraph)
         assert_equal(result[1].style_id, "textbox-content")
     
     @istest
@@ -526,7 +526,7 @@ class ReadXmlElementTests(object):
             ])
         ])
         result = _read_and_get_document_xml_element(element)
-        assert_equal("second", result[0].style_id)
+        assert_equal("second", result.style_id)
     
     @istest
     def text_nodes_are_ignored_when_reading_children(self):
@@ -536,17 +536,44 @@ class ReadXmlElementTests(object):
             _read_and_get_document_xml_element(element)
         )
 
-
 def _read_and_get_document_xml_element(*args, **kwargs):
+    return _read_and_get_document_xml(
+        lambda reader, element: reader.read(element),
+        *args,
+        **kwargs)
+
+
+def _read_and_get_document_xml_elements(*args, **kwargs):
+    return _read_and_get_document_xml(
+        lambda reader, element: reader.read_all([element]),
+        *args,
+        **kwargs)
+
+
+def _read_and_get_document_xml(func, *args, **kwargs):
     styles = kwargs.pop("styles", FakeStyles())
-    result = _read_document_xml_element(*args, styles=styles, **kwargs)
+    result = _read_document_xml(func, *args, styles=styles, **kwargs)
     assert_equal([], result.messages)
     return result.value
 
 
-def _read_document_xml_element(element, *args, **kwargs):
+def _read_document_xml_element(*args, **kwargs):
+    return _read_document_xml(
+        lambda reader, element: reader.read(element),
+        *args,
+        **kwargs)
+
+
+def _read_document_xml_elements(*args, **kwargs):
+    return _read_document_xml(
+        lambda reader, element: reader.read_all([element]),
+        *args,
+        **kwargs)
+
+
+def _read_document_xml(func, element, *args, **kwargs):
     reader = body_xml.reader(*args, **kwargs)
-    return reader.read(element)
+    return func(reader, element)
 
 
 class FakeStyles(object):
