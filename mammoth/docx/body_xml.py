@@ -214,7 +214,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _read_blips(blips, alt_text)
     
     def _read_blips(blips, alt_text):
-        return _ReadResult.concat(map(lambda blip: _read_blip(blip, alt_text), blips))
+        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
     
     def _read_blip(element, alt_text):
         return _read_image(lambda: _find_blip_image(element), alt_text)
@@ -314,7 +314,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def _read_xml_elements(nodes):
         elements = filter(lambda node: isinstance(node, XmlElement), nodes)
-        return _ReadResult.concat(map(read, elements))
+        return _ReadResult.concat(lists.map(read, elements))
     
     return read, _read_xml_elements
 
