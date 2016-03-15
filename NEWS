@@ -1,3 +1,7 @@
+# 0.3.31
+
+* Improve collapsing of similar non-fresh HTML elements.
+
 # 0.3.30
 
 * Allow bold and italic style mappings to be configured.
