@@ -257,6 +257,11 @@ Converts the source document to HTML.
 * `ignore_empty_paragraphs`: by default, empty paragraphs are ignored.
   Set this option to `False` to preserve empty paragraphs in the output.
 
+* `id_prefix`:
+  a string to prepend to any generated IDs,
+  such as those used by bookmarks, footnotes and endnotes.
+  Defaults to an empty string.
+
 * Returns a result with the following properties:
 
   * `value`: the generated HTML
