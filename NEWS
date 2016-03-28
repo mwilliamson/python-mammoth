@@ -1,3 +1,7 @@
+# 1.0.0
+
+* Remove deprecated convert_underline argument.
+
 # 0.3.31
 
 * Improve collapsing of similar non-fresh HTML elements.
