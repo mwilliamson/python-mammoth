@@ -235,7 +235,7 @@ class _DocumentConverter(documents.ElementVisitor):
         return self._html_id("{0}-ref-{1}".format(note.note_type, note.note_id))
     
     def _html_id(self, suffix):
-        return "{0}-{1}".format(self._id_prefix, suffix)
+        return "{0}{1}".format(self._id_prefix, suffix)
         
 
 def _document_matcher_matches(matcher, element, element_type):

@@ -274,7 +274,7 @@ def docx_hyperlink_with_href_is_converted_to_anchor_tag():
 def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
     result = convert_document_element_to_html(
         documents.hyperlink(anchor="start", children=[documents.Text("Hello")]),
-        id_prefix="doc-42",
+        id_prefix="doc-42-",
     )
     assert_equal('<a href="#doc-42-start">Hello</a>', result.value)
 
@@ -283,7 +283,7 @@ def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
 def bookmarks_are_converted_to_anchors_with_ids():
     result = convert_document_element_to_html(
         documents.bookmark(name="start"),
-        id_prefix="doc-42",
+        id_prefix="doc-42-",
     )
     assert_equal('<a id="doc-42-start"></a>', result.value)
 
@@ -369,7 +369,7 @@ def footnote_reference_is_converted_to_superscript_intra_page_link():
     footnote_reference = documents.note_reference("footnote", "4")
     result = convert_document_element_to_html(
         footnote_reference,
-        id_prefix="doc-42"
+        id_prefix="doc-42-"
     )
     assert_equal('<sup><a href="#doc-42-footnote-4" id="doc-42-footnote-ref-4">[1]</a></sup>', result.value)
 
@@ -388,7 +388,7 @@ def footnotes_are_included_after_the_main_body():
     )
     result = convert_document_element_to_html(
         document,
-        id_prefix="doc-42"
+        id_prefix="doc-42-"
     )
     expected_html = ('<p>Knock knock<sup><a href="#doc-42-footnote-4" id="doc-42-footnote-ref-4">[1]</a></sup></p>' +
                 '<ol><li id="doc-42-footnote-4"><p>Who\'s there? <a href="#doc-42-footnote-ref-4">↑</a></p></li></ol>')
