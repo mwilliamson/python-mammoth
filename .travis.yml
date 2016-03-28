@@ -1,14 +1,8 @@
+sudo: false
 language: python
 python:
-  - "2.6"
-  - "2.7"
-  - "3.2"
-  - "3.3"
-  - "pypy"
+  - "3.5"
 install:
-  - "touch README"
-  - "pip install . --use-mirrors"
-  - "pip install -r test-requirements.txt --use-mirrors"
-script: nosetests tests
-notifications:
-  email: false
+  - "pip install 'virtualenv<14.0.0' tox"
+  - "make README"
+script: tox
