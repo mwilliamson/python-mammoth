@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import base64
-import random
 
 from . import documents, results, html_paths, images, writers, html, lists
 from .docx.files import InvalidFileReferenceError
@@ -20,7 +19,7 @@ def convert_document_element_to_html(element,
         style_map = []
     
     if id_prefix is None:
-        id_prefix = str(random.randint(0, 1000000000000000))
+        id_prefix = ""
     
     if convert_image is None:
         convert_image = images.inline(_generate_image_attributes)
