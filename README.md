@@ -177,7 +177,7 @@ def convert_image(image):
         "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
     }
 
-mammoth.convert_to_html(docx_file, convert_image=mammoth.images.inline(convert_image))
+mammoth.convert_to_html(docx_file, convert_image=mammoth.images.img_element(convert_image))
 ```
 
 #### Bold
@@ -312,8 +312,8 @@ Each message has the following properties:
 
 #### Image converters
 
-An inline image converter can be created by calling `mammoth.images.inline(func)`.
-This creates an inline `<img>` element for each image in the original docx.
+An image converter can be created by calling `mammoth.images.img_element(func)`.
+This creates an `<img>` element for each image in the original docx.
 `func` should be a function that has one argument `image`.
 This argument is the image element being converted,
 and has the following properties:
@@ -322,8 +322,10 @@ and has the following properties:
   
 * `content_type`: the content type of the image, such as `image/png`.
 
-`func` should return a `dict` with a `src` item,
-which will be used as the `src` attribute on the `<img>` element.
+`func` should return a `dict` of attributes for the `<img>` element.
+At a minimum, this should include the `src` attribute.
+If any alt text is found for the image,
+this will be automatically added to the element's attributes.
 
 For instance, the following replicates the default image conversion:
 
@@ -336,7 +338,7 @@ def convert_image(image):
         "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
     }
 
-mammoth.images.inline(convert_image)
+mammoth.images.img_element(convert_image)
 ```
 
 ## Writing style maps

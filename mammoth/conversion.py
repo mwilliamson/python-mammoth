@@ -22,7 +22,7 @@ def convert_document_element_to_html(element,
         id_prefix = ""
     
     if convert_image is None:
-        convert_image = images.inline(_generate_image_attributes)
+        convert_image = images.img_element(_generate_image_attributes)
     
     messages = []
     converter = _DocumentConverter(

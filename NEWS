@@ -9,6 +9,9 @@
 * The default ID prefix is now the empty string rather than a random number
   followed by a hyphen.
 
+* Rename mammoth.images.inline to mammoth.images.img_element to better reflect
+  its behaviour.
+
 # 0.3.31
 
 * Improve collapsing of similar non-fresh HTML elements.
