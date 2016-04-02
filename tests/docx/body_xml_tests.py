@@ -307,8 +307,8 @@ class ReadXmlElementTests(object):
         
         
     @istest
-    @funk.with_context
-    def can_read_imagedata_elements_with_rid_attribute(self, context):
+    @funk.with_mocks
+    def can_read_imagedata_elements_with_rid_attribute(self, mocks):
         imagedata_element = xml_element("v:imagedata", {"r:id": "rId5", "o:title": "It's a hat"})
         
         image_bytes = b"Not an image at all!"
@@ -317,10 +317,10 @@ class ReadXmlElementTests(object):
             "rId5": Relationship(target="media/hat.png")
         })
         
-        docx_file = context.mock()
+        docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
         
-        content_types = context.mock()
+        content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
         
         image = _read_and_get_document_xml_element(
@@ -337,8 +337,8 @@ class ReadXmlElementTests(object):
         
         
     @istest
-    @funk.with_context
-    def can_read_inline_pictures(self, context):
+    @funk.with_mocks
+    def can_read_inline_pictures(self, mocks):
         drawing_element = _create_inline_image(
             blip=_embedded_blip("rId5"),
             description="It's a hat",
@@ -350,10 +350,10 @@ class ReadXmlElementTests(object):
             "rId5": Relationship(target="media/hat.png")
         })
         
-        docx_file = context.mock()
+        docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
         
-        content_types = context.mock()
+        content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
         
         image = _read_and_get_document_xml_element(
@@ -369,8 +369,8 @@ class ReadXmlElementTests(object):
             assert_equal(image_bytes, image_file.read())
         
     @istest
-    @funk.with_context
-    def can_read_anchored_pictures(self, context):
+    @funk.with_mocks
+    def can_read_anchored_pictures(self, mocks):
         drawing_element = _create_anchored_image(
             blip=_embedded_blip("rId5"),
             description="It's a hat",
@@ -382,10 +382,10 @@ class ReadXmlElementTests(object):
             "rId5": Relationship(target="media/hat.png")
         })
         
-        docx_file = context.mock()
+        docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
         
-        content_types = context.mock()
+        content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
         
         image = _read_and_get_document_xml_element(
@@ -402,8 +402,8 @@ class ReadXmlElementTests(object):
         
         
     @istest
-    @funk.with_context
-    def warning_if_unsupported_image_type(self, context):
+    @funk.with_mocks
+    def warning_if_unsupported_image_type(self, mocks):
         drawing_element = _create_inline_image(
             blip=_embedded_blip("rId5"),
             description="It's a hat",
@@ -415,10 +415,10 @@ class ReadXmlElementTests(object):
             "rId5": Relationship(target="media/hat.emf")
         })
         
-        docx_file = context.mock()
+        docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.emf").returns(io.BytesIO(image_bytes))
         
-        content_types = context.mock()
+        content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.emf").returns("image/x-emf")
         
         result = _read_document_xml_element(
@@ -433,8 +433,8 @@ class ReadXmlElementTests(object):
         
         
     @istest
-    @funk.with_context
-    def can_read_linked_pictures(self, context):
+    @funk.with_mocks
+    def can_read_linked_pictures(self, mocks):
         drawing_element = _create_inline_image(
             blip=_linked_blip("rId5"),
             description="It's a hat",
@@ -446,11 +446,11 @@ class ReadXmlElementTests(object):
             "rId5": Relationship(target="file:///media/hat.png")
         })
         
-        files = context.mock()
+        files = mocks.mock()
         funk.allows(files).verify("file:///media/hat.png")
         funk.allows(files).open("file:///media/hat.png").returns(io.BytesIO(image_bytes))
         
-        content_types = context.mock()
+        content_types = mocks.mock()
         funk.allows(content_types).find_content_type("file:///media/hat.png").returns("image/png")
         
         image = _read_and_get_document_xml_element(
