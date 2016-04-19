@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import contextlib
 import sys
@@ -7,7 +5,7 @@ import os
 import shutil
 
 import mammoth
-from mammoth import writers
+from . import writers
 
 
 def main():
@@ -114,3 +112,4 @@ def _parse_args():
 
 if __name__ == "__main__":
     main()
+

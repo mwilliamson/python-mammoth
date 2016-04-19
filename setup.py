@@ -25,7 +25,11 @@ setup(
     author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/python-mammoth',
     packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.style_reader', 'mammoth.writers'],
-    scripts=["scripts/mammoth"],
+    entry_points={
+        "console_scripts": [
+            "mammoth=mammoth.cli:main"
+        ]
+    },
     keywords="docx word office clean html markdown md",
     install_requires=_install_requires,
     classifiers=[

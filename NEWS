@@ -1,3 +1,8 @@
+# 1.0.1
+
+* Improve script installation on Windows by using entry_points instead of
+  scripts in setup.py.
+
 # 1.0.0
 
 * Remove deprecated convert_underline argument.
