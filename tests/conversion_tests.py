@@ -332,6 +332,22 @@ def empty_cells_are_preserved_in_table():
 
 
 @istest
+def table_cells_are_written_with_colspan_if_not_equal_to_one():
+    table = documents.table([
+        documents.table_row([
+            documents.table_cell([_paragraph_with_text("Top left")], colspan=2),
+            documents.table_cell([_paragraph_with_text("Top right")]),
+        ]),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<tr><td colspan=\"2\"><p>Top left</p></td><td><p>Top right</p></td></tr>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def line_break_is_converted_to_br():
     line_break = documents.line_break()
     result = convert_document_element_to_html(line_break)
