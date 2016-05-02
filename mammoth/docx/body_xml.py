@@ -164,8 +164,21 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def table_cell(element):
+        gridspan = element \
+            .find_child_or_null("w:tcPr") \
+            .find_child_or_null("w:gridSpan") \
+            .attributes.get("w:val")
+        
+        if gridspan is None:
+            colspan = 1
+        else:
+            colspan = int(gridspan)
+        
         return _read_xml_elements(element.children) \
-            .map(documents.table_cell)
+            .map(lambda children: documents.table_cell(
+                children=children,
+                colspan=colspan
+            ))
     
     
     def read_child_elements(element):

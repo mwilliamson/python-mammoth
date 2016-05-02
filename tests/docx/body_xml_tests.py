@@ -221,6 +221,29 @@ class ReadXmlElementTests(object):
             ])
         ])
         assert_equal(expected_result, table)
+    
+    
+    @istest
+    def gridspan_is_read_as_colspan_for_table_cell(self):
+        element = xml_element("w:tbl", {}, [
+            xml_element("w:tr", {}, [
+                xml_element("w:tc", {}, [
+                    xml_element("w:tcPr", {}, [
+                        xml_element("w:gridSpan", {"w:val": "2"})
+                    ]),
+                    xml_element("w:p", {}, [])
+                ]),
+            ]),
+        ])
+        table = _read_and_get_document_xml_element(element)
+        expected_result = documents.table([
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([])
+                ], colspan=2)
+            ])
+        ])
+        assert_equal(expected_result, table)
 
 
     @istest
