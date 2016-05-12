@@ -247,6 +247,88 @@ class ReadXmlElementTests(object):
 
 
     @istest
+    def vmerge_is_read_as_rowspan_for_table_cell(self):
+        element = xml_element("w:tbl", {}, [
+            w_tr(w_tc()),
+            w_tr(w_tc(properties=[w_vmerge("restart")])),
+            w_tr(w_tc(properties=[w_vmerge("continue")])),
+            w_tr(w_tc(properties=[w_vmerge("continue")])),
+            w_tr(w_tc())
+        ])
+        result = _read_and_get_document_xml_element(element)
+        expected_result = documents.table([
+            documents.table_row([documents.table_cell([])]),
+            documents.table_row([documents.table_cell([], rowspan=3)]),
+            documents.table_row([]),
+            documents.table_row([]),
+            documents.table_row([documents.table_cell([])]),
+        ])
+        assert_equal(expected_result, result)
+
+
+    @istest
+    def vmerge_without_val_is_treated_as_continue(self):
+        element = xml_element("w:tbl", {}, [
+            w_tr(w_tc(properties=[w_vmerge("restart")])),
+            w_tr(w_tc(properties=[w_vmerge(None)])),
+        ])
+        result = _read_and_get_document_xml_element(element)
+        expected_result = documents.table([
+            documents.table_row([documents.table_cell([], rowspan=2)]),
+            documents.table_row([]),
+        ])
+        assert_equal(expected_result, result)
+
+
+    @istest
+    def vmerge_accounts_for_cells_spanning_columns(self):
+        element = xml_element("w:tbl", {}, [
+            w_tr(w_tc(), w_tc(), w_tc(properties=[w_vmerge("restart")])),
+            w_tr(w_tc(properties=[w_gridspan("2")]), w_tc(properties=[w_vmerge("continue")])),
+            w_tr(w_tc(), w_tc(), w_tc(properties=[w_vmerge("continue")])),
+            w_tr(w_tc(), w_tc(), w_tc()),
+        ])
+        result = _read_and_get_document_xml_element(element)
+        expected_result = documents.table([
+            documents.table_row([documents.table_cell([]), documents.table_cell([]), documents.table_cell([], rowspan=3)]),
+            documents.table_row([documents.table_cell([], colspan=2)]),
+            documents.table_row([documents.table_cell([]), documents.table_cell([])]),
+            documents.table_row([documents.table_cell([]), documents.table_cell([]), documents.table_cell([])]),
+        ])
+        assert_equal(expected_result, result)
+
+
+    @istest
+    def no_vertical_cell_merging_if_merged_cells_do_not_line_up(self):
+        element = xml_element("w:tbl", {}, [
+            w_tr(w_tc(properties=[w_gridspan("2")]), w_tc(properties=[w_vmerge("restart")])),
+            w_tr(w_tc(), w_tc(properties=[w_vmerge("continue")])),
+        ])
+        result = _read_and_get_document_xml_element(element)
+        expected_result = documents.table([
+            documents.table_row([documents.table_cell([], colspan=2), documents.table_cell([])]),
+            documents.table_row([documents.table_cell([]), documents.table_cell([])]),
+        ])
+        assert_equal(expected_result, result)
+
+
+    @istest
+    def warning_if_non_row_in_table(self):
+        element = xml_element("w:tbl", {}, [xml_element("w:p")])
+        result = _read_document_xml_element(element)
+        expected_warning = results.warning("unexpected non-row element in table, cell merging may be incorrect")
+        assert_equal([expected_warning], result.messages)
+
+
+    @istest
+    def warning_if_non_cell_in_table_row(self):
+        element = xml_element("w:tbl", {}, [w_tr(xml_element("w:p"))])
+        result = _read_document_xml_element(element)
+        expected_warning = results.warning("unexpected non-cell element in table row, cell merging may be incorrect")
+        assert_equal([expected_warning], result.messages)
+
+
+    @istest
     def children_of_w_ins_are_converted_normally(self):
         element = xml_element("w:p", {}, [
             xml_element("w:ins", {}, [
@@ -662,3 +744,16 @@ def _linked_blip(relationship_id):
 
 def _blip(attributes):
     return xml_element("a:blip", attributes)
+
+
+def w_tr(*children):
+    return xml_element("w:tr", {}, children)
+
+def w_tc(properties=None, *children):
+    return xml_element("w:tc", {}, [xml_element("w:tcPr", {}, properties)] + list(children))
+
+def w_gridspan(val):
+    return xml_element("w:gridSpan", {"w:val": val})
+
+def w_vmerge(val):
+    return xml_element("w:vMerge", {"w:val": val})

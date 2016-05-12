@@ -155,6 +155,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     def table(element):
         return _read_xml_elements(element.children) \
+            .flat_map(calculate_row_spans) \
             .map(documents.table)
     
     
@@ -164,8 +165,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def table_cell(element):
-        gridspan = element \
-            .find_child_or_null("w:tcPr") \
+        properties = element.find_child_or_null("w:tcPr")
+        gridspan = properties \
             .find_child_or_null("w:gridSpan") \
             .attributes.get("w:val")
         
@@ -175,10 +176,60 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             colspan = int(gridspan)
         
         return _read_xml_elements(element.children) \
-            .map(lambda children: documents.table_cell(
-                children=children,
-                colspan=colspan
+            .map(lambda children: _add_attrs(
+                documents.table_cell(
+                    children=children,
+                    colspan=colspan
+                ),
+                _vmerge=read_vmerge(properties),
             ))
+    
+    def read_vmerge(properties):
+        vmerge_element = properties.find_child("w:vMerge")
+        if vmerge_element is None:
+            return False
+        else:
+            val = vmerge_element.attributes.get("w:val")
+            return val == "continue" or not val
+    
+    
+    def calculate_row_spans(rows):
+        unexpected_non_rows = any(
+            not isinstance(row, documents.TableRow)
+            for row in rows
+        )
+        if unexpected_non_rows:
+            return _elements_result_with_messages(rows, [results.warning(
+                "unexpected non-row element in table, cell merging may be incorrect"
+            )])
+            
+        unexpected_non_cells = any(
+            not isinstance(cell, documents.TableCell)
+            for row in rows
+            for cell in row.children
+        )
+        if unexpected_non_cells:
+            return _elements_result_with_messages(rows, [results.warning(
+                "unexpected non-cell element in table row, cell merging may be incorrect"
+            )])
+        
+        columns = {}
+        for row in rows:
+            cell_index = 0
+            for cell in row.children:
+                if cell._vmerge and cell_index in columns:
+                    columns[cell_index].rowspan += 1
+                else:
+                    columns[cell_index] = cell
+                    cell._vmerge = False
+                cell_index += cell.colspan
+        
+        for row in rows:
+            row.children = lists.filter(lambda cell: not cell._vmerge, row.children)
+            for cell in row.children:
+                del cell._vmerge
+        
+        return _success(rows)
     
     
     def read_child_elements(element):
@@ -362,10 +413,21 @@ class _ReadResult(object):
         self.messages = messages
     
     def map(self, func):
+        elements = func(self.elements)
+        if not isinstance(elements, list):
+            elements = [elements]
         return _ReadResult(
-            [func(self.elements)],
+            elements,
             self.extra,
             self.messages)
+    
+    def flat_map(self, func):
+        result = func(self.elements)
+        return _ReadResult(
+            result.elements,
+            self.extra + result.extra,
+            self.messages + result.messages)
+        
     
     def to_extra(self):
         return _ReadResult([], _concat(self.extra, self.elements), self.messages)
@@ -373,11 +435,16 @@ class _ReadResult(object):
     def append_extra(self):
         return _ReadResult(_concat(self.elements, self.extra), [], self.messages)
 
-def _success(element):
-    return _ReadResult([element], [], [])
+def _success(elements):
+    if not isinstance(elements, list):
+        elements = [elements]
+    return _ReadResult(elements, [], [])
 
 def _element_result_with_messages(element, messages):
-    return _ReadResult([element], [], messages)
+    return _elements_result_with_messages([element], messages)
+
+def _elements_result_with_messages(elements, messages):
+    return _ReadResult(elements, [], messages)
 
 _empty_result = _ReadResult([], [], [])
 
@@ -390,3 +457,10 @@ def _concat(*values):
         for element in value:
             result.append(element)
     return result
+
+
+def _add_attrs(obj, **kwargs):
+    for key, value in kwargs.items():
+        setattr(obj, key, value)
+    
+    return obj
