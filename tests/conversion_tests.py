@@ -348,6 +348,21 @@ def table_cells_are_written_with_colspan_if_not_equal_to_one():
 
 
 @istest
+def table_cells_are_written_with_rowspan_if_not_equal_to_one():
+    table = documents.table([
+        documents.table_row([
+            documents.table_cell([], rowspan=2),
+        ]),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<tr><td rowspan=\"2\"></td></tr>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def line_break_is_converted_to_br():
     line_break = documents.line_break()
     result = convert_document_element_to_html(line_break)
