@@ -8,7 +8,7 @@ test-all:
 	tox
 
 upload: setup assert-converted-readme test-all
-	python setup.py sdist upload
+	python setup.py sdist bdist_wheel upload
 	make clean
 	
 register: setup
