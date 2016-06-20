@@ -337,6 +337,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def alternate_content(element):
         return read_child_elements(element.find_child("mc:Fallback"))
     
+    def read_sdt(element):
+        return read_child_elements(element.find_child_or_null("w:sdtContent"))
+
     handlers = {
         "w:t": text,
         "w:r": run,
@@ -362,6 +365,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:footnoteReference": note_reference_reader("footnote"),
         "w:endnoteReference": note_reference_reader("endnote"),
         "mc:AlternateContent": alternate_content,
+        "w:sdt": read_sdt
     }
     
     def read(element):

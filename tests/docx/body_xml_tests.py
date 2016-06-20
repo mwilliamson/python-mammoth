@@ -634,6 +634,16 @@ class ReadXmlElementTests(object):
         assert_equal("second", result.style_id)
     
     @istest
+    def sdt_is_read_using_sdt_content(self):
+        element = xml_element("w:sdt", {}, [
+            xml_element("w:sdtContent", {}, [
+                xml_element("w:t", {}, [xml_text("Blackdown")]),
+            ]),
+        ])
+        result = _read_and_get_document_xml_element(element)
+        assert_equal(documents.text("Blackdown"), result)
+
+    @istest
     def text_nodes_are_ignored_when_reading_children(self):
         element = xml_element("w:r", {}, [xml_text("[text]")])
         assert_equal(
