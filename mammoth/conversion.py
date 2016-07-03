@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import collections
 from functools import partial
 import base64
 
@@ -25,6 +26,14 @@ def convert_document_element_to_html(element,
     if convert_image is None:
         convert_image = images.img_element(_generate_image_attributes)
     
+    if isinstance(element, documents.Document):
+        comments = dict(
+            (comment.comment_id, comment)
+            for comment in element.comments
+        )
+    else:
+        comments = {}
+
     messages = []
     converter = _DocumentConverter(
         messages=messages,
@@ -32,7 +41,9 @@ def convert_document_element_to_html(element,
         convert_image=convert_image,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
-        note_references=[])
+        note_references=[],
+        comments=comments,
+    )
     nodes = converter.visit(element)
     
     writer = writers.writer(output_format)
@@ -50,13 +61,16 @@ def _generate_image_attributes(image):
 
 
 class _DocumentConverter(documents.ElementVisitor):
-    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references):
+    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
         self._note_references = note_references
+        self._referenced_comments = []
+        self._comment_count_by_initials = collections.defaultdict(lambda: 0)
         self._convert_image = convert_image
+        self._comments = comments
     
     def visit_image(self, image):
         try:
@@ -72,7 +86,8 @@ class _DocumentConverter(documents.ElementVisitor):
             for reference in self._note_references
         ]
         notes_list = html.element("ol", {}, self._visit_all(notes))
-        return nodes + [notes_list]
+        comments = html.element("dl", {}, lists.flat_map(self.visit_comment, self._referenced_comments))
+        return nodes + [notes_list, comments]
 
 
     def visit_paragraph(self, paragraph):
@@ -195,7 +210,44 @@ class _DocumentConverter(documents.ElementVisitor):
 
 
     def visit_comment_reference(self, reference):
-        return []
+        def nodes():
+            comment = self._comments[reference.comment_id]
+            self._comment_count_by_initials[comment.author_initials] += 1
+            count = self._comment_count_by_initials[comment.author_initials]
+            label = "{0} {1}".format(comment.author_initials, count)
+            self._referenced_comments.append((label, comment))
+            return [
+                # TODO: remove duplication with note references
+                html.element("a", {
+                    "href": "#" + self._referent_html_id("comment", reference.comment_id),
+                    "id": self._reference_html_id("comment", reference.comment_id),
+                # TODO: handle comments without initials
+                }, [html.text("[{0}]".format(label))])
+            ]
+        
+        html_path = self._find_html_path(
+            None,
+            "comment_reference",
+            default=html_paths.ignore,
+        )
+        
+        return html_path.wrap(nodes)
+    
+    def visit_comment(self, referenced_comment):
+        label, comment = referenced_comment
+        # TODO remove duplication with notes
+        body = self._visit_all(comment.body) + [
+            html.collapsible_element("p", {}, [
+                html.text(" "),
+                html.element("a", {"href": "#" + self._reference_html_id("comment", comment.comment_id)}, [
+                    html.text(_up_arrow)
+                ]),
+            ])
+        ]
+        return [
+            html.element("dt", {"id": self._referent_html_id("comment", comment.comment_id)}, [html.text(label)]),
+            html.element("dd", {}, body),
+        ]
 
 
     def _visit_all(self, elements):
@@ -215,7 +267,7 @@ class _DocumentConverter(documents.ElementVisitor):
         if style is not None:
             return style.html_path
         
-        if element.style_id is not None:
+        if getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(
                 "Unrecognised {0} style: {1} (Style ID: {2})".format(
                     element_type, element.style_name, element.style_id)
@@ -230,17 +282,23 @@ class _DocumentConverter(documents.ElementVisitor):
                 return style
 
     def _note_html_id(self, note):
-        return self._html_id("{0}-{1}".format(note.note_type, note.note_id))
+        return self._referent_html_id(note.note_type, note.note_id)
         
     def _note_ref_html_id(self, note):
-        return self._html_id("{0}-ref-{1}".format(note.note_type, note.note_id))
+        return self._reference_html_id(note.note_type, note.note_id)
+    
+    def _referent_html_id(self, reference_type, reference_id):
+        return self._html_id("{0}-{1}".format(reference_type, reference_id))
+    
+    def _reference_html_id(self, reference_type, reference_id):
+        return self._html_id("{0}-ref-{1}".format(reference_type, reference_id))
     
     def _html_id(self, suffix):
         return "{0}{1}".format(self._id_prefix, suffix)
         
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type in ["underline", "strikethrough", "bold", "italic"]:
+    if matcher.element_type in ["underline", "strikethrough", "bold", "italic", "comment_reference"]:
         return matcher.element_type == element_type
     else:
         return (

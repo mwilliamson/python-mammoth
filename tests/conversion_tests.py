@@ -445,6 +445,36 @@ def comments_are_ignored_by_default():
     assert_equal(expected_html, result.value)
 
 
+@istest
+def comment_references_are_linked_to_comment_after_main_body():
+    reference = documents.comment_reference("4")
+    comment = documents.comment(
+        comment_id="4",
+        body=[_paragraph_with_text("Who's there?")],
+        author_name="The Piemaker",
+        author_initials="TP",
+    )
+    document = documents.document(
+        [documents.paragraph([
+            _run_with_text("Knock knock"),
+            documents.run([reference])
+        ])],
+        comments=[comment],
+    )
+    result = convert_document_element_to_html(
+        document,
+        id_prefix="doc-42-",
+        style_map=[
+            _style_mapping("comment-reference => sup")
+        ],
+    )
+    expected_html = (
+        '<p>Knock knock<sup><a href="#doc-42-comment-4" id="doc-42-comment-ref-4">[TP 1]</a></sup></p>' +
+        '<dl><dt id="doc-42-comment-4">TP 1</dt><dd><p>Who\'s there? <a href="#doc-42-comment-ref-4">↑</a></p></dd></dl>'
+    )
+    assert_equal(expected_html, result.value)
+
+
 def _paragraph_with_text(text):
     return documents.paragraph(children=[_run_with_text(text)])
 

@@ -52,5 +52,6 @@ empty = path([])
 
 
 class ignore(object):
-    def wrap(self, generate_nodes):
+    @staticmethod
+    def wrap(generate_nodes):
         return []
