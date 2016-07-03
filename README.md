@@ -39,6 +39,8 @@ The following features are currently supported:
 * Text boxes. The contents of the text box are treated as a separate paragraph
   that appears after the paragraph containing the text box.
 
+* Comments.
+
 ## Installation
 
     pip install mammoth
@@ -238,6 +240,23 @@ style_map = "strike => del"
 with open("document.docx", "rb") as docx_file:
     result = mammoth.convert_to_html(docx_file, style_map=style_map)
 ```
+
+#### Comments
+
+By default, comments are ignored.
+To include comments in the generated HTML,
+add a style mapping for `comment-reference`.
+For instance:
+
+```python
+style_map = "comment-reference => sup"
+
+with open("document.docx", "rb") as docx_file:
+    result = mammoth.convert_to_html(docx_file, style_map=style_map)
+```
+
+Comments will be appended to the end of the document,
+with links to the comments wrapped using the specified style mapping.
 
 ### API
 
