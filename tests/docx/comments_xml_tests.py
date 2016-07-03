@@ -25,3 +25,23 @@ def when_optional_attributes_of_comment_are_missing_then_they_are_as_none():
     comment, = comments.value
     assert_equal(None, comment.author_name)
     assert_equal(None, comment.author_initials)
+
+
+@istest
+def when_optional_attributes_of_comment_are_blank_then_they_are_as_none():
+    comments = create_comments_reader(body_xml.reader())(xml_element("w:comments", {}, [
+        xml_element("w:comment", {"w:id": "1", "w:author": " ", "w:initials": " "}, []),
+    ]))
+    comment, = comments.value
+    assert_equal(None, comment.author_name)
+    assert_equal(None, comment.author_initials)
+
+
+@istest
+def when_optional_attributes_of_comment_are_not_blank_then_they_are_read():
+    comments = create_comments_reader(body_xml.reader())(xml_element("w:comments", {}, [
+        xml_element("w:comment", {"w:id": "1", "w:author": "The Piemaker", "w:initials": "TP"}, []),
+    ]))
+    comment, = comments.value
+    assert_equal("The Piemaker", comment.author_name)
+    assert_equal("TP", comment.author_initials)
