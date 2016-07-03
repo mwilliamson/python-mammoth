@@ -49,3 +49,8 @@ class HtmlPathElement(object):
         return [element]
 
 empty = path([])
+
+
+class ignore(object):
+    def wrap(self, generate_nodes):
+        return []

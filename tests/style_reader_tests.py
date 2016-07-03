@@ -68,6 +68,14 @@ class ReadHtmlPathTests(object):
             read_html_path("p:fresh")
         )
 
+    
+    @istest
+    def can_read_ignore_element(self):
+        assert_equal(
+            html_paths.ignore,
+            read_html_path("!")
+        )
+
 
 @istest
 class ReadDocumentMatcherTests(object):

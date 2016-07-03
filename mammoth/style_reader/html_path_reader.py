@@ -9,8 +9,10 @@ def read_html_path(string):
 
 
 def read_html_path_node(path_node):
-    if path_node.children:
-        return _read_html_path_elements_node(path_node.children[0])
+    if path_node.children[0].expr_name == "ignore":
+        return html_paths.ignore
+    elif path_node.children[0].children:
+        return _read_html_path_elements_node(path_node.children[0].children[0])
     else:
         return html_paths.empty
 
@@ -67,7 +69,9 @@ def _repeated_children_with_separator(node, has_whitespace):
 
 grammar_text = r"""
 
-html_path = html_path_elements?
+html_path = ignore / html_path_elements?
+
+ignore = "!"
 
 html_path_elements = element (whitespace* ">" whitespace* element)*
 
