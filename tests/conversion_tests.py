@@ -426,6 +426,25 @@ def footnotes_are_included_after_the_main_body():
     assert_equal(expected_html, result.value)
 
 
+@istest
+def comments_are_ignored_by_default():
+    reference = documents.comment_reference("4")
+    comment = documents.comment(
+        comment_id="4",
+        body=[_paragraph_with_text("Who's there?")],
+    )
+    document = documents.document(
+        [documents.paragraph([
+            _run_with_text("Knock knock"),
+            documents.run([reference])
+        ])],
+        comments=[comment],
+    )
+    result = convert_document_element_to_html(document, id_prefix="doc-42-")
+    expected_html = '<p>Knock knock</p>'
+    assert_equal(expected_html, result.value)
+
+
 def _paragraph_with_text(text):
     return documents.paragraph(children=[_run_with_text(text)])
 
