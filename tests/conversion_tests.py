@@ -7,7 +7,7 @@ import io
 from nose.tools import istest, assert_equal
 
 from mammoth import documents, style_reader, results, html
-from mammoth.conversion import convert_document_element_to_html
+from mammoth.conversion import convert_document_element_to_html, _comment_author_label
 from mammoth.docx.xmlparser import parse_xml
 
 
@@ -473,6 +473,24 @@ def comment_references_are_linked_to_comment_after_main_body():
         '<dl><dt id="doc-42-comment-4">TP 1</dt><dd><p>Who\'s there? <a href="#doc-42-comment-ref-4">↑</a></p></dd></dl>'
     )
     assert_equal(expected_html, result.value)
+
+
+@istest
+def when_initials_are_not_blank_then_comment_author_label_is_initials():
+    assert_equal("TP", _comment_author_label(documents.comment(
+        comment_id="0",
+        body=[],
+        author_initials="TP",
+    )))
+
+
+@istest
+def when_initials_are_blank_then_comment_author_label_is_comment():
+    assert_equal("Comment", _comment_author_label(documents.comment(
+        comment_id="0",
+        body=[],
+        author_initials=None,
+    )))
 
 
 def _paragraph_with_text(text):

@@ -214,14 +214,13 @@ class _DocumentConverter(documents.ElementVisitor):
             comment = self._comments[reference.comment_id]
             self._comment_count_by_initials[comment.author_initials] += 1
             count = self._comment_count_by_initials[comment.author_initials]
-            label = "{0} {1}".format(comment.author_initials, count)
+            label = "{0} {1}".format(_comment_author_label(comment), count)
             self._referenced_comments.append((label, comment))
             return [
                 # TODO: remove duplication with note references
                 html.element("a", {
                     "href": "#" + self._referent_html_id("comment", reference.comment_id),
                     "id": self._reference_html_id("comment", reference.comment_id),
-                # TODO: handle comments without initials
                 }, [html.text("[{0}]".format(label))])
             ]
         
@@ -314,5 +313,10 @@ def _document_matcher_matches(matcher, element, element_type):
                 matcher.numbering == element.numbering
             )
         )
+
+
+def _comment_author_label(comment):
+    return comment.author_initials or "Comment"
+
 
 _up_arrow = "↑"
