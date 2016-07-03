@@ -455,5 +455,5 @@ def _run_with_text(text):
 
 def _style_mapping(text):
     result = style_reader.read_style(text)
-    assert not result.messages
+    assert_equal([], result.messages)
     return result.value
