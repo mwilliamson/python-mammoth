@@ -334,6 +334,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         
         return note_reference
     
+    def read_comment_reference(element):
+        return _success(documents.comment_reference(element.attributes["w:id"]))
+
     def alternate_content(element):
         return read_child_elements(element.find_child("mc:Fallback"))
     
@@ -364,6 +367,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "v:imagedata": read_imagedata,
         "w:footnoteReference": note_reference_reader("footnote"),
         "w:endnoteReference": note_reference_reader("endnote"),
+        "w:commentReference": read_comment_reference,
         "mc:AlternateContent": alternate_content,
         "w:sdt": read_sdt
     }

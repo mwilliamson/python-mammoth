@@ -201,6 +201,9 @@ class _DocumentConverter(documents.ElementVisitor):
         self._html_generator.append(note_generator)
         self._html_generator.end()
 
+    def visit_comment_reference(self, reference):
+        return []
+
 
     def _visit_all(self, elements):
         return lists.flat_map(self.visit, elements)

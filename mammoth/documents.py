@@ -182,4 +182,10 @@ class Comment(object):
 
 comment = Comment
 
+@cobble.data
+class CommentReference(Element):
+    comment_id = cobble.field()
+
+comment_reference = CommentReference
+
 ElementVisitor = cobble.visitor(Element)

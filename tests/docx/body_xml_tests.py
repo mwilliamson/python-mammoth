@@ -577,6 +577,12 @@ class ReadXmlElementTests(object):
         assert_equal("4", footnote.note_id)
     
     @istest
+    def comment_reference_has_id_read(self):
+        comment_reference_xml = xml_element("w:commentReference", {"w:id": "4"})
+        comment_reference = _read_and_get_document_xml_element(comment_reference_xml)
+        assert_equal(documents.CommentReference("4"), comment_reference)
+
+    @istest
     def ignored_elements_are_ignored_without_message(self):
         element = xml_element("w:bookmarkEnd")
         result = _read_document_xml_element(element)
