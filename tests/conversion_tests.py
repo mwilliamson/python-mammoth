@@ -469,8 +469,8 @@ def comment_references_are_linked_to_comment_after_main_body():
         ],
     )
     expected_html = (
-        '<p>Knock knock<sup><a href="#doc-42-comment-4" id="doc-42-comment-ref-4">[TP 1]</a></sup></p>' +
-        '<dl><dt id="doc-42-comment-4">TP 1</dt><dd><p>Who\'s there? <a href="#doc-42-comment-ref-4">↑</a></p></dd></dl>'
+        '<p>Knock knock<sup><a href="#doc-42-comment-4" id="doc-42-comment-ref-4">[TP1]</a></sup></p>' +
+        '<dl><dt id="doc-42-comment-4">Comment [TP1]</dt><dd><p>Who\'s there? <a href="#doc-42-comment-ref-4">↑</a></p></dd></dl>'
     )
     assert_equal(expected_html, result.value)
 

@@ -214,14 +214,14 @@ class _DocumentConverter(documents.ElementVisitor):
             comment = self._comments[reference.comment_id]
             self._comment_count_by_initials[comment.author_initials] += 1
             count = self._comment_count_by_initials[comment.author_initials]
-            label = "{0} {1}".format(_comment_author_label(comment), count)
+            label = "[{0}{1}]".format(_comment_author_label(comment), count)
             self._referenced_comments.append((label, comment))
             return [
                 # TODO: remove duplication with note references
                 html.element("a", {
                     "href": "#" + self._referent_html_id("comment", reference.comment_id),
                     "id": self._reference_html_id("comment", reference.comment_id),
-                }, [html.text("[{0}]".format(label))])
+                }, [html.text(label)])
             ]
         
         html_path = self._find_html_path(
@@ -244,7 +244,11 @@ class _DocumentConverter(documents.ElementVisitor):
             ])
         ]
         return [
-            html.element("dt", {"id": self._referent_html_id("comment", comment.comment_id)}, [html.text(label)]),
+            html.element(
+                "dt",
+                {"id": self._referent_html_id("comment", comment.comment_id)},
+                [html.text("Comment {0}".format(label))],
+            ),
             html.element("dd", {}, body),
         ]
 
