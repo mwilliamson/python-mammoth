@@ -7,39 +7,56 @@ from .relationships_xml import read_relationships_xml_element, Relationships
 from .numbering_xml import read_numbering_xml_element, Numbering
 from .styles_xml import read_styles_xml_element
 from .notes_xml import create_footnotes_reader, create_endnotes_reader
+from .comments_xml import create_comments_reader
 from .files import Files
 from . import body_xml, office_xml
 from ..zips import open_zip
+
+
+_empty_result = results.success([])
 
 
 def read(fileobj):
     zip_file = open_zip(fileobj, "r")
     body_readers = _body_readers(getattr(fileobj, "name", None), zip_file)
     
-    return _read_notes(zip_file, body_readers).bind(lambda notes:
-        _read_document(zip_file, body_readers, notes))
+    return results.combine([
+        _read_notes(zip_file, body_readers),
+        _read_comments(zip_file, body_readers),
+    ]).bind(lambda referents:
+        _read_document(zip_file, body_readers, notes=referents[0], comments=referents[1])
+    )
 
 
 def _read_notes(zip_file, body_readers):
-    empty_result = results.success([])
-    
     read_footnotes_xml = create_footnotes_reader(body_readers("footnotes"))
     footnotes = _try_read_entry_or_default(
-        zip_file, "word/footnotes.xml", read_footnotes_xml, default=empty_result)
+        zip_file, "word/footnotes.xml", read_footnotes_xml, default=_empty_result)
     
     read_endnotes_xml = create_endnotes_reader(body_readers("endnotes"))
     endnotes = _try_read_entry_or_default(
-        zip_file, "word/endnotes.xml", read_endnotes_xml, default=empty_result)
+        zip_file, "word/endnotes.xml", read_endnotes_xml, default=_empty_result)
     
     return results.combine([footnotes, endnotes]).map(lists.flatten)
+
+
+def _read_comments(zip_file, body_readers):
+    return _try_read_entry_or_default(
+        zip_file,
+        "word/comments.xml",
+        create_comments_reader(body_readers("comments")),
+        default=_empty_result,
+    )
+
     
-def _read_document(zip_file, body_readers, notes):
+def _read_document(zip_file, body_readers, notes, comments):
     with zip_file.open("word/document.xml") as document_fileobj:
         document_xml = office_xml.read(document_fileobj)
         return read_document_xml_element(
             document_xml,
             body_reader=body_readers("document"),
             notes=notes,
+            comments=comments,
         )
 
 
