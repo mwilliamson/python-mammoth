@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from functools import partial
 import base64
 
 from . import documents, results, html_paths, images, writers, html, lists
@@ -75,38 +76,38 @@ class _DocumentConverter(documents.ElementVisitor):
 
 
     def visit_paragraph(self, paragraph):
-        content = self._visit_all(paragraph.children)
-        if self._ignore_empty_paragraphs:
-            children = content
-        else:
-            children = [html.force_write] + content
+        def children():
+            content = self._visit_all(paragraph.children)
+            if self._ignore_empty_paragraphs:
+                return content
+            else:
+                return [html.force_write] + content
         
         html_path = self._find_html_path_for_paragraph(paragraph)
         return html_path.wrap(children)
 
 
     def visit_run(self, run):
-        nodes = self._visit_all(run.children)
+        nodes = lambda: self._visit_all(run.children)
+        paths = []
         if run.is_strikethrough:
-            nodes = self._find_style_for_run_property("strikethrough", default="s").wrap(nodes)
+            paths.append(self._find_style_for_run_property("strikethrough", default="s"))
         if run.is_underline:
-            nodes = self._convert_underline(nodes)
+            paths.append(self._find_style_for_run_property("underline"))
         if run.vertical_alignment == documents.VerticalAlignment.subscript:
-            nodes = html_paths.element(["sub"], fresh=False).wrap(nodes)
+            paths.append(html_paths.element(["sub"], fresh=False))
         if run.vertical_alignment == documents.VerticalAlignment.superscript:
-            nodes = html_paths.element(["sup"], fresh=False).wrap(nodes)
+            paths.append(html_paths.element(["sup"], fresh=False))
         if run.is_italic:
-            nodes = self._find_style_for_run_property("italic", default="em").wrap(nodes)
+            paths.append(self._find_style_for_run_property("italic", default="em"))
         if run.is_bold:
-            nodes = self._find_style_for_run_property("bold", default="strong").wrap(nodes)
-        html_path = self._find_html_path_for_run(run)
-        if html_path:
-            nodes = html_path.wrap(nodes)
-        return nodes
-    
-    
-    def _convert_underline(self, nodes):
-        return self._find_style_for_run_property("underline").wrap(nodes)
+            paths.append(self._find_style_for_run_property("bold", default="strong"))
+        paths.append(self._find_html_path_for_run(run))
+
+        for path in paths:
+            nodes = partial(path.wrap, nodes)
+
+        return nodes()
     
     
     def _find_style_for_run_property(self, element_type, default=None):
@@ -206,7 +207,7 @@ class _DocumentConverter(documents.ElementVisitor):
         return self._find_html_path(paragraph, "paragraph", default)
     
     def _find_html_path_for_run(self, run):
-        return self._find_html_path(run, "run", default=None)
+        return self._find_html_path(run, "run", default=html_paths.empty)
         
     
     def _find_html_path(self, element, element_type, default):

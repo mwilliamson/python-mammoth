@@ -19,9 +19,11 @@ def element(names, class_names=None, fresh=None):
 class HtmlPath(object):
     elements = cobble.field()
     
-    def wrap(self, nodes):
+    def wrap(self, generate_nodes):
+        nodes = generate_nodes()
+
         for element in reversed(self.elements):
-            nodes = element.wrap(nodes)
+            nodes = element.wrap_nodes(nodes)
         
         return nodes
 
@@ -31,7 +33,10 @@ class HtmlPathElement(object):
     class_names = cobble.field()
     fresh = cobble.field()
 
-    def wrap(self, nodes):
+    def wrap(self, generate_nodes):
+        return self.wrap_nodes(generate_nodes())
+
+    def wrap_nodes(self, nodes):
         if self.class_names:
             attributes = {"class": " ".join(self.class_names)}
         else:
