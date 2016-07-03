@@ -22,6 +22,8 @@ def read_document_matcher_node(root_node):
         return document_matchers.underline
     elif element_node.expr_name == "strikethrough":
         return document_matchers.strikethrough
+    elif element_node.expr_name == "comment_reference":
+        return document_matchers.comment_reference
     
 
 def _read_paragraph_node(paragraph_node):
@@ -61,7 +63,7 @@ def _read_list_node(list_node):
         return None
 
 grammar_text = r"""
-document_matcher = paragraph / run / underline / strikethrough / bold / italic
+document_matcher = paragraph / run / underline / strikethrough / bold / italic / comment_reference
 
 underline = "u"
 
@@ -70,6 +72,8 @@ strikethrough = "strike"
 bold = "b"
 
 italic = "i"
+
+comment_reference = "comment-reference"
 
 paragraph = "p" style_id? style_name_specifier? list?
 

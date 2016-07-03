@@ -162,6 +162,13 @@ class ReadDocumentMatcherTests(object):
             read_document_matcher("strike")
         )
 
+    @istest
+    def reads_comment_reference(self):
+        assert_equal(
+            document_matchers.comment_reference,
+            read_document_matcher("comment-reference")
+        )
+
 
 @istest
 def document_matcher_is_mapped_to_html_path_using_fat_arrow():

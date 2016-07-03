@@ -31,3 +31,7 @@ class underline(object):
 
 class strikethrough(object):
     element_type = "strikethrough"
+
+
+class comment_reference(object):
+    element_type = "comment_reference"
