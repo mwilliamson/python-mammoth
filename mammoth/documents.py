@@ -173,4 +173,11 @@ class NoteReference(Element):
 note_reference = NoteReference
 
 
+@cobble.data
+class Comment(object):
+    comment_id = cobble.field()
+    body = cobble.field()
+
+comment = Comment
+
 ElementVisitor = cobble.visitor(Element)
