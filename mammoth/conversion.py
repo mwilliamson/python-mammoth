@@ -191,15 +191,7 @@ class _DocumentConverter(documents.ElementVisitor):
         return [
             html.element("li", {"id": self._note_html_id(note)}, note_body)
         ]
-        self._html_generator.start("li", {"id": self._note_html_id(note)})
-        note_generator = self._html_generator.child()
-        self._with_html_generator(note_generator)._visit_all(note.body)
-        note_generator.text(" ")
-        note_generator.start("a", {"href": "#" + self._note_ref_html_id(note)})
-        note_generator.text(_up_arrow)
-        note_generator.end_all()
-        self._html_generator.append(note_generator)
-        self._html_generator.end()
+
 
     def visit_comment_reference(self, reference):
         return []
