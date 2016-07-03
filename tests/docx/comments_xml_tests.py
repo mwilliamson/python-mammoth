@@ -16,3 +16,12 @@ def id_and_body_of_comment_is_read():
     assert_equal(comments.value[0].body, [documents.paragraph(children=[])])
     assert_equal("1", comments.value[0].comment_id)
 
+
+@istest
+def when_optional_attributes_of_comment_are_missing_then_they_are_as_none():
+    comments = create_comments_reader(body_xml.reader())(xml_element("w:comments", {}, [
+        xml_element("w:comment", {"w:id": "1"}, []),
+    ]))
+    comment, = comments.value
+    assert_equal(None, comment.author_name)
+    assert_equal(None, comment.author_initials)

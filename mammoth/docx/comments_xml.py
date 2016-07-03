@@ -13,7 +13,9 @@ def create_comments_reader(body_reader):
         return body_reader.read_all(element.children).map(lambda body:
             documents.comment(
                 comment_id=element.attributes["w:id"],
-                body=body
+                body=body,
+                author_name=None,
+                author_initials=None,
             ))
 
     return read_comments_xml_element

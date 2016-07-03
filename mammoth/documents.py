@@ -177,6 +177,8 @@ note_reference = NoteReference
 class Comment(object):
     comment_id = cobble.field()
     body = cobble.field()
+    author_name = cobble.field()
+    author_initials = cobble.field()
 
 comment = Comment
 
