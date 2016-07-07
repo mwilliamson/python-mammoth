@@ -1,3 +1,10 @@
+# 1.1.1
+
+* Handle comments without author initials.
+
+* Change numbering of comments to be global rather than per-user to match the
+  behaviour of Word.
+
 # 1.1.0
 
 * Add support for comments.
