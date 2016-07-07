@@ -317,7 +317,7 @@ def _document_matcher_matches(matcher, element, element_type):
 
 
 def _comment_author_label(comment):
-    return comment.author_initials or "Comment"
+    return comment.author_initials or ""
 
 
 _up_arrow = "↑"

@@ -485,8 +485,8 @@ def when_initials_are_not_blank_then_comment_author_label_is_initials():
 
 
 @istest
-def when_initials_are_blank_then_comment_author_label_is_comment():
-    assert_equal("Comment", _comment_author_label(documents.comment(
+def when_initials_are_blank_then_comment_author_label_is_blank():
+    assert_equal("", _comment_author_label(documents.comment(
         comment_id="0",
         body=[],
         author_initials=None,
