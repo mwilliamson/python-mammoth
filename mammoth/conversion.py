@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import collections
 from functools import partial
 import base64
 
@@ -68,7 +67,6 @@ class _DocumentConverter(documents.ElementVisitor):
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
         self._note_references = note_references
         self._referenced_comments = []
-        self._comment_count_by_initials = collections.defaultdict(lambda: 0)
         self._convert_image = convert_image
         self._comments = comments
     
@@ -212,8 +210,7 @@ class _DocumentConverter(documents.ElementVisitor):
     def visit_comment_reference(self, reference):
         def nodes():
             comment = self._comments[reference.comment_id]
-            self._comment_count_by_initials[comment.author_initials] += 1
-            count = self._comment_count_by_initials[comment.author_initials]
+            count = len(self._referenced_comments) + 1
             label = "[{0}{1}]".format(_comment_author_label(comment), count)
             self._referenced_comments.append((label, comment))
             return [
