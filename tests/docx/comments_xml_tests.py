@@ -18,7 +18,7 @@ def id_and_body_of_comment_is_read():
 
 
 @istest
-def when_optional_attributes_of_comment_are_missing_then_they_are_as_none():
+def when_optional_attributes_of_comment_are_missing_then_they_are_read_as_none():
     comments = create_comments_reader(body_xml.reader())(xml_element("w:comments", {}, [
         xml_element("w:comment", {"w:id": "1"}, []),
     ]))
@@ -28,7 +28,7 @@ def when_optional_attributes_of_comment_are_missing_then_they_are_as_none():
 
 
 @istest
-def when_optional_attributes_of_comment_are_blank_then_they_are_as_none():
+def when_optional_attributes_of_comment_are_blank_then_they_are_read_as_none():
     comments = create_comments_reader(body_xml.reader())(xml_element("w:comments", {}, [
         xml_element("w:comment", {"w:id": "1", "w:author": " ", "w:initials": " "}, []),
     ]))
