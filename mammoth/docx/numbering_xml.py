@@ -56,4 +56,4 @@ class Numbering(object):
         if num is None:
             return None
         else:
-            return num[level]
+            return num.get(level)

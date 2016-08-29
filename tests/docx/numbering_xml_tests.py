@@ -41,3 +41,9 @@ def list_is_not_ordered_if_formatted_as_bullet():
 def list_is_ordered_if_formatted_as_decimal():
     numbering = read_numbering_xml_element(_sample_numbering_xml)
     assert_equal(True, numbering.find_level("47", "1").is_ordered)
+
+
+@istest
+def find_level_returns_none_if_level_cannot_be_found():
+    numbering = read_numbering_xml_element(_sample_numbering_xml)
+    assert_equal(None, numbering.find_level("47", "2"))
