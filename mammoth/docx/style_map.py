@@ -21,7 +21,7 @@ def write_style_map(fileobj, style_map):
     })
 
 def _generate_relationships_xml(relationships_xml):
-    schema = "http://schemas.zwobble.org/mammoth/style-map";
+    schema = "http://schemas.zwobble.org/mammoth/style-map"
     relationships_uri = "http://schemas.openxmlformats.org/package/2006/relationships"
     relationship_element_name = "{" + relationships_uri + "}Relationship"
     

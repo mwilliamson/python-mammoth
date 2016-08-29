@@ -182,7 +182,7 @@ class _DocumentConverter(documents.ElementVisitor):
         return [html.self_closing_element("br")]
     
     def visit_note_reference(self, note_reference):
-        self._note_references.append(note_reference);
+        self._note_references.append(note_reference)
         note_number = len(self._note_references)
         return [
             html.element("sup", {}, [
