@@ -269,7 +269,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _success(documents.line_break())
     
     def inline(element):
-        alt_text = element.find_child_or_null("wp:docPr").attributes.get("descr")
+        properties = element.find_child_or_null("wp:docPr").attributes
+        if properties.get("descr", "").strip():
+            alt_text = properties.get("descr")
+        else:
+            alt_text = properties.get("title")
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
             .find_children("pic:pic") \
