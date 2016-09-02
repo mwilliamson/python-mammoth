@@ -410,20 +410,21 @@ class ReadXmlElementTests(object):
         assert_equal([expected_warning], result.messages)
         assert_equal(None, result.value)
         
-        
+    
+    IMAGE_BYTES = b"Not an image at all!"
+    
+    
     @istest
     @funk.with_mocks
     def can_read_imagedata_elements_with_rid_attribute(self, mocks):
         imagedata_element = xml_element("v:imagedata", {"r:id": "rId5", "o:title": "It's a hat"})
-        
-        image_bytes = b"Not an image at all!"
         
         relationships = Relationships({
             "rId5": Relationship(target="media/hat.png")
         })
         
         docx_file = mocks.mock()
-        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
+        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
         
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
@@ -438,7 +439,7 @@ class ReadXmlElementTests(object):
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
-            assert_equal(image_bytes, image_file.read())
+            assert_equal(self.IMAGE_BYTES, image_file.read())
         
         
     @istest
@@ -449,14 +450,12 @@ class ReadXmlElementTests(object):
             description="It's a hat",
         )
         
-        image_bytes = b"Not an image at all!"
-        
         relationships = Relationships({
             "rId5": Relationship(target="media/hat.png")
         })
         
         docx_file = mocks.mock()
-        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
+        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
         
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
@@ -471,7 +470,7 @@ class ReadXmlElementTests(object):
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
-            assert_equal(image_bytes, image_file.read())
+            assert_equal(self.IMAGE_BYTES, image_file.read())
         
     @istest
     @funk.with_mocks
@@ -481,14 +480,12 @@ class ReadXmlElementTests(object):
             description="It's a hat",
         )
         
-        image_bytes = b"Not an image at all!"
-        
         relationships = Relationships({
             "rId5": Relationship(target="media/hat.png")
         })
         
         docx_file = mocks.mock()
-        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(image_bytes))
+        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
         
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
@@ -503,7 +500,7 @@ class ReadXmlElementTests(object):
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
-            assert_equal(image_bytes, image_file.read())
+            assert_equal(self.IMAGE_BYTES, image_file.read())
         
         
     @istest
@@ -514,14 +511,12 @@ class ReadXmlElementTests(object):
             description="It's a hat",
         )
         
-        image_bytes = b"Not an image at all!"
-        
         relationships = Relationships({
             "rId5": Relationship(target="media/hat.emf")
         })
         
         docx_file = mocks.mock()
-        funk.allows(docx_file).open("word/media/hat.emf").returns(io.BytesIO(image_bytes))
+        funk.allows(docx_file).open("word/media/hat.emf").returns(io.BytesIO(self.IMAGE_BYTES))
         
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.emf").returns("image/x-emf")
@@ -545,15 +540,13 @@ class ReadXmlElementTests(object):
             description="It's a hat",
         )
         
-        image_bytes = b"Not an image at all!"
-        
         relationships = Relationships({
             "rId5": Relationship(target="file:///media/hat.png")
         })
         
         files = mocks.mock()
         funk.allows(files).verify("file:///media/hat.png")
-        funk.allows(files).open("file:///media/hat.png").returns(io.BytesIO(image_bytes))
+        funk.allows(files).open("file:///media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
         
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("file:///media/hat.png").returns("image/png")
@@ -568,7 +561,7 @@ class ReadXmlElementTests(object):
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
-            assert_equal(image_bytes, image_file.read())
+            assert_equal(self.IMAGE_BYTES, image_file.read())
     
     @istest
     def footnote_reference_has_id_read(self):
