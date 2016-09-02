@@ -412,29 +412,36 @@ class ReadXmlElementTests(object):
         
     
     IMAGE_BYTES = b"Not an image at all!"
+    IMAGE_RELATIONSHIP_ID = "rId5"
     
-    
-    @istest
-    @funk.with_mocks
-    def can_read_imagedata_elements_with_rid_attribute(self, mocks):
-        imagedata_element = xml_element("v:imagedata", {"r:id": "rId5", "o:title": "It's a hat"})
-        
+    def _read_embedded_image(self, element):
         relationships = Relationships({
-            "rId5": Relationship(target="media/hat.png")
+            self.IMAGE_RELATIONSHIP_ID: Relationship(target="media/hat.png")
         })
         
+        mocks = funk.Mocks()
         docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
         
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
         
-        image = _read_and_get_document_xml_element(
-            imagedata_element,
+        return _read_and_get_document_xml_element(
+            element,
             content_types=content_types,
             relationships=relationships,
             docx_file=docx_file,
         )
+    
+    @istest
+    def can_read_imagedata_elements_with_rid_attribute(self):
+        imagedata_element = xml_element("v:imagedata", {
+            "r:id": self.IMAGE_RELATIONSHIP_ID,
+            "o:title": "It's a hat"
+        })
+        
+        image = self._read_embedded_image(imagedata_element)
+        
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
@@ -443,29 +450,14 @@ class ReadXmlElementTests(object):
         
         
     @istest
-    @funk.with_mocks
-    def can_read_inline_pictures(self, mocks):
+    def can_read_inline_pictures(self):
         drawing_element = _create_inline_image(
-            blip=_embedded_blip("rId5"),
+            blip=_embedded_blip(self.IMAGE_RELATIONSHIP_ID),
             description="It's a hat",
         )
         
-        relationships = Relationships({
-            "rId5": Relationship(target="media/hat.png")
-        })
+        image = self._read_embedded_image(drawing_element)
         
-        docx_file = mocks.mock()
-        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
-        
-        content_types = mocks.mock()
-        funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
-        
-        image = _read_and_get_document_xml_element(
-            drawing_element,
-            content_types=content_types,
-            relationships=relationships,
-            docx_file=docx_file,
-        )
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
@@ -473,29 +465,14 @@ class ReadXmlElementTests(object):
             assert_equal(self.IMAGE_BYTES, image_file.read())
         
     @istest
-    @funk.with_mocks
-    def can_read_anchored_pictures(self, mocks):
+    def can_read_anchored_pictures(self):
         drawing_element = _create_anchored_image(
-            blip=_embedded_blip("rId5"),
+            blip=_embedded_blip(self.IMAGE_RELATIONSHIP_ID),
             description="It's a hat",
         )
         
-        relationships = Relationships({
-            "rId5": Relationship(target="media/hat.png")
-        })
+        image = self._read_embedded_image(drawing_element)
         
-        docx_file = mocks.mock()
-        funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
-        
-        content_types = mocks.mock()
-        funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
-        
-        image = _read_and_get_document_xml_element(
-            drawing_element,
-            content_types=content_types,
-            relationships=relationships,
-            docx_file=docx_file,
-        )
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
