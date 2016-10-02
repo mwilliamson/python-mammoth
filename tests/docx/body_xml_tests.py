@@ -447,6 +447,15 @@ class ReadXmlElementTests(object):
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
+    
+    @istest
+    def when_imagedata_element_has_no_relationship_id_then_it_is_ignored_with_error(self):
+        imagedata_element = xml_element("v:imagedata")
+        
+        result = _read_document_xml_element(imagedata_element)
+        expected_warning = results.warning("A v:imagedata element without a relationship ID was ignored")
+        assert_equal([expected_warning], result.messages)
+        assert_equal(None, result.value)
         
         
     @istest
