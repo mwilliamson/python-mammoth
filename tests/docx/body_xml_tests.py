@@ -449,7 +449,7 @@ class ReadXmlElementTests(object):
             assert_equal(self.IMAGE_BYTES, image_file.read())
     
     @istest
-    def when_imagedata_element_has_no_relationship_id_then_it_is_ignored_with_error(self):
+    def when_imagedata_element_has_no_relationship_id_then_it_is_ignored_with_warning(self):
         imagedata_element = xml_element("v:imagedata")
         
         result = _read_document_xml_element(imagedata_element)
