@@ -174,10 +174,20 @@ class ReadXmlElementTests(object):
     def run_is_not_struckthrough_if_strikethrough_element_is_not_present(self):
         run = self._read_run_with_properties([])
         assert_equal(False, run.is_strikethrough)
+        
+    @istest
+    def run_is_not_struckthrough_if_strikethrough_element_is_present_and_false(self):
+        run = self._read_run_with_properties([xml_element("w:strike", {"w:val": "false"})])
+        assert_equal(False, run.is_strikethrough)
     
     @istest
     def run_is_struckthrough_if_strikethrough_element_is_present(self):
         run = self._read_run_with_properties([xml_element("w:strike")])
+        assert_equal(True, run.is_strikethrough)
+        
+    @istest
+    def run_is_struckthrough_if_strikethrough_element_is_present_and_true(self):
+        run = self._read_run_with_properties([xml_element("w:strike", {"w:val": "true"})])
         assert_equal(True, run.is_strikethrough)
     
     @istest
