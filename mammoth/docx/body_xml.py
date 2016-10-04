@@ -71,9 +71,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def text(element):
         return _success(documents.Text(_inner_text(element)))
-   
-    def element_or_value(element):
-        return element and element.attributes.get("w:val") != "false"
 
     def run(element):
         properties = element.find_child_or_null("w:rPr")
@@ -81,10 +78,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
         
-        is_bold = element_or_value(properties.find_child("w:b"))
-        is_italic = element_or_value(properties.find_child("w:i"))
-        is_underline = element_or_value(properties.find_child("w:u"))
-        is_strikethrough = element_or_value(properties.find_child("w:strike"))
+        is_bold = read_boolean_element(properties.find_child("w:b"))
+        is_italic = read_boolean_element(properties.find_child("w:i"))
+        is_underline = read_boolean_element(properties.find_child("w:u"))
+        is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
         
         return _ReadResult.map_results(
             _read_run_style(properties),
@@ -99,6 +96,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 is_strikethrough=is_strikethrough,
                 vertical_alignment=vertical_alignment,
             ))
+
+    def read_boolean_element(element):
+        return element and element.attributes.get("w:val") != "false"
 
 
     def paragraph(element):
