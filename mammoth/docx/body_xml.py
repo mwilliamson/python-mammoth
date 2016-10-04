@@ -73,13 +73,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _success(documents.Text(_inner_text(element)))
    
     def element_or_value(element):
-        if element and ("w:val" in element.attributes):
-            element_value = element.attributes["w:val"]
-            if element_value == "false":
-                return False
-            elif element_value == "true":
-                return True
-        return element
+        return element and element.attributes.get("w:val") != "false"
 
     def run(element):
         properties = element.find_child_or_null("w:rPr")
