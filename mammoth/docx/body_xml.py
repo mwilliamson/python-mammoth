@@ -98,7 +98,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             ))
 
     def read_boolean_element(element):
-        return element and element.attributes.get("w:val") != "false"
+        return element and element.attributes.get("w:val") not in ["false", "0"]
 
 
     def paragraph(element):

@@ -189,14 +189,24 @@ class ReadXmlElementTests(object):
     ])(istest(func))
 
     @run_boolean_property_test
+    def run_boolean_property_is_false_if_element_is_present_and_val_is_false(self, attr_name, tag_name):
+        run = self._read_run_with_properties([xml_element(tag_name, {"w:val": "false"})])
+        assert_equal(False, getattr(run, attr_name))
+
+    @run_boolean_property_test
+    def run_boolean_property_is_false_if_element_is_present_and_val_is_0(self, attr_name, tag_name):
+        run = self._read_run_with_properties([xml_element(tag_name, {"w:val": "0"})])
+        assert_equal(False, getattr(run, attr_name))
+
+    @run_boolean_property_test
     def run_boolean_property_is_true_if_element_is_present_and_val_is_true(self, attr_name, tag_name):
         run = self._read_run_with_properties([xml_element(tag_name, {"w:val": "true"})])
         assert_equal(True, getattr(run, attr_name))
 
     @run_boolean_property_test
-    def run_boolean_property_is_false_if_element_is_present_and_val_is_false(self, attr_name, tag_name):
-        run = self._read_run_with_properties([xml_element(tag_name, {"w:val": "false"})])
-        assert_equal(False, getattr(run, attr_name))
+    def run_boolean_property_is_true_if_element_is_present_and_val_is_1(self, attr_name, tag_name):
+        run = self._read_run_with_properties([xml_element(tag_name, {"w:val": "1"})])
+        assert_equal(True, getattr(run, attr_name))
     
     @istest
     def run_has_baseline_vertical_alignment_if_vertical_alignment_element_is_not_present(self):
