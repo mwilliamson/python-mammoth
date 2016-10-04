@@ -75,9 +75,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def element_or_value(element):
         if element and ("w:val" in element.attributes):
             element_value = element.attributes["w:val"]
-            if element_value == 'false':
+            if element_value == "false":
                 return False
-            elif element_value == 'true':
+            elif element_value == "true":
                 return True
         return element
 
