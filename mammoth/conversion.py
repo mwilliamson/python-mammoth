@@ -132,6 +132,7 @@ class _DocumentConverter(documents.ElementVisitor):
         else:
             return html_paths.empty
 
+
     def visit_text(self, text):
         return [html.text(text.value)]
     
@@ -176,11 +177,22 @@ class _DocumentConverter(documents.ElementVisitor):
         return [
             html.element("td", attributes, nodes)
         ]
-    
-    
-    def visit_line_break(self, line_break):
-        return [html.element("br")]
-    
+
+
+    def visit_break(self, break_):
+        return self._find_html_path_for_break(break_).wrap(lambda: [])
+
+
+    def _find_html_path_for_break(self, break_):
+        style = self._find_style(break_, "break")
+        if style is not None:
+            return style.html_path
+        elif break_.break_type == "line":
+            return html_paths.path([html_paths.element("br", fresh=True)])
+        else:
+            return html_paths.empty
+
+
     def visit_note_reference(self, note_reference):
         self._note_references.append(note_reference)
         note_number = len(self._note_references)
@@ -192,6 +204,7 @@ class _DocumentConverter(documents.ElementVisitor):
                 }, [html.text("[{0}]".format(note_number))])
             ])
         ]
+
     
     def visit_note(self, note):
         note_body = self._visit_all(note.body) + [
@@ -300,7 +313,12 @@ class _DocumentConverter(documents.ElementVisitor):
 def _document_matcher_matches(matcher, element, element_type):
     if matcher.element_type in ["underline", "strikethrough", "bold", "italic", "comment_reference"]:
         return matcher.element_type == element_type
-    else:
+    elif matcher.element_type == "break":
+        return (
+            matcher.element_type == element_type and
+            matcher.break_type == element.break_type
+        )
+    else: # matcher.element_type in ["paragraph", "run"]:
         return (
             matcher.element_type == element_type and (
                 matcher.style_id is None or

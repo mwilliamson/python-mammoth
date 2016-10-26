@@ -422,22 +422,39 @@ class ReadXmlElementTests(object):
             documents.bookmark("start"),
             _read_and_get_document_xml_element(element)
         )
-    
+
     @istest
-    def br_is_read_as_line_break(self):
+    def br_without_explicit_type_is_read_as_line_break(self):
         break_element = xml_element("w:br", {}, [])
-        result = _read_and_get_document_xml_element(break_element)
-        assert_equal(result, documents.line_break())
-    
-    
+        result = _read_document_xml_element(break_element)
+        assert_equal(documents.line_break, result.value)
+
     @istest
-    def warning_on_breaks_that_arent_line_breaks(self):
+    def br_with_text_wrapping_type_is_read_as_line_break(self):
+        break_element = xml_element("w:br", {"w:type": "textWrapping"}, [])
+        result = _read_document_xml_element(break_element)
+        assert_equal(documents.line_break, result.value)
+
+    @istest
+    def br_with_page_type_is_read_as_page_break(self):
         break_element = xml_element("w:br", {"w:type": "page"}, [])
         result = _read_document_xml_element(break_element)
-        expected_warning = results.warning("Unsupported break type: page")
+        assert_equal(documents.page_break, result.value)
+
+    @istest
+    def br_with_column_type_is_read_as_column_break(self):
+        break_element = xml_element("w:br", {"w:type": "column"}, [])
+        result = _read_document_xml_element(break_element)
+        assert_equal(documents.column_break, result.value)
+
+    @istest
+    def warning_on_break_types_that_arent_recognised(self):
+        break_element = xml_element("w:br", {"w:type": "unknownBreakType"}, [])
+        result = _read_document_xml_element(break_element)
+        expected_warning = results.warning("Unsupported break type: unknownBreakType")
         assert_equal([expected_warning], result.messages)
         assert_equal(None, result.value)
-        
+
     
     IMAGE_BYTES = b"Not an image at all!"
     IMAGE_RELATIONSHIP_ID = "rId5"

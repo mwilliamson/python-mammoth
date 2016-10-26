@@ -365,9 +365,25 @@ def table_cells_are_written_with_rowspan_if_not_equal_to_one():
 
 @istest
 def line_break_is_converted_to_br():
-    line_break = documents.line_break()
-    result = convert_document_element_to_html(line_break)
+    result = convert_document_element_to_html(documents.line_break)
     assert_equal("<br />", result.value)
+
+
+@istest
+def breaks_that_are_not_line_breaks_are_ignored():
+    result = convert_document_element_to_html(documents.page_break)
+    assert_equal("", result.value)
+
+
+@istest
+def breaks_can_be_mapped_using_style_mappings():
+    result = convert_document_element_to_html(
+        documents.page_break,
+        style_map=[
+            _style_mapping("br[type='page'] => hr")
+        ],
+    )
+    assert_equal("<hr />", result.value)
 
 
 @istest

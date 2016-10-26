@@ -39,6 +39,15 @@ class comment_reference(object):
     element_type = "comment_reference"
 
 
+BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
+BreakMatcher.element_type = "break"
+
+
+line_break = BreakMatcher("line")
+page_break = BreakMatcher("page")
+column_break = BreakMatcher("column")
+
+
 def equal_to(value):
     return StringMatcher(_operator_equal_to, value)
 
@@ -49,7 +58,6 @@ def _operator_equal_to(first, second):
     
 def starts_with(value):
     return StringMatcher(_operator_starts_with, value)
-
 
 def _operator_starts_with(first, second):
     return second.upper().startswith(first.upper())
