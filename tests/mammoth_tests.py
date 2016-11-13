@@ -49,6 +49,14 @@ def empty_paragraphs_are_preserved_if_ignore_empty_paragraphs_is_false():
 
 @istest
 def embedded_style_map_is_used_if_present():
+    with open(test_path("embedded-style-map.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("<h1>Walking on imported air</h1>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
+def embedded_style_map_can_be_written_and_then_read():
     with _copy_of_test_data("single-paragraph.docx") as fileobj:
         mammoth.embed_style_map(fileobj, "p => h1")
         result = mammoth.convert_to_html(fileobj=fileobj, ignore_empty_paragraphs=False)
