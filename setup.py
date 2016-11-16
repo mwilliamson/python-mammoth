@@ -24,7 +24,7 @@ setup(
     author='Michael Williamson',
     author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/python-mammoth',
-    packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.style_reader', 'mammoth.writers'],
+    packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.style_reader', 'mammoth.styles', 'mammoth.styles.parser', 'mammoth.writers'],
     entry_points={
         "console_scripts": [
             "mammoth=mammoth.cli:main"
