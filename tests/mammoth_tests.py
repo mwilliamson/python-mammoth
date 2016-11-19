@@ -56,6 +56,14 @@ def embedded_style_map_is_used_if_present():
 
 
 @istest
+def explicit_style_map_takes_precedence_over_embedded_style_map():
+    with open(test_path("embedded-style-map.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, style_map="p => p")
+        assert_equal("<p>Walking on imported air</p>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
 def embedded_style_map_can_be_written_and_then_read():
     with _copy_of_test_data("single-paragraph.docx") as fileobj:
         mammoth.embed_style_map(fileobj, "p => h1")
