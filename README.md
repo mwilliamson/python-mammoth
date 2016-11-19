@@ -271,7 +271,7 @@ Converts the source document to HTML.
   See the section "Writing style maps" for a description of the syntax.
 
 * `include_embedded_style_map`: by default,
-  if the document contains an embedded style, then it is combined with the default style map.
+  if the document contains an embedded style map, then it is combined with the default style map.
   To ignore any embedded style maps,
   pass `include_embedded_style_map=False`.
 
