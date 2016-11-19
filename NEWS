@@ -1,5 +1,7 @@
 # 1.3.0
 
+* Add default style mappings for Heading 5 and Heading 6.
+
 * Add include_embedded_style_map argument to allow embedded style maps to be
   disabled.
 
