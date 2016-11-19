@@ -270,6 +270,11 @@ Converts the source document to HTML.
 * `style_map`: a string to specify the mapping of Word styles to HTML.
   See the section "Writing style maps" for a description of the syntax.
 
+* `include_embedded_style_map`: by default,
+  if the document contains an embedded style, then it is combined with the default style map.
+  To ignore any embedded style maps,
+  pass `include_embedded_style_map=False`.
+
 * `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
@@ -316,7 +321,7 @@ Each paragraph is followed by two newlines.
 
 Embeds the style map `style_map` into `fileobj`.
 When Mammoth reads a file object,
-it will use the embedded style if no explicit style map is provided.
+it will use the embedded style map.
 
 * `fileobj`: a file-like object containing the source document.
   Files should be opened for reading and writing in binary mode.

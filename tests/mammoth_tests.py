@@ -64,6 +64,22 @@ def explicit_style_map_takes_precedence_over_embedded_style_map():
 
 
 @istest
+def explicit_style_map_is_combined_with_embedded_style_map():
+    with open(test_path("embedded-style-map.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, style_map="r => strong")
+        assert_equal("<h1><strong>Walking on imported air</strong></h1>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
+def embedded_style_maps_can_be_disabled():
+    with open(test_path("embedded-style-map.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, include_embedded_style_map=False)
+        assert_equal("<p>Walking on imported air</p>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
 def embedded_style_map_can_be_written_and_then_read():
     with _copy_of_test_data("single-paragraph.docx") as fileobj:
         mammoth.embed_style_map(fileobj, "p => h1")
