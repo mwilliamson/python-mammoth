@@ -1,4 +1,8 @@
 # TODO: check indices
+# TODO: proper tests for unexpected tokens
+
+from .errors import LineParseError
+
 
 class TokenIterator(object):
     def __init__(self, tokens):
@@ -46,4 +50,7 @@ class TokenIterator(object):
                 self._index += 1
         
         return True
-                
+    
+    def _unexpected_token_type(self, token_type, token):
+        raise LineParseError()
+    

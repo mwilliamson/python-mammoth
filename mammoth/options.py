@@ -1,4 +1,5 @@
-from . import style_reader, lists, results
+from .styles.parser import read_style_mapping
+from . import lists, results
 
 
 def read_options(options):
@@ -24,7 +25,7 @@ def read_options(options):
 
 def _read_style_map(style_text):
     lines = filter(None, map(_get_line, style_text.split("\n")))
-    return results.combine(lists.map(style_reader.read_style, lines)) \
+    return results.combine(lists.map(read_style_mapping, lines)) \
         .map(lambda style_mappings: lists.filter(None, style_mappings))
     
 

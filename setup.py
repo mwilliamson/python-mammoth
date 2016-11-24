@@ -9,7 +9,6 @@ def read(fname):
 
 
 _install_requires = [
-    "parsimonious>=0.5,<0.6",
     "cobble>=0.1.1,<0.2",
 ]
 
@@ -24,7 +23,7 @@ setup(
     author='Michael Williamson',
     author_email='mike@zwobble.org',
     url='http://github.com/mwilliamson/python-mammoth',
-    packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.style_reader', 'mammoth.styles', 'mammoth.styles.parser', 'mammoth.writers'],
+    packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.styles', 'mammoth.styles.parser', 'mammoth.writers'],
     entry_points={
         "console_scripts": [
             "mammoth=mammoth.cli:main"
