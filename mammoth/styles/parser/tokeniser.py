@@ -12,6 +12,7 @@ class TokenType(object):
     STRING = "string"
     UNTERMINATED_STRING = "unterminated string"
     INTEGER = "integer"
+    END = "end"
     
 
 
@@ -33,7 +34,7 @@ def regex_tokeniser(rules):
                 # Should be impossible
                 raise Exception("Remaining: " + value[index:])
 
-        tokens.append(Token(index, "end", ""))
+        tokens.append(Token(index, TokenType.END, ""))
 
         return tokens
 

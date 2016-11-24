@@ -27,9 +27,9 @@ class TokenIterator(object):
         else:
             raise self._unexpected_token_type(token_type, token)
     
-    def try_skip(self, token_type, token_value):
+    def try_skip(self, token_type, token_value=None):
         token = self._tokens[self._index]
-        if token.type == token_type and token.value == token_value:
+        if token.type == token_type and (token_value is None or token.value == token_value):
             self._index += 1
             return True
         else:
