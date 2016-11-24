@@ -19,6 +19,10 @@ def test_identifiers_are_tokenised():
     assert_tokens("Overture", is_token("identifier", "Overture"))
 
 
+def test_escape_sequences_in_identifiers_are_tokenised():
+    assert_tokens(r"\:", is_token("identifier", r"\:"))
+
+
 def test_integers_are_tokenised():
     assert_tokens("123", is_token("integer", "123"))
 
@@ -27,48 +31,56 @@ def test_strings_are_tokenised():
     assert_tokens("'Tristan'", is_token("string", "'Tristan'"))
 
 
+def test_escape_sequences_in_strings_are_tokenised():
+    assert_tokens(r"'Tristan\''", is_token("string", r"'Tristan\''"))
+
+
 def test_unterminated_strings_are_tokenised():
     assert_tokens("'Tristan", is_token("unterminated string", "'Tristan"))
 
 
 def test_arrows_are_tokenised():
-    assert_tokens("=>=>", is_token("arrow", "=>"), is_token("arrow", "=>"))
+    assert_tokens("=>=>", is_token("symbol", "=>"), is_token("symbol", "=>"))
 
 
-def test_classes_are_tokenised():
-    assert_tokens(".overture", is_token("class name", ".overture"))
+def test_dots_are_tokenised():
+    assert_tokens(".", is_token("symbol", "."))
 
 
 def test_colons_are_tokenised():
-    assert_tokens("::", is_token("colon", ":"), is_token("colon", ":"))
+    assert_tokens("::", is_token("symbol", ":"), is_token("symbol", ":"))
 
 
 def test_greater_thans_are_tokenised():
-    assert_tokens(">>", is_token("greater than", ">"), is_token("greater than", ">"))
+    assert_tokens(">>", is_token("symbol", ">"), is_token("symbol", ">"))
 
 
 def test_equals_are_tokenised():
-    assert_tokens("==", is_token("equals", "="), is_token("equals", "="))
+    assert_tokens("==", is_token("symbol", "="), is_token("symbol", "="))
 
 
 def test_open_parens_are_tokenised():
-    assert_tokens("((", is_token("open paren", "("), is_token("open paren", "("))
+    assert_tokens("((", is_token("symbol", "("), is_token("symbol", "("))
 
 
 def test_close_parens_are_tokenised():
-    assert_tokens("))", is_token("close paren", ")"), is_token("close paren", ")"))
+    assert_tokens("))", is_token("symbol", ")"), is_token("symbol", ")"))
 
 
 def test_open_square_brackets_are_tokenised():
-    assert_tokens("[[", is_token("open square bracket", "["), is_token("open square bracket", "["))
+    assert_tokens("[[", is_token("symbol", "["), is_token("symbol", "["))
 
 
 def test_close_square_brackets_are_tokenised():
-    assert_tokens("]]", is_token("close square bracket", "]"), is_token("close square bracket", "]"))
+    assert_tokens("]]", is_token("symbol", "]"), is_token("symbol", "]"))
 
 
 def test_choices_are_tokenised():
-    assert_tokens("||", is_token("choice", "|"), is_token("choice", "|"))
+    assert_tokens("||", is_token("symbol", "|"), is_token("symbol", "|"))
+
+
+def test_bangs_are_tokenised():
+    assert_tokens("!!", is_token("symbol", "!"), is_token("symbol", "!"))
 
 
 def test_can_tokenise_multiple_tokens():

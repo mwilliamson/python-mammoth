@@ -38,22 +38,13 @@ def _to_regex(value):
 
 
 _string_prefix = r"'(?:\\.|[^'])*"
+_identifier_character = r"(?:[a-zA-Z\-_]|\\.)"
 
 tokenise = regex_tokeniser([
-    ("identifier", r"[a-zA-Z][a-zA-Z0-9\-]*"),
-    ("class name", r"\.(?:[a-zA-Z0-9\-]|\\.)+"),
-    ("colon", r":"),
-    ("greater than", r">"),
+    ("identifier", _identifier_character + "(?:" + _identifier_character + "|[0-9])*"),
+    ("symbol", r":|>|=>|\^=|=|\(|\)|\[|\]|\||!|\."),
     ("whitespace", r"\s+"),
-    ("arrow", r"=>"),
-    ("equals", r"="),
-    ("open paren", r"\("),
-    ("close paren", r"\)"),
-    ("open square bracket", r"\["),
-    ("close square bracket", r"\]"),
     ("string", _string_prefix + "'"),
     ("unterminated string", _string_prefix),
-    ("integer", r"([0-9]+)"),
-    ("choice", r"\|"),
-    ("bang", r"(!)"),
+    ("integer", "([0-9]+)"),
 ])
