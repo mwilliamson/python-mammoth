@@ -5,6 +5,16 @@ import re
 Token = collections.namedtuple("Token", ["character_index", "type", "value"])
 
 
+class TokenType(object):
+    IDENTIFIER = "identifier"
+    SYMBOL = "symbol"
+    WHITESPACE = "whitespace"
+    STRING = "string"
+    UNTERMINATED_STRING = "unterminated string"
+    INTEGER = "integer"
+    
+
+
 def regex_tokeniser(rules):
     rules = [(token_type, _to_regex(regex)) for token_type, regex in rules]
     rules.append(("unknown", re.compile(".")))
@@ -41,10 +51,10 @@ _string_prefix = r"'(?:\\.|[^'])*"
 _identifier_character = r"(?:[a-zA-Z\-_]|\\.)"
 
 tokenise = regex_tokeniser([
-    ("identifier", _identifier_character + "(?:" + _identifier_character + "|[0-9])*"),
-    ("symbol", r":|>|=>|\^=|=|\(|\)|\[|\]|\||!|\."),
-    ("whitespace", r"\s+"),
-    ("string", _string_prefix + "'"),
-    ("unterminated string", _string_prefix),
-    ("integer", "([0-9]+)"),
+    (TokenType.IDENTIFIER, _identifier_character + "(?:" + _identifier_character + "|[0-9])*"),
+    (TokenType.SYMBOL, r":|>|=>|\^=|=|\(|\)|\[|\]|\||!|\."),
+    (TokenType.WHITESPACE, r"\s+"),
+    (TokenType.STRING, _string_prefix + "'"),
+    (TokenType.UNTERMINATED_STRING, _string_prefix),
+    (TokenType.INTEGER, "([0-9]+)"),
 ])
