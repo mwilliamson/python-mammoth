@@ -39,6 +39,9 @@ def parse_document_matcher(tokens):
     elif tokens.try_skip(TokenType.IDENTIFIER, "comment-reference"):
         return document_matchers.comment_reference
 
+    else:
+        # TODO: raise
+        pass
 
 def _parse_style_name(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "["):
