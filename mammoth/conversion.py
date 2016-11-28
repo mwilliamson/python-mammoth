@@ -177,10 +177,10 @@ class _DocumentConverter(documents.ElementVisitor):
             html.element("td", attributes, nodes)
         ]
     
-    
-    def visit_line_break(self, line_break):
-        if line_break.line_break_type:
-            return [html.self_closing_element("br",{"class": line_break.line_break_type})]
+
+    def visit_Break(self, Break):
+        if Break.break_type == "page" || "column":
+            return [html.self_closing_element("br",{"class": Break.break_type})]
         else:
             return [html.self_closing_element("br")]
 

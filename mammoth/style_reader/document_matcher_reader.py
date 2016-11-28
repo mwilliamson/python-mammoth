@@ -24,8 +24,8 @@ def read_document_matcher_node(root_node):
         return document_matchers.strikethrough
     elif element_node.expr_name == "comment_reference":
         return document_matchers.comment_reference
-    elif element_node.expr_name == "line_break":
-        return document_matchers.line_break
+    elif element_node.expr_name == "Break":
+        return document_matchers.Break
     
 
 def _read_paragraph_node(paragraph_node):
@@ -65,7 +65,7 @@ def _read_list_node(list_node):
         return None
 
 grammar_text = r"""
-document_matcher = paragraph / run / underline / strikethrough / bold / italic / comment_reference
+document_matcher = paragraph / run / underline / strikethrough / bold / italic / comment_reference / Break
 
 underline = "u"
 
@@ -93,9 +93,9 @@ list = ":" list_type "(" ~"[0-9]+" ")"
 
 list_type = "ordered-list" / "unordered-list"
 
-line_break = "br" line_break_type?
+Break = "br" break_type?
 
-line_break_type = "page" / "column"
+break_type = "line" / "page" / "column"
 """
 _grammar = Grammar(grammar_text)
 
