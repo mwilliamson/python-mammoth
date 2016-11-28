@@ -265,14 +265,17 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     def br(element):
         break_type = element.attributes.get("w:type")
-        if break_type:
-            if break_type == 'page':
-                return _success(documents.line_break("pageBreak"))
-            else:
-                warning = results.warning("Unsupported break type: {0}".format(break_type))
-                return _empty_result_with_message(warning)
+        if not breaktype:
+            return _success(documents.Break("line"))
+ 
+        if break_type == 'page':
+            return _success(documents.Break("page"))
+        else if break_type == 'column':
+            return _success(documents.Break("column"))
         else:
-            return _success(documents.line_break())
+            warning = results.warning("Unsupported break type: {0}".format(break_type))
+            return _empty_result_with_message(warning)
+
     
     def inline(element):
         properties = element.find_child_or_null("wp:docPr").attributes

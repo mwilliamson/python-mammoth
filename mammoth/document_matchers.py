@@ -39,12 +39,12 @@ class comment_reference(object):
     element_type = "comment_reference"
 
 
-def line_break(line_break_type=None):
-    return LineBreakMatcher(line_break_type)
+def Break(break_type=None):
+    return BreakMatcher(break_type)
 
 
-LineBreakMatcher = collections.namedtuple("BreakMatcher", ["line_break_type"])
-LineBreakMatcher.element_type = "line_break"
+BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
+BreakMatcher.element_type = "Break"
 
 
 def equal_to(value):
