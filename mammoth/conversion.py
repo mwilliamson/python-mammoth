@@ -179,8 +179,12 @@ class _DocumentConverter(documents.ElementVisitor):
     
     
     def visit_line_break(self, line_break):
-        return [html.self_closing_element("br")]
-    
+        if line_break.line_break_type:
+            return [html.self_closing_element("br",{"class": line_break.line_break_type})]
+        else:
+            return [html.self_closing_element("br")]
+
+
     def visit_note_reference(self, note_reference):
         self._note_references.append(note_reference)
         note_number = len(self._note_references)
@@ -192,6 +196,7 @@ class _DocumentConverter(documents.ElementVisitor):
                 }, [html.text("[{0}]".format(note_number))])
             ])
         ]
+
     
     def visit_note(self, note):
         note_body = self._visit_all(note.body) + [

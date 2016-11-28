@@ -24,6 +24,8 @@ def read_document_matcher_node(root_node):
         return document_matchers.strikethrough
     elif element_node.expr_name == "comment_reference":
         return document_matchers.comment_reference
+    elif element_node.expr_name == "line_break":
+        return document_matchers.line_break
     
 
 def _read_paragraph_node(paragraph_node):
@@ -90,6 +92,10 @@ style_name = ~"[^']+"
 list = ":" list_type "(" ~"[0-9]+" ")"
 
 list_type = "ordered-list" / "unordered-list"
+
+line_break = "br" line_break_type?
+
+line_break_type = "page" / "column"
 """
 _grammar = Grammar(grammar_text)
 

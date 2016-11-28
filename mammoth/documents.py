@@ -54,7 +54,7 @@ class TableCell(HasChildren):
 
 @cobble.data
 class LineBreak(Element):
-    pass
+    line_break_type = cobble.field(default=None)
 
 @cobble.data
 class Tab(Element):
