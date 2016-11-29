@@ -49,7 +49,7 @@ def _parse_style_name(tokens):
         tokens.skip(TokenType.SYMBOL, "=")
         name = parse_string(tokens)
         tokens.skip(TokenType.SYMBOL, "]")
-        return name
+        return document_matchers.equal_to(name)
     else:
         return None
 

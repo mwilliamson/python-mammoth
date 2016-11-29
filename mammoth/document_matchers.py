@@ -1,5 +1,7 @@
 import collections
 
+import cobble
+
 
 def paragraph(style_id=None, style_name=None, numbering=None):
     return ParagraphMatcher(style_id, style_name, numbering)
@@ -35,3 +37,22 @@ class strikethrough(object):
 
 class comment_reference(object):
     element_type = "comment_reference"
+
+
+def equal_to(value):
+    return StringMatcher(_operator_equal_to, value)
+
+
+def _operator_equal_to(first, second):
+    return first.upper() == second.upper()
+
+
+@cobble.data
+class StringMatcher(object):
+    operator = cobble.field()
+    value = cobble.field()
+    
+    def matches(self, other):
+        return self.operator(self.value, other)
+    
+    

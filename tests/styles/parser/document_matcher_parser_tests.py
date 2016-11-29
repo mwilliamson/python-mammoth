@@ -33,7 +33,7 @@ def reads_paragraph_with_style_id():
 @istest
 def reads_paragraph_with_exact_style_name():
     assert_equal(
-        document_matchers.paragraph(style_name="Heading 1"),
+        document_matchers.paragraph(style_name=document_matchers.equal_to("Heading 1")),
         read_document_matcher("p[style-name='Heading 1']")
     )
 
@@ -79,7 +79,7 @@ def reads_run_with_style_id():
 @istest
 def reads_run_with_style_name():
     assert_equal(
-        document_matchers.run(style_name="Emphasis"),
+        document_matchers.run(style_name=document_matchers.equal_to("Emphasis")),
         read_document_matcher("r[style-name='Emphasis']")
     )
 
