@@ -6,14 +6,14 @@ def text(value):
     return TextNode(value)
 
 
-def element(tag_names, attributes=None, children=None, collapsible=False):
+def element(tag_names, attributes=None, children=None, collapsible=False, separator=None):
     if not isinstance(tag_names, list):
         tag_names = [tag_names]
     if attributes is None:
         attributes = {}
     if children is None:
         children = []
-    return Element(tag_names, attributes, children, collapsible=collapsible)
+    return Element(tag_names, attributes, children, collapsible=collapsible, separator=separator)
 
 
 def collapsible_element(tag_names, attributes=None, children=None):
@@ -50,11 +50,15 @@ class StripEmpty(NodeVisitor):
         if len(children) == 0:
             return []
         else:
-            return [Element(
-                element.tag_names,
-                element.attributes,
-                children,
-                collapsible=element.collapsible)]
+            return [
+                Element(
+                    element.tag_names,
+                    element.attributes,
+                    children,
+                    collapsible=element.collapsible,
+                    separator=element.separator,
+                )
+            ]
     
     def visit_self_closing_element(self, element):
         return [element]
@@ -80,7 +84,9 @@ class _CollapseNode(NodeVisitor):
             element.tag_names,
             element.attributes,
             collapse(element.children),
-            collapsible=element.collapsible)
+            collapsible=element.collapsible,
+            separator=element.separator,
+        )
     
     def visit_self_closing_element(self, element):
         return element
@@ -110,8 +116,12 @@ def _try_collapse(collapsed, node):
     if not _is_match(last, node):
         return False
     
+    if node.separator:
+        last.children.append(text(node.separator))
+    
     for child in node.children:
         _collapsing_add(last.children, child)
+        
     return True
 
 def _is_match(first, second):

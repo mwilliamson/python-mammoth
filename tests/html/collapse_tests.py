@@ -105,3 +105,21 @@ def element_with_choice_of_tag_names_can_collapse_into_previous_element_if_it_ha
             html.collapsible_element(["ul", "ol"]),
             html.collapsible_element("ol")
         ]))
+
+
+@istest
+def when_separator_is_present_then_separator_is_prepended_to_collapsed_element():
+    assert_equal(
+        [
+            html.element("pre", collapsible=False, children=[
+                html.text("Hello"),
+                html.text("\n"),
+                html.text(" the"),
+                html.text("re")
+            ])
+        ],
+        html.collapse([
+            html.element("pre", collapsible=False, children=[html.text("Hello")]),
+            html.element("pre", collapsible=True, separator="\n", children=[html.text(" the"), html.text("re")]),
+        ]),
+    )

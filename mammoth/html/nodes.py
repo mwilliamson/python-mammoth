@@ -16,6 +16,7 @@ class Element(Node):
     attributes = cobble.field()
     children = cobble.field()
     collapsible = cobble.field()
+    separator = cobble.field()
     
     @property
     def tag_name(self):
