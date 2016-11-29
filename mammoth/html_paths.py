@@ -46,7 +46,9 @@ class HtmlPathElement(object):
             self.names,
             attributes,
             nodes,
-            collapsible=not self.fresh)
+            collapsible=not self.fresh,
+            separator=self.separator,
+        )
         return [element]
 
 empty = path([])
