@@ -11,16 +11,41 @@ class TextNode(Node):
 
 
 @cobble.data
-class Element(Node):
+class Tag(object):
     tag_names = cobble.field()
     attributes = cobble.field()
-    children = cobble.field()
     collapsible = cobble.field()
     separator = cobble.field()
     
     @property
     def tag_name(self):
         return self.tag_names[0]
+
+
+@cobble.data
+class Element(Node):
+    tag = cobble.field()
+    children = cobble.field()
+    
+    @property
+    def tag_name(self):
+        return self.tag.tag_name
+        
+    @property
+    def tag_names(self):
+        return self.tag.tag_names
+
+    @property
+    def attributes(self):
+        return self.tag.attributes
+        
+    @property
+    def collapsible(self):
+        return self.tag.collapsible
+        
+    @property
+    def separator(self):
+        return self.tag.separator
 
 
 @cobble.data

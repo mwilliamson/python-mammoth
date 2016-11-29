@@ -12,7 +12,16 @@ def element(names, class_names=None, fresh=None, separator=None):
         class_names = []
     if fresh is None:
         fresh = False
-    return HtmlPathElement(names, class_names, fresh, separator=separator)
+    if class_names:
+        attributes = {"class": " ".join(class_names)}
+    else:
+        attributes = {}
+    return HtmlPathElement(html.tag(
+        tag_names=names,
+        attributes=attributes,
+        collapsible=not fresh,
+        separator=separator,
+    ))
 
 
 @cobble.data
@@ -27,28 +36,16 @@ class HtmlPath(object):
         
         return nodes
 
+
 @cobble.data
 class HtmlPathElement(object):
-    names = cobble.field()
-    class_names = cobble.field()
-    fresh = cobble.field()
-    separator = cobble.field()
+    tag = cobble.field()
 
     def wrap(self, generate_nodes):
         return self.wrap_nodes(generate_nodes())
 
     def wrap_nodes(self, nodes):
-        if self.class_names:
-            attributes = {"class": " ".join(self.class_names)}
-        else:
-            attributes = {}
-        element = html.element(
-            self.names,
-            attributes,
-            nodes,
-            collapsible=not self.fresh,
-            separator=self.separator,
-        )
+        element = html.Element(self.tag, nodes)
         return [element]
 
 empty = path([])
