@@ -70,6 +70,14 @@ def can_read_when_element_must_be_fresh():
 
 
 @istest
+def can_read_separator_for_elements():
+    assert_equal(
+        html_paths.path([html_paths.element(["p"], separator="x")]),
+        read_html_path("p:separator('x')")
+    )
+
+
+@istest
 def can_read_ignore_element():
     assert_equal(
         html_paths.ignore,
