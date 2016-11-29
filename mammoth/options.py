@@ -66,9 +66,6 @@ r[style-name='endnote reference'] =>
 p[style-name='annotation text'] => p
 r[style-name='annotation reference'] =>
 
-# Default behaviour
-br => br[break_type='line']
-
 # LibreOffice
 p[style-name='Footnote'] => p
 r[style-name='Footnote anchor'] =>
@@ -89,7 +86,6 @@ p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li
 r[style-name='Hyperlink'] =>
 
 p[style-name='Normal'] => p:fresh
-br[]
 """)
 
 

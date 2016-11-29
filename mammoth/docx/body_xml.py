@@ -263,14 +263,14 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _success(documents.bookmark(name))
     
     
-    def br(element):
+    def Break(element):
         break_type = element.attributes.get("w:type")
-        if not breaktype:
-            return _success(documents.Break("line"))
+        if not break_type:
+            return _success(documents.Break())
  
         if break_type == 'page':
             return _success(documents.Break("page"))
-        else if break_type == 'column':
+        elif break_type == 'column':
             return _success(documents.Break("column"))
         else:
             warning = results.warning("Unsupported break type: {0}".format(break_type))
@@ -379,7 +379,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:pict": pict,
         "w:hyperlink": hyperlink,
         "w:bookmarkStart": bookmark_start,
-        "w:br": br,
+        "w:br": Break,
         "wp:inline": inline,
         "wp:anchor": inline,
         "v:imagedata": read_imagedata,

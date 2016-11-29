@@ -178,8 +178,8 @@ class _DocumentConverter(documents.ElementVisitor):
         ]
     
 
-    def visit_Break(self, Break):
-        if Break.break_type == "page" || "column":
+    def visit_br(self, Break):
+        if Break.break_type == "page" or Break.break_type == "column":
             return [html.self_closing_element("br",{"class": Break.break_type})]
         else:
             return [html.element("br")]
