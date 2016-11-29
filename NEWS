@@ -2,6 +2,8 @@
 
 * Add default style mappings for Heading 5 and Heading 6.
 
+* Allow escape sequences in style IDs, style names and CSS class names.
+
 * Add include_embedded_style_map argument to allow embedded style maps to be
   disabled.
 
