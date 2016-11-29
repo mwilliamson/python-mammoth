@@ -59,8 +59,7 @@ def _parse_string_matcher(tokens):
     elif tokens.try_skip(TokenType.SYMBOL, "^="):
         return document_matchers.starts_with(parse_string(tokens))
     else:
-        # TODO raise
-        pass
+        raise LineParseError("Unrecognised string matcher: {0}".format(tokens.next_value()))
 
 def _parse_numbering(tokens):
     if tokens.try_skip(TokenType.SYMBOL, ":"):

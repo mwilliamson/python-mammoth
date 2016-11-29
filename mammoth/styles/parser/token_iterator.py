@@ -12,12 +12,12 @@ class TokenIterator(object):
     def peek_token_type(self):
         return self._tokens[self._index].type
     
-    def next_value(self, token_type):
+    def next_value(self, token_type=None):
         return self._next(token_type).value
     
-    def _next(self, token_type):
+    def _next(self, token_type=None):
         token = self._tokens[self._index]
-        if token.type == token_type:
+        if token_type is None or token.type == token_type:
             self._index += 1
             return token
         else:

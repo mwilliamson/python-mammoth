@@ -47,6 +47,12 @@ def reads_paragraph_with_style_name_prefix():
 
 
 @istest
+def unrecognised_string_matcher_raises_error():
+    error = assert_raises(LineParseError, lambda: read_document_matcher("p[style-name*='Heading']"))
+    assert_equal("Unrecognised string matcher: *", str(error))
+
+
+@istest
 def reads_paragraph_ordered_list():
     assert_equal(
         document_matchers.paragraph(numbering=documents.numbering_level(1, is_ordered=True)),
