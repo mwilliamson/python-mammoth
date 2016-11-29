@@ -55,6 +55,12 @@ def reads_paragraph_unordered_list():
 
 
 @istest
+def unrecognised_list_type_raises_error():
+    error = assert_raises(LineParseError, lambda: read_document_matcher("p:blah"))
+    assert_equal("Unrecognised list type: blah", str(error))
+
+
+@istest
 def reads_plain_run():
     assert_equal(
         document_matchers.run(),

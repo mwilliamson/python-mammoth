@@ -70,5 +70,4 @@ def _parse_list_type(tokens):
     elif list_type == "unordered-list":
         return False
     else:
-        pass
-        # TODO: raise
+        raise LineParseError("Unrecognised list type: {0}".format(list_type))
