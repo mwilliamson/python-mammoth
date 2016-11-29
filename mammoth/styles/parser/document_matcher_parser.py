@@ -46,13 +46,21 @@ def parse_document_matcher(tokens):
 def _parse_style_name(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "["):
         tokens.skip(TokenType.IDENTIFIER, "style-name")
-        tokens.skip(TokenType.SYMBOL, "=")
-        name = parse_string(tokens)
+        string_matcher = _parse_string_matcher(tokens)
         tokens.skip(TokenType.SYMBOL, "]")
-        return document_matchers.equal_to(name)
+        return string_matcher
     else:
         return None
 
+
+def _parse_string_matcher(tokens):
+    if tokens.try_skip(TokenType.SYMBOL, "="):
+        return document_matchers.equal_to(parse_string(tokens))
+    elif tokens.try_skip(TokenType.SYMBOL, "^="):
+        return document_matchers.starts_with(parse_string(tokens))
+    else:
+        # TODO raise
+        pass
 
 def _parse_numbering(tokens):
     if tokens.try_skip(TokenType.SYMBOL, ":"):

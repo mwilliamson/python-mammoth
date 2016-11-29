@@ -39,6 +39,14 @@ def reads_paragraph_with_exact_style_name():
 
 
 @istest
+def reads_paragraph_with_style_name_prefix():
+    assert_equal(
+        document_matchers.paragraph(style_name=document_matchers.starts_with("Heading")),
+        read_document_matcher("p[style-name^='Heading']")
+    )
+
+
+@istest
 def reads_paragraph_ordered_list():
     assert_equal(
         document_matchers.paragraph(numbering=documents.numbering_level(1, is_ordered=True)),
