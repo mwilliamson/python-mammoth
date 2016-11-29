@@ -1,4 +1,5 @@
 from ... import documents, document_matchers
+from .errors import LineParseError
 from .tokeniser import TokenType
 from .token_parser import try_parse_class_name, parse_string
 
@@ -40,8 +41,7 @@ def parse_document_matcher(tokens):
         return document_matchers.comment_reference
 
     else:
-        # TODO: raise
-        pass
+        raise LineParseError("Unrecognised document element: {0}".format(tokens.next_value(TokenType.IDENTIFIER)))
 
 def _parse_style_name(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "["):

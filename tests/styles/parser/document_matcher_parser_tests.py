@@ -2,8 +2,16 @@ from nose.tools import istest, assert_equal
 
 from mammoth import documents, document_matchers
 from mammoth.styles.parser.document_matcher_parser import parse_document_matcher
+from mammoth.styles.parser.errors import LineParseError
 from mammoth.styles.parser.tokeniser import tokenise
 from mammoth.styles.parser.token_iterator import TokenIterator
+from ...testing import assert_raises
+
+
+@istest
+def unrecognised_document_element_raises_error():
+    error = assert_raises(LineParseError, lambda: read_document_matcher("x"))
+    assert_equal("Unrecognised document element: x", str(error))
 
 
 @istest
