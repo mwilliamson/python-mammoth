@@ -1,5 +1,7 @@
 import collections
 
+import cobble
+
 
 def paragraph(style_id=None, style_name=None, numbering=None):
     return ParagraphMatcher(style_id, style_name, numbering)
@@ -37,10 +39,31 @@ class comment_reference(object):
     element_type = "comment_reference"
 
 
+def equal_to(value):
+    return StringMatcher(_operator_equal_to, value)
+
+
+def _operator_equal_to(first, second):
+    return first.upper() == second.upper()
+    
+    
+def starts_with(value):
+    return StringMatcher(_operator_starts_with, value)
+ 
 def Break(break_type=None):
     return BreakMatcher(break_type)
-
 
 BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
 BreakMatcher.element_type = "Break"
 
+def _operator_starts_with(first, second):
+    return second.upper().startswith(first.upper())
+
+
+@cobble.data
+class StringMatcher(object):
+    operator = cobble.field()
+    value = cobble.field()
+    
+    def matches(self, other):
+        return self.operator(self.value, other)
