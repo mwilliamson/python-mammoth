@@ -6,9 +6,10 @@ import io
 
 from nose.tools import istest, assert_equal
 
-from mammoth import documents, style_reader, results, html
+from mammoth import documents, results, html
 from mammoth.conversion import convert_document_element_to_html, _comment_author_label
 from mammoth.docx.xmlparser import parse_xml
+from mammoth.styles.parser import read_style_mapping
 
 
 @istest
@@ -502,6 +503,6 @@ def _run_with_text(text):
 
 
 def _style_mapping(text):
-    result = style_reader.read_style(text)
+    result = read_style_mapping(text)
     assert_equal([], result.messages)
     return result.value

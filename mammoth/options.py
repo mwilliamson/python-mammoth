@@ -1,19 +1,31 @@
-from . import style_reader, lists, results
+from .styles.parser import read_style_mapping
+from . import lists, results
 
 
 def read_options(options):
-    custom_style_map_result = _read_style_map(options.get("style_map") or "")
-    include_default_style_map = options.get("include_default_style_map", True)
-    options["ignore_empty_paragraphs"] = options.get("ignore_empty_paragraphs", True)
+    custom_style_map_text = options.pop("style_map", "") or ""
+    embedded_style_map_text = options.pop("embedded_style_map", "") or ""
+    include_default_style_map = options.pop("include_default_style_map", True)
     
-    options["style_map"] = custom_style_map_result.value + \
-        (_default_style_map if include_default_style_map else [])
-    return custom_style_map_result.map(lambda _: options)
+    read_style_map_result = results.combine([
+        _read_style_map(custom_style_map_text),
+        _read_style_map(embedded_style_map_text),
+    ])
+    
+    custom_style_map, embedded_style_map = read_style_map_result.value
+    style_map = custom_style_map + embedded_style_map
+    
+    if include_default_style_map:
+        style_map += _default_style_map
+    
+    options["ignore_empty_paragraphs"] = options.get("ignore_empty_paragraphs", True)
+    options["style_map"] = style_map
+    return read_style_map_result.map(lambda _: options)
 
 
 def _read_style_map(style_text):
     lines = filter(None, map(_get_line, style_text.split("\n")))
-    return results.combine(lists.map(style_reader.read_style, lines)) \
+    return results.combine(lists.map(read_style_mapping, lines)) \
         .map(lambda style_mappings: lists.filter(None, style_mappings))
     
 

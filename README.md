@@ -270,6 +270,11 @@ Converts the source document to HTML.
 * `style_map`: a string to specify the mapping of Word styles to HTML.
   See the section "Writing style maps" for a description of the syntax.
 
+* `include_embedded_style_map`: by default,
+  if the document contains an embedded style map, then it is combined with the default style map.
+  To ignore any embedded style maps,
+  pass `include_embedded_style_map=False`.
+
 * `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
@@ -316,7 +321,7 @@ Each paragraph is followed by two newlines.
 
 Embeds the style map `style_map` into `fileobj`.
 When Mammoth reads a file object,
-it will use the embedded style if no explicit style map is provided.
+it will use the embedded style map.
 
 * `fileobj`: a file-like object containing the source document.
   Files should be opened for reading and writing in binary mode.
@@ -430,6 +435,13 @@ For instance, to match a paragraph with the style name `Heading 1`:
 p[style-name='Heading 1']
 ```
 
+You can also match a style name by prefix.
+For instance, to match a paragraph where the style name starts with `Heading`:
+
+```
+p[style-name^='Heading']
+```
+
 Styles can also be referenced by style ID.
 This is the ID used internally in the .docx file.
 To match a paragraph or run with a specific style ID,
@@ -512,6 +524,27 @@ Modifiers must be used in the correct order:
 
 ```
 h1.section-title:fresh
+```
+
+#### Separators
+
+To specify a separator to place between the contents of paragraphs that are collapsed together,
+use `:separator('SEPARATOR STRING')`.
+
+For instance, suppose a document contains a block of code where each line of code is a paragraph with the style `Code Block`.
+We can write a style mapping to map such paragraphs to `<pre>` elements:
+
+```
+p[style-name='Code Block'] => pre
+```
+
+Since `pre` isn't marked as `:fresh`,
+consecutive `pre` elements will be collapsed together.
+However, this results in the code all being on one line.
+We can use `:separator` to insert a newline between each line of code:
+
+```
+p[style-name='Code Block'] => pre:separator('\n')
 ```
 
 #### Nested elements
