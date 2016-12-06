@@ -305,7 +305,14 @@ class _DocumentConverter(documents.ElementVisitor):
 def _document_matcher_matches(matcher, element, element_type):
     if matcher.element_type in ["underline", "strikethrough", "bold", "italic", "comment_reference"]:
         return matcher.element_type == element_type
-    else:
+    elif matcher.element_type == "Break":
+    	return (
+            matcher.element_type == element_type and (
+                matcher.break_type is None or
+                matcher.break_type == element.break_type
+            )
+        )
+    else: # matcher.element_type in ["paragraph", "run"]:
         return (
             matcher.element_type == element_type and (
                 matcher.style_id is None or
