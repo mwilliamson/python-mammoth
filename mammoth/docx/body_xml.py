@@ -253,7 +253,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return children_result.map(lambda children: documents.hyperlink(anchor=anchor, children=children))
         else:
             return children_result
-    
+
+
     def bookmark_start(element):
         name = element.attributes.get("w:name")
         if name == "_GoBack":
@@ -262,13 +263,19 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _success(documents.bookmark(name))
     
     
-    def br(element):
+    def Break(element):
         break_type = element.attributes.get("w:type")
-        if break_type:
+        if not break_type:
+            return _success(documents.Break())
+ 
+        if break_type == 'page':
+            return _success(documents.Break("page"))
+        elif break_type == 'column':
+            return _success(documents.Break("column"))
+        else:
             warning = results.warning("Unsupported break type: {0}".format(break_type))
             return _empty_result_with_message(warning)
-        else:
-            return _success(documents.line_break())
+
     
     def inline(element):
         properties = element.find_child_or_null("wp:docPr").attributes
@@ -372,7 +379,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:pict": pict,
         "w:hyperlink": hyperlink,
         "w:bookmarkStart": bookmark_start,
-        "w:br": br,
+        "w:br": Break,
         "wp:inline": inline,
         "wp:anchor": inline,
         "v:imagedata": read_imagedata,

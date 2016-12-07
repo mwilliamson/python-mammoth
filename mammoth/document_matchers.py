@@ -19,6 +19,14 @@ RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
 RunMatcher.element_type = "run"
 
 
+def Break(break_type=None):
+    return BreakMatcher(break_type)
+
+
+BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
+BreakMatcher.element_type = "Break"
+
+
 class bold(object):
     element_type = "bold"
 

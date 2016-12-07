@@ -65,7 +65,7 @@ p[style-name='endnote text'] => p
 r[style-name='endnote reference'] =>
 p[style-name='annotation text'] => p
 r[style-name='annotation reference'] =>
-        
+
 # LibreOffice
 p[style-name='Footnote'] => p
 r[style-name='Footnote anchor'] =>

@@ -365,7 +365,7 @@ def table_cells_are_written_with_rowspan_if_not_equal_to_one():
 
 @istest
 def line_break_is_converted_to_br():
-    line_break = documents.line_break()
+    line_break = documents.Break('line')
     result = convert_document_element_to_html(line_break)
     assert_equal("<br />", result.value)
 

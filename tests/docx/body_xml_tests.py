@@ -422,22 +422,33 @@ class ReadXmlElementTests(object):
             documents.bookmark("start"),
             _read_and_get_document_xml_element(element)
         )
-    
+
     @istest
-    def br_is_read_as_line_break(self):
+    def line_break(self):
         break_element = xml_element("w:br", {}, [])
-        result = _read_and_get_document_xml_element(break_element)
-        assert_equal(result, documents.line_break())
-    
-    
+        result = _read_document_xml_element(break_element)
+        assert_equal(documents.Break(), result.value)
+
     @istest
-    def warning_on_breaks_that_arent_line_breaks(self):
+    def page_break(self):
         break_element = xml_element("w:br", {"w:type": "page"}, [])
         result = _read_document_xml_element(break_element)
-        expected_warning = results.warning("Unsupported break type: page")
+        assert_equal(documents.Break("page"), result.value)
+
+    @istest
+    def column_break(self):
+        break_element = xml_element("w:br", {"w:type": "column"}, [])
+        result = _read_document_xml_element(break_element)
+        assert_equal(documents.Break("column"), result.value)
+
+    @istest
+    def warning_on_break_types_that_arent_supported(self):
+        break_element = xml_element("w:br", {"w:type": "not_supported"}, [])
+        result = _read_document_xml_element(break_element)
+        expected_warning = results.warning("Unsupported break type: not_supported")
         assert_equal([expected_warning], result.messages)
         assert_equal(None, result.value)
-        
+
     
     IMAGE_BYTES = b"Not an image at all!"
     IMAGE_RELATIONSHIP_ID = "rId5"
