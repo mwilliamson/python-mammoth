@@ -132,6 +132,22 @@ class _DocumentConverter(documents.ElementVisitor):
         else:
             return html_paths.empty
 
+
+    def visit_br(self, Break):
+        return self._find_style_for_Break_property(Break, Break.break_type)
+
+
+    def _find_style_for_Break_property(self, Break, break_type=None):
+        style = self._find_style(Break, break_type)
+        if style is not None:
+            return style.html_path
+        else:
+            if break_type == "page" or break_type == "column":
+                return [html.element("br",{"class": break_type})]
+            else:
+                return [html.element("br")]
+
+
     def visit_text(self, text):
         return [html.text(text.value)]
     
@@ -176,13 +192,6 @@ class _DocumentConverter(documents.ElementVisitor):
         return [
             html.element("td", attributes, nodes)
         ]
-    
-
-    def visit_br(self, Break):
-        if Break.break_type == "page" or Break.break_type == "column":
-            return [html.self_closing_element("br",{"class": Break.break_type})]
-        else:
-            return [html.element("br")]
 
 
     def visit_note_reference(self, note_reference):
@@ -306,7 +315,7 @@ def _document_matcher_matches(matcher, element, element_type):
     if matcher.element_type in ["underline", "strikethrough", "bold", "italic", "comment_reference"]:
         return matcher.element_type == element_type
     elif matcher.element_type == "Break":
-    	return (
+        return (
             matcher.element_type == element_type and (
                 matcher.break_type is None or
                 matcher.break_type == element.break_type
