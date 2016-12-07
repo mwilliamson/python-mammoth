@@ -18,6 +18,13 @@ def run(style_id=None, style_name=None):
 RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
 RunMatcher.element_type = "run"
 
+def Break(break_type=None):
+    return BreakMatcher(break_type)
+
+
+BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
+BreakMatcher.element_type = "Break"
+
 
 class bold(object):
     element_type = "bold"
@@ -49,12 +56,7 @@ def _operator_equal_to(first, second):
     
 def starts_with(value):
     return StringMatcher(_operator_starts_with, value)
- 
-def Break(break_type=None):
-    return BreakMatcher(break_type)
 
-BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
-BreakMatcher.element_type = "Break"
 
 def _operator_starts_with(first, second):
     return second.upper().startswith(first.upper())

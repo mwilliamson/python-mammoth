@@ -14,6 +14,8 @@ def read_document_matcher_node(root_node):
         return _read_paragraph_node(element_node)
     elif element_node.expr_name == "run":
         return _read_run_node(element_node)
+    elif element_node.expr_name == "Break":
+        return _read_Break_node(element_node)
     elif element_node.expr_name == "bold":
         return document_matchers.bold
     elif element_node.expr_name == "italic":
@@ -24,8 +26,6 @@ def read_document_matcher_node(root_node):
         return document_matchers.strikethrough
     elif element_node.expr_name == "comment_reference":
         return document_matchers.comment_reference
-    elif element_node.expr_name == "Break":
-        return document_matchers.Break
     
 
 def _read_paragraph_node(paragraph_node):
@@ -39,6 +39,11 @@ def _read_run_node(run_node):
     style_id = _read_style_id_node(run_node.children[1])
     style_name = _read_style_name_node(run_node.children[2])
     return document_matchers.run(style_id=style_id, style_name=style_name)
+
+
+def _read_Break_node(break_node):
+    break_type = _read_style_id_node(break_node.children[1])
+    return document_matchers.Break(break_type=break_type)
 
 
 def _read_style_id_node(style_id_node):
