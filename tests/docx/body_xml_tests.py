@@ -430,6 +430,12 @@ class ReadXmlElementTests(object):
         assert_equal(documents.line_break, result.value)
 
     @istest
+    def br_with_text_wrapping_type_is_read_as_line_break(self):
+        break_element = xml_element("w:br", {"w:type": "textWrapping"}, [])
+        result = _read_document_xml_element(break_element)
+        assert_equal(documents.line_break, result.value)
+
+    @istest
     def br_with_page_type_is_read_as_page_break(self):
         break_element = xml_element("w:br", {"w:type": "page"}, [])
         result = _read_document_xml_element(break_element)
