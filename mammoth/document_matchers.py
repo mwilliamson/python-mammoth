@@ -43,7 +43,7 @@ def Break(break_type=None):
     return BreakMatcher(break_type)
 
 BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
-BreakMatcher.element_type = "Break"
+BreakMatcher.element_type = "break"
 
 
 def equal_to(value):
