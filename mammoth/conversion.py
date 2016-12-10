@@ -133,7 +133,7 @@ class _DocumentConverter(documents.ElementVisitor):
             return html_paths.empty
 
 
-    def visit_br(self, Break):
+    def visit_break(self, Break):
         return self._find_style_for_Break_property(Break, Break.break_type)
 
 

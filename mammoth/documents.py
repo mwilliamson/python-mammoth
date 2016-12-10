@@ -53,8 +53,10 @@ class TableCell(HasChildren):
     rowspan = cobble.field()
 
 @cobble.data
-class Br(Element):
+class Break(Element):
     break_type = cobble.field(default=None)
+
+break_ = Break
 
 @cobble.data
 class Tab(Element):
@@ -122,8 +124,6 @@ def table_cell(children, colspan=None, rowspan=None):
         rowspan = 1
     return TableCell(children=children, colspan=colspan, rowspan=rowspan)
 
-
-Break = Br
 
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))
