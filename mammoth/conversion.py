@@ -179,7 +179,7 @@ class _DocumentConverter(documents.ElementVisitor):
     
     
     def visit_line_break(self, line_break):
-        return [html.self_closing_element("br")]
+        return [html.element("br")]
     
     def visit_note_reference(self, note_reference):
         self._note_references.append(note_reference)

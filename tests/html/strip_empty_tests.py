@@ -54,8 +54,8 @@ def empty_children_are_removed():
 @istest
 def self_closing_elements_are_never_empty():
     assert_equal(
-        [html.self_closing_element("br")],
-        html.strip_empty([html.self_closing_element("br")]))
+        [html.element("br")],
+        html.strip_empty([html.element("br")]))
 
 
 @istest

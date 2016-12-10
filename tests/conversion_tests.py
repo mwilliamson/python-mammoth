@@ -389,7 +389,7 @@ def images_have_alt_tags_if_available():
 def can_define_custom_conversion_for_images():
     def convert_image(image):
         with image.open() as image_file:
-            return [html.self_closing_element("img", {"alt": image_file.read().decode("ascii")})]
+            return [html.element("img", {"alt": image_file.read().decode("ascii")})]
         
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)

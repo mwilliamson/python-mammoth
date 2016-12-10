@@ -7,7 +7,7 @@ def img_element(func):
         if image.alt_text:
             attributes["alt"] = image.alt_text
             
-        return [html.self_closing_element("img", attributes)]
+        return [html.element("img", attributes)]
     
     return convert_image
 

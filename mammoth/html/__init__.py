@@ -1,5 +1,5 @@
 from ..lists import flat_map
-from .nodes import TextNode, Tag, Element, SelfClosingElement, ForceWrite, NodeVisitor
+from .nodes import TextNode, Tag, Element, ForceWrite, NodeVisitor
 
 
 def text(value):
@@ -24,13 +24,6 @@ def element(tag_names, attributes=None, children=None, collapsible=None, separat
 
 def collapsible_element(tag_names, attributes=None, children=None):
     return element(tag_names, attributes, children, collapsible=True)
-    
-
-def self_closing_element(tag_name, attributes=None):
-    if attributes is None:
-        attributes = {}
-    
-    return SelfClosingElement(tag_name, attributes)
 
 
 force_write = ForceWrite()
@@ -53,13 +46,10 @@ class StripEmpty(NodeVisitor):
     
     def visit_element(self, element):
         children = strip_empty(element.children)
-        if len(children) == 0:
+        if len(children) == 0 and not element.is_void():
             return []
         else:
             return [Element(element.tag, children)]
-    
-    def visit_self_closing_element(self, element):
-        return [element]
     
     def visit_force_write(self, node):
         return [node]
@@ -79,9 +69,6 @@ class _CollapseNode(NodeVisitor):
     
     def visit_element(self, element):
         return Element(element.tag, collapse(element.children))
-    
-    def visit_self_closing_element(self, element):
-        return element
     
     def visit_force_write(self, node):
         return node
@@ -133,12 +120,12 @@ class _NodeWriter(NodeVisitor):
         self._writer.text(node.value)
     
     def visit_element(self, element):
-        self._writer.start(element.tag_name, element.attributes)
-        self.visit_all(element.children)
-        self._writer.end(element.tag_name)
-    
-    def visit_self_closing_element(self, element):
-        self._writer.self_closing(element.tag_name, element.attributes)
+        if element.is_void():
+            self._writer.self_closing(element.tag_name, element.attributes)
+        else:
+            self._writer.start(element.tag_name, element.attributes)
+            self.visit_all(element.children)
+            self._writer.end(element.tag_name)
     
     def visit_force_write(self, element):
         pass

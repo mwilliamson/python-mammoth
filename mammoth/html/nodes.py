@@ -47,11 +47,10 @@ class Element(Node):
     def separator(self):
         return self.tag.separator
 
+    _VOID_TAG_NAMES = set(["br", "hr", "img"])
 
-@cobble.data
-class SelfClosingElement(Node):
-    tag_name = cobble.field()
-    attributes = cobble.field()
+    def is_void(self):
+        return not self.children and self.tag_name in self._VOID_TAG_NAMES
 
 
 @cobble.visitable
