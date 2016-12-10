@@ -316,10 +316,8 @@ def _document_matcher_matches(matcher, element, element_type):
         return matcher.element_type == element_type
     elif matcher.element_type == "break":
         return (
-            matcher.element_type == element_type and (
-                matcher.break_type is None or
-                matcher.break_type == element.break_type
-            )
+            matcher.element_type == element_type and
+            matcher.break_type == element.break_type
         )
     else: # matcher.element_type in ["paragraph", "run"]:
         return (
