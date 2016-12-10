@@ -263,7 +263,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _success(documents.bookmark(name))
     
     
-    def Break(element):
+    def break_(element):
         break_type = element.attributes.get("w:type")
 
         if not break_type or break_type == "textWrapping":
@@ -379,7 +379,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:pict": pict,
         "w:hyperlink": hyperlink,
         "w:bookmarkStart": bookmark_start,
-        "w:br": Break,
+        "w:br": break_,
         "wp:inline": inline,
         "wp:anchor": inline,
         "v:imagedata": read_imagedata,
