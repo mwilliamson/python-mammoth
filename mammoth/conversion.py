@@ -133,19 +133,18 @@ class _DocumentConverter(documents.ElementVisitor):
             return html_paths.empty
 
 
-    def visit_break(self, Break):
-        return self._find_style_for_Break_property(Break, Break.break_type)
+    def visit_break(self, break_):
+        return self._find_html_path_for_break(break_).wrap(lambda: [])
 
 
-    def _find_style_for_Break_property(self, Break, break_type=None):
-        style = self._find_style(Break, break_type)
+    def _find_html_path_for_break(self, break_):
+        style = self._find_style(break_, "break")
         if style is not None:
             return style.html_path
+        elif break_.break_type == "line":
+            return html_paths.path([html_paths.element("br", fresh=True)])
         else:
-            if break_type == "page" or break_type == "column":
-                return [html.element("br",{"class": break_type})]
-            else:
-                return [html.element("br")]
+            return html_paths.empty
 
 
     def visit_text(self, text):
