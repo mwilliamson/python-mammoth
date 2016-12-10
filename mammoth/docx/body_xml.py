@@ -268,7 +268,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         if not break_type or break_type == "textWrapping":
             return _success(documents.line_break)
-        if break_type == "page":
+        elif break_type == "page":
             return _success(documents.page_break)
         elif break_type == "column":
             return _success(documents.column_break)
