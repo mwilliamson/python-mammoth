@@ -132,6 +132,33 @@ def reads_comment_reference():
         read_document_matcher("comment-reference")
     )
 
+@istest
+def reads_line_breaks():
+    assert_equal(
+        document_matchers.line_break,
+        read_document_matcher("br[type='line']"),
+    )
+
+@istest
+def reads_page_breaks():
+    assert_equal(
+        document_matchers.page_break,
+        read_document_matcher("br[type='page']"),
+    )
+
+@istest
+def reads_column_breaks():
+    assert_equal(
+        document_matchers.column_break,
+        read_document_matcher("br[type='column']"),
+    )
+
+
+@istest
+def unrecognised_break_type_raises_error():
+    error = assert_raises(LineParseError, lambda: read_document_matcher("br[type='unknownBreakType']"))
+    assert_equal("Unrecognised break type: unknownBreakType", str(error))
+    
 
 def read_document_matcher(string):
     return parse_document_matcher(TokenIterator(tokenise(string)))
