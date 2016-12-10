@@ -54,7 +54,7 @@ class TableCell(HasChildren):
 
 @cobble.data
 class Break(Element):
-    break_type = cobble.field(default=None)
+    break_type = cobble.field()
 
 break_ = Break
 

@@ -427,7 +427,7 @@ class ReadXmlElementTests(object):
     def line_break(self):
         break_element = xml_element("w:br", {}, [])
         result = _read_document_xml_element(break_element)
-        assert_equal(documents.Break(), result.value)
+        assert_equal(documents.Break("line"), result.value)
 
     @istest
     def page_break(self):
