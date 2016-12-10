@@ -56,7 +56,10 @@ class TableCell(HasChildren):
 class Break(Element):
     break_type = cobble.field()
 
-break_ = Break
+line_break = Break("line")
+page_break = Break("page")
+column_break = Break("column")
+
 
 @cobble.data
 class Tab(Element):

@@ -427,19 +427,19 @@ class ReadXmlElementTests(object):
     def line_break(self):
         break_element = xml_element("w:br", {}, [])
         result = _read_document_xml_element(break_element)
-        assert_equal(documents.Break("line"), result.value)
+        assert_equal(documents.line_break, result.value)
 
     @istest
     def page_break(self):
         break_element = xml_element("w:br", {"w:type": "page"}, [])
         result = _read_document_xml_element(break_element)
-        assert_equal(documents.Break("page"), result.value)
+        assert_equal(documents.page_break, result.value)
 
     @istest
     def column_break(self):
         break_element = xml_element("w:br", {"w:type": "column"}, [])
         result = _read_document_xml_element(break_element)
-        assert_equal(documents.Break("column"), result.value)
+        assert_equal(documents.column_break, result.value)
 
     @istest
     def warning_on_break_types_that_arent_supported(self):

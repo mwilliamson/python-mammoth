@@ -266,12 +266,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def Break(element):
         break_type = element.attributes.get("w:type")
         if not break_type:
-            return _success(documents.break_("line"))
+            return _success(documents.line_break)
  
         if break_type == 'page':
-            return _success(documents.break_("page"))
+            return _success(documents.page_break)
         elif break_type == 'column':
-            return _success(documents.break_("column"))
+            return _success(documents.column_break)
         else:
             warning = results.warning("Unsupported break type: {0}".format(break_type))
             return _empty_result_with_message(warning)
