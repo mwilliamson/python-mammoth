@@ -1,8 +1,15 @@
 sudo: false
 language: python
 python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
   - "3.5"
+  - "3.6"
+  - "pypy"
 install:
   - "pip install 'virtualenv<14.0.0' tox"
   - "make README"
-script: tox
+script: tox -e py
