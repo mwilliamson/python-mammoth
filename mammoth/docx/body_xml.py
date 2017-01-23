@@ -3,9 +3,9 @@ import contextlib
 from .. import documents
 from .. import results
 from .. import lists
-from ..zips import uri_to_zip_entry_name
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
+from .uris import uri_to_zip_entry_name
 
 
 def reader(numbering=None,

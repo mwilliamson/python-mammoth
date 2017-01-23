@@ -1,6 +1,6 @@
 from nose.tools import istest, assert_equal
 
-from mammoth.zips import uri_to_zip_entry_name
+from mammoth.docx.uris import uri_to_zip_entry_name
 
 
 @istest
