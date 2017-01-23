@@ -54,3 +54,10 @@ def update_zip(fileobj, files):
     fileobj.seek(0)
     destination_fileobj.seek(0)
     shutil.copyfileobj(destination_fileobj, fileobj)
+
+
+def uri_to_zip_entry_name(base, uri):
+    if uri.startswith("/"):
+        return uri[1:]
+    else:
+        return base + "/" + uri

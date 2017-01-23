@@ -3,6 +3,7 @@ import contextlib
 from .. import documents
 from .. import results
 from .. import lists
+from ..zips import uri_to_zip_entry_name
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 
@@ -317,7 +318,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _find_linked_image(link_relationship_id)
     
     def _find_embedded_image(relationship_id):
-        image_path = "word/" + relationships[relationship_id].target.lstrip("/")
+        image_path = uri_to_zip_entry_name("word", relationships[relationship_id].target)
         
         def open_image():
             image_file = docx_file.open(image_path)
