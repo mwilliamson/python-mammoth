@@ -8,12 +8,14 @@ from .styles_xml import Styles
 from .uris import uri_to_zip_entry_name
 
 
-def reader(numbering=None,
-        content_types=None,
-        relationships=None,
-        styles=None,
-        docx_file=None,
-        files=None):
+def reader(
+    numbering=None,
+    content_types=None,
+    relationships=None,
+    styles=None,
+    docx_file=None,
+    files=None
+):
     
     if styles is None:
         styles = Styles({}, {})
