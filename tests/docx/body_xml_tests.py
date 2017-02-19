@@ -13,28 +13,30 @@ from mammoth.docx.styles_xml import Styles, Style
 
 
 @istest
-class ReadXmlElementTests(object):
-    @istest
-    def text_from_text_element_is_read(self):
-        element = _text_element("Hello!")
-        assert_equal(documents.Text("Hello!"), _read_and_get_document_xml_element(element))
-    
-    @istest
-    def can_read_text_within_run(self):
-        element = _run_element_with_text("Hello!")
-        assert_equal(
-            documents.run([documents.Text("Hello!")]),
-            _read_and_get_document_xml_element(element)
-        )
-    
-    @istest
-    def can_read_text_within_paragraph(self):
-        element = _paragraph_element_with_text("Hello!")
-        assert_equal(
-            documents.paragraph([documents.run([documents.Text("Hello!")])]),
-            _read_and_get_document_xml_element(element)
-        )
-        
+def text_from_text_element_is_read():
+    element = _text_element("Hello!")
+    assert_equal(documents.Text("Hello!"), _read_and_get_document_xml_element(element))
+
+
+@istest
+def can_read_text_within_run():
+    element = _run_element_with_text("Hello!")
+    assert_equal(
+        documents.run([documents.Text("Hello!")]),
+        _read_and_get_document_xml_element(element)
+    )
+
+@istest
+def can_read_text_within_paragraph():
+    element = _paragraph_element_with_text("Hello!")
+    assert_equal(
+        documents.paragraph([documents.run([documents.Text("Hello!")])]),
+        _read_and_get_document_xml_element(element)
+    )
+
+
+@istest
+class ParagraphTests(object):
     @istest
     def paragraph_has_no_style_if_it_has_no_properties(self):
         element = xml_element("w:p")
@@ -110,7 +112,10 @@ class ReadXmlElementTests(object):
         numbering_properties_xml = xml_element("w:numPr", {}, children)
         properties_xml = xml_element("w:pPr", {}, [numbering_properties_xml])
         return xml_element("w:p", {}, [properties_xml])
-    
+
+
+@istest
+class RunTests(object):
     @istest
     def run_has_no_style_if_it_has_no_properties(self):
         element = xml_element("w:r")
@@ -224,13 +229,15 @@ class ReadXmlElementTests(object):
         return _read_and_get_document_xml_element(run_xml, styles=styles)
 
 
-    @istest
-    def can_read_tab_element(self):
-        element = xml_element("w:tab")
-        tab = _read_and_get_document_xml_element(element)
-        assert_equal(documents.tab(), tab)
+@istest
+def can_read_tab_element():
+    element = xml_element("w:tab")
+    tab = _read_and_get_document_xml_element(element)
+    assert_equal(documents.tab(), tab)
     
-    
+
+@istest
+class TableTests(object):
     @istest
     def word_table_is_read_as_document_table_element(self):
         element = xml_element("w:tbl", {}, [
@@ -356,30 +363,33 @@ class ReadXmlElementTests(object):
         assert_equal([expected_warning], result.messages)
 
 
-    @istest
-    def children_of_w_ins_are_converted_normally(self):
-        element = xml_element("w:p", {}, [
-            xml_element("w:ins", {}, [
-                xml_element("w:r")
-            ])
+@istest
+def children_of_w_ins_are_converted_normally():
+    element = xml_element("w:p", {}, [
+        xml_element("w:ins", {}, [
+            xml_element("w:r")
         ])
-        assert_equal(
-            documents.paragraph([documents.run([])]),
-            _read_and_get_document_xml_element(element)
-        )
-        
-    @istest
-    def children_of_w_smart_tag_are_converted_normally(self):
-        element = xml_element("w:p", {}, [
-            xml_element("w:smartTag", {}, [
-                xml_element("w:r")
-            ])
+    ])
+    assert_equal(
+        documents.paragraph([documents.run([])]),
+        _read_and_get_document_xml_element(element)
+    )
+    
+@istest
+def children_of_w_smart_tag_are_converted_normally():
+    element = xml_element("w:p", {}, [
+        xml_element("w:smartTag", {}, [
+            xml_element("w:r")
         ])
-        assert_equal(
-            documents.paragraph([documents.run([])]),
-            _read_and_get_document_xml_element(element)
-        )
-        
+    ])
+    assert_equal(
+        documents.paragraph([documents.run([])]),
+        _read_and_get_document_xml_element(element)
+    )
+
+
+@istest
+class HyperlinkTests(object):
     @istest
     def hyperlink_is_read_if_it_has_a_relationship_id(self):
         relationships = Relationships({
@@ -409,7 +419,10 @@ class ReadXmlElementTests(object):
             documents.run([]),
             _read_and_get_document_xml_element(element)
         )
-        
+
+
+@istest
+class BookmarkTests(object):
     @istest
     def go_back_bookmark_is_ignored(self):
         element = xml_element("w:bookmarkStart", {"w:name": "_GoBack"})
@@ -423,6 +436,9 @@ class ReadXmlElementTests(object):
             _read_and_get_document_xml_element(element)
         )
 
+
+@istest
+class BreakTests(object):
     @istest
     def br_without_explicit_type_is_read_as_line_break(self):
         break_element = xml_element("w:br", {}, [])
@@ -455,7 +471,9 @@ class ReadXmlElementTests(object):
         assert_equal([expected_warning], result.messages)
         assert_equal(None, result.value)
 
-    
+
+@istest
+class ImageTests(object):
     IMAGE_BYTES = b"Not an image at all!"
     IMAGE_RELATIONSHIP_ID = "rId5"
     
@@ -643,93 +661,94 @@ class ReadXmlElementTests(object):
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
-    
-    @istest
-    def footnote_reference_has_id_read(self):
-        footnote_xml = xml_element("w:footnoteReference", {"w:id": "4"})
-        footnote = _read_and_get_document_xml_element(footnote_xml)
-        assert_equal("4", footnote.note_id)
-    
-    @istest
-    def comment_reference_has_id_read(self):
-        comment_reference_xml = xml_element("w:commentReference", {"w:id": "4"})
-        comment_reference = _read_and_get_document_xml_element(comment_reference_xml)
-        assert_equal(documents.CommentReference("4"), comment_reference)
 
-    @istest
-    def ignored_elements_are_ignored_without_message(self):
-        element = xml_element("w:bookmarkEnd")
-        result = _read_document_xml_element(element)
-        assert_equal(None, result.value)
-        assert_equal([], result.messages)
+
+@istest
+def footnote_reference_has_id_read():
+    footnote_xml = xml_element("w:footnoteReference", {"w:id": "4"})
+    footnote = _read_and_get_document_xml_element(footnote_xml)
+    assert_equal("4", footnote.note_id)
+
+@istest
+def comment_reference_has_id_read():
+    comment_reference_xml = xml_element("w:commentReference", {"w:id": "4"})
+    comment_reference = _read_and_get_document_xml_element(comment_reference_xml)
+    assert_equal(documents.CommentReference("4"), comment_reference)
+
+@istest
+def ignored_elements_are_ignored_without_message():
+    element = xml_element("w:bookmarkEnd")
+    result = _read_document_xml_element(element)
+    assert_equal(None, result.value)
+    assert_equal([], result.messages)
+
+@istest
+def unrecognised_elements_emit_warning():
+    element = xml_element("w:huh", {}, [])
+    result = _read_document_xml_element(element)
+    expected_warning = results.warning("An unrecognised element was ignored: w:huh")
+    assert_equal([expected_warning], result.messages)
+
+@istest
+def unrecognised_elements_are_ignored():
+    element = xml_element("w:huh", {}, [])
+    assert_equal(None, _read_document_xml_element(element).value)
+
+@istest
+def unrecognised_children_are_ignored():
+    element = xml_element("w:r", {}, [_text_element("Hello!"), xml_element("w:huh", {}, [])])
+    assert_equal(
+        documents.run([documents.Text("Hello!")]),
+        _read_document_xml_element(element).value
+    )
     
-    @istest
-    def unrecognised_elements_emit_warning(self):
-        element = xml_element("w:huh", {}, [])
-        result = _read_document_xml_element(element)
-        expected_warning = results.warning("An unrecognised element was ignored: w:huh")
-        assert_equal([expected_warning], result.messages)
-    
-    @istest
-    def unrecognised_elements_are_ignored(self):
-        element = xml_element("w:huh", {}, [])
-        assert_equal(None, _read_document_xml_element(element).value)
-    
-    @istest
-    def unrecognised_children_are_ignored(self):
-        element = xml_element("w:r", {}, [_text_element("Hello!"), xml_element("w:huh", {}, [])])
-        assert_equal(
-            documents.run([documents.Text("Hello!")]),
-            _read_document_xml_element(element).value
-        )
-        
-    @istest
-    def text_boxes_have_content_appended_after_containing_paragraph(self):
-        text_box = xml_element("w:pict", {}, [
-            xml_element("v:shape", {}, [
-                xml_element("v:textbox", {}, [
-                    xml_element("w:txbxContent", {}, [
-                        _paragraph_with_style_id("textbox-content")
-                    ])
+@istest
+def text_boxes_have_content_appended_after_containing_paragraph():
+    text_box = xml_element("w:pict", {}, [
+        xml_element("v:shape", {}, [
+            xml_element("v:textbox", {}, [
+                xml_element("w:txbxContent", {}, [
+                    _paragraph_with_style_id("textbox-content")
                 ])
             ])
         ])
-        paragraph = xml_element("w:p", {}, [
-            xml_element("w:r", {}, [text_box])
-        ])
-        result = _read_and_get_document_xml_elements(paragraph)
-        assert_equal(result[1].style_id, "textbox-content")
-    
-    @istest
-    def alternate_content_is_read_using_fallback(self):
-        element = xml_element("mc:AlternateContent", {}, [
-            xml_element("mc:Choice", {"Requires": "wps"}, [
-                _paragraph_with_style_id("first")
-            ]),
-            xml_element("mc:Fallback", {}, [
-                _paragraph_with_style_id("second")
-            ])
-        ])
-        result = _read_and_get_document_xml_element(element)
-        assert_equal("second", result.style_id)
-    
-    @istest
-    def sdt_is_read_using_sdt_content(self):
-        element = xml_element("w:sdt", {}, [
-            xml_element("w:sdtContent", {}, [
-                xml_element("w:t", {}, [xml_text("Blackdown")]),
-            ]),
-        ])
-        result = _read_and_get_document_xml_element(element)
-        assert_equal(documents.text("Blackdown"), result)
+    ])
+    paragraph = xml_element("w:p", {}, [
+        xml_element("w:r", {}, [text_box])
+    ])
+    result = _read_and_get_document_xml_elements(paragraph)
+    assert_equal(result[1].style_id, "textbox-content")
 
-    @istest
-    def text_nodes_are_ignored_when_reading_children(self):
-        element = xml_element("w:r", {}, [xml_text("[text]")])
-        assert_equal(
-            documents.run([]),
-            _read_and_get_document_xml_element(element)
-        )
+@istest
+def alternate_content_is_read_using_fallback():
+    element = xml_element("mc:AlternateContent", {}, [
+        xml_element("mc:Choice", {"Requires": "wps"}, [
+            _paragraph_with_style_id("first")
+        ]),
+        xml_element("mc:Fallback", {}, [
+            _paragraph_with_style_id("second")
+        ])
+    ])
+    result = _read_and_get_document_xml_element(element)
+    assert_equal("second", result.style_id)
+
+@istest
+def sdt_is_read_using_sdt_content():
+    element = xml_element("w:sdt", {}, [
+        xml_element("w:sdtContent", {}, [
+            xml_element("w:t", {}, [xml_text("Blackdown")]),
+        ]),
+    ])
+    result = _read_and_get_document_xml_element(element)
+    assert_equal(documents.text("Blackdown"), result)
+
+@istest
+def text_nodes_are_ignored_when_reading_children():
+    element = xml_element("w:r", {}, [xml_text("[text]")])
+    assert_equal(
+        documents.run([]),
+        _read_and_get_document_xml_element(element)
+    )
 
 def _read_and_get_document_xml_element(*args, **kwargs):
     return _read_and_get_document_xml(
