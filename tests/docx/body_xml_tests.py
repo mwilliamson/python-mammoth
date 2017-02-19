@@ -733,7 +733,7 @@ class ReadXmlElementTests(object):
 
 def _read_and_get_document_xml_element(*args, **kwargs):
     return _read_and_get_document_xml(
-        lambda reader, element: reader.read(element),
+        lambda reader, element: reader.read_all([element]).map(single),
         *args,
         **kwargs)
 
@@ -754,7 +754,7 @@ def _read_and_get_document_xml(func, *args, **kwargs):
 
 def _read_document_xml_element(*args, **kwargs):
     return _read_document_xml(
-        lambda reader, element: reader.read(element),
+        lambda reader, element: reader.read_all([element]).map(single),
         *args,
         **kwargs)
 
@@ -853,3 +853,12 @@ def w_gridspan(val):
 
 def w_vmerge(val):
     return xml_element("w:vMerge", {"w:val": val})
+
+
+def single(values):
+    if len(values) == 0:
+        return None
+    elif len(values) == 1:
+        return values[0]
+    else:
+        raise Exception("Had {0} elements".format(len(values)))

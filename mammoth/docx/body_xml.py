@@ -18,7 +18,7 @@ def reader(numbering=None,
     if styles is None:
         styles = Styles({}, {})
     
-    read, read_all = _create_reader(
+    read_all = _create_reader(
         numbering=numbering,
         content_types=content_types,
         relationships=relationships,
@@ -26,22 +26,13 @@ def reader(numbering=None,
         docx_file=docx_file,
         files=files,
     )
-    return _BodyReader(read, read_all)
+    return _BodyReader(read_all)
 
 
 
 class _BodyReader(object):
-    def __init__(self, read, read_all):
-        self._read = read
+    def __init__(self, read_all):
         self._read_all = read_all
-    
-    def read(self, element):
-        result = self._read(element)
-        if result.elements:
-            element = result.elements[0]
-        else:
-            element = None
-        return results.Result(element, result.messages)
     
     def read_all(self, elements):
         result = self._read_all(elements)
@@ -407,7 +398,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         elements = filter(lambda node: isinstance(node, XmlElement), nodes)
         return _ReadResult.concat(lists.map(read, elements))
     
-    return read, _read_xml_elements
+    return _read_xml_elements
 
 
 def _inner_text(node):
