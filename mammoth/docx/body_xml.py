@@ -1,8 +1,10 @@
 import contextlib
+import re
 
 from .. import documents
 from .. import results
 from .. import lists
+from . import complex_fields
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 from .uris import uri_to_zip_entry_name
@@ -77,9 +79,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         is_underline = read_boolean_element(properties.find_child("w:u"))
         is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
         
+        def add_complex_field_hyperlink(children):
+            hyperlink_href = current_hyperlink_href()
+            if hyperlink_href is None:
+                return children
+            else:
+                return [documents.hyperlink(href=hyperlink_href, children=children)]
+        
         return _ReadResult.map_results(
             _read_run_style(properties),
-            _read_xml_elements(element.children),
+            _read_xml_elements(element.children).map(add_complex_field_hyperlink),
             lambda style, children: documents.run(
                 children=children,
                 style_id=style[0],
@@ -90,6 +99,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 is_strikethrough=is_strikethrough,
                 vertical_alignment=vertical_alignment,
             ))
+    
+    def _read_run_style(properties):
+        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
 
     def read_boolean_element(element):
         return element and element.attributes.get("w:val") not in ["false", "0"]
@@ -112,8 +124,42 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def _read_paragraph_style(properties):
         return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id)
     
-    def _read_run_style(properties):
-        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
+    current_instr_text = []
+    complex_field_stack = []
+    
+    def current_hyperlink_href():
+        for complex_field in reversed(complex_field_stack):
+            if isinstance(complex_field, complex_fields.Hyperlink):
+                return complex_field.href
+
+        return None
+    
+    def read_fld_char(element):
+        fld_char_type = element.attributes.get("w:fldCharType")
+        if fld_char_type == "begin":
+            del current_instr_text[:]
+        elif fld_char_type == "end":
+            complex_field_stack.pop()
+        elif fld_char_type == "separate":
+            instr_text = "".join(current_instr_text)
+            hyperlink_href = parse_hyperlink_field_code(instr_text)
+            if hyperlink_href is None:
+                complex_field = complex_fields.unknown
+            else:
+                complex_field = complex_fields.hyperlink(hyperlink_href)
+            complex_field_stack.append(complex_field)
+        return _empty_result
+    
+    def parse_hyperlink_field_code(instr_text):
+        result = re.match(r'\s*HYPERLINK "(.*)"', instr_text)
+        if result is None:
+            return None
+        else:
+            return result.group(1)
+    
+    def read_instr_text(element):
+        current_instr_text.append(_inner_text(element))
+        return _empty_result
     
     def _read_style(properties, style_tag_name, style_type, find_style_by_id):
         messages = []
@@ -359,6 +405,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:t": text,
         "w:r": run,
         "w:p": paragraph,
+        "w:fldChar": read_fld_char,
+        "w:instrText": read_instr_text,
         "w:tab": tab,
         "w:tbl": table,
         "w:tr": table_row,

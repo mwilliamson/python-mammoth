@@ -1,5 +1,6 @@
 import io
 
+from precisely import assert_that, is_sequence
 from nose.tools import istest, assert_equal
 from nose_parameterized import parameterized, param
 import funk
@@ -10,6 +11,13 @@ from mammoth.docx import body_xml
 from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 from mammoth.docx.styles_xml import Styles, Style
+from .document_matchers import (
+    is_paragraph,
+    is_empty_run,
+    is_run,
+    is_hyperlink,
+    is_text,
+)
 
 
 @istest
@@ -227,6 +235,158 @@ class RunTests(object):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
         return _read_and_get_document_xml_element(run_xml, styles=styles)
+
+
+@istest
+class ComplexFieldTests(object):
+    _URI = "http://example.com"
+    _BEGIN_COMPLEX_FIELD = xml_element("w:r", {}, [
+        xml_element("w:fldChar", {"w:fldCharType": "begin"}),
+    ])
+    _SEPARATE_COMPLEX_FIELD = xml_element("w:r", {}, [
+        xml_element("w:fldChar", {"w:fldCharType": "separate"}),
+    ])
+    _END_COMPLEX_FIELD = xml_element("w:r", {}, [
+        xml_element("w:fldChar", {"w:fldCharType": "end"}),
+    ])
+    _HYPERLINK_INSTRTEXT = xml_element("w:instrText", {}, [
+        xml_text(' HYPERLINK "{0}"'.format(_URI))
+    ])
+    
+    def _is_hyperlinked_run(self, **kwargs):
+        return is_run(children=is_sequence(
+            is_hyperlink(
+                href=self._URI,
+                **kwargs
+            ),
+        ))
+    
+    @property
+    def _is_empty_hyperlinked_run(self):
+        return self._is_hyperlinked_run(children=[])
+    
+    @istest
+    def runs_in_a_complex_field_for_hyperlinks_are_read_as_hyperlinks(self):
+        element = xml_element("w:p", {}, [
+            self._BEGIN_COMPLEX_FIELD,
+            self._HYPERLINK_INSTRTEXT,
+            self._SEPARATE_COMPLEX_FIELD,
+            _run_element_with_text("this is a hyperlink"),
+            self._END_COMPLEX_FIELD,
+        ])
+        paragraph = _read_and_get_document_xml_element(element)
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            self._is_empty_hyperlinked_run,
+            self._is_hyperlinked_run(children=is_sequence(
+                is_text("this is a hyperlink"),
+            )),
+            is_empty_run,
+        )))
+    
+    @istest
+    def runs_after_a_complex_field_for_hyperlinks_are_not_read_as_hyperlinks(self):
+        element = xml_element("w:p", {}, [
+            self._BEGIN_COMPLEX_FIELD,
+            self._HYPERLINK_INSTRTEXT,
+            self._SEPARATE_COMPLEX_FIELD,
+            self._END_COMPLEX_FIELD,
+            _run_element_with_text("this will not be a hyperlink"),
+        ])
+        paragraph = _read_and_get_document_xml_element(element)
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            self._is_empty_hyperlinked_run,
+            is_empty_run,
+            is_run(children=is_sequence(
+                is_text("this will not be a hyperlink"),
+            )),
+        )))
+    
+    @istest
+    def can_handle_split_instr_text_elements(self):
+        element = xml_element("w:p", {}, [
+            self._BEGIN_COMPLEX_FIELD,
+            xml_element("w:instrText", {}, [
+                xml_text(" HYPE")
+            ]),
+            xml_element("w:instrText", {}, [
+                xml_text('RLINK "{0}"'.format(self._URI)),
+            ]),
+            self._SEPARATE_COMPLEX_FIELD,
+            _run_element_with_text("this is a hyperlink"),
+            self._END_COMPLEX_FIELD,
+        ])
+        paragraph = _read_and_get_document_xml_element(element)
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            self._is_empty_hyperlinked_run,
+            self._is_hyperlinked_run(children=is_sequence(
+                is_text("this is a hyperlink"),
+            )),
+            is_empty_run,
+        )))
+    
+    @istest
+    def hyperlink_is_not_ended_by_end_of_nested_complex_field(self):
+        element = xml_element("w:p", {}, [
+            self._BEGIN_COMPLEX_FIELD,
+            self._HYPERLINK_INSTRTEXT,
+            self._SEPARATE_COMPLEX_FIELD,
+            self._BEGIN_COMPLEX_FIELD,
+            xml_element("w:instrText", {}, [
+                xml_text(' AUTHOR "John Doe"')
+            ]),
+            self._SEPARATE_COMPLEX_FIELD,
+            self._END_COMPLEX_FIELD,
+            _run_element_with_text("this is a hyperlink"),
+            self._END_COMPLEX_FIELD,
+        ])
+        paragraph = _read_and_get_document_xml_element(element)
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            self._is_empty_hyperlinked_run,
+            self._is_empty_hyperlinked_run,
+            self._is_empty_hyperlinked_run,
+            self._is_empty_hyperlinked_run,
+            self._is_hyperlinked_run(children=is_sequence(
+                is_text("this is a hyperlink"),
+            )),
+            is_empty_run,
+        )))
+    
+    @istest
+    def complex_field_nested_within_a_hyperlink_complex_field_is_wrapped_with_the_hyperlink(self):
+        element = xml_element("w:p", {}, [
+            self._BEGIN_COMPLEX_FIELD,
+            self._HYPERLINK_INSTRTEXT,
+            self._SEPARATE_COMPLEX_FIELD,
+            self._BEGIN_COMPLEX_FIELD,
+            xml_element("w:instrText", {}, [
+                xml_text(' AUTHOR "John Doe"')
+            ]),
+            self._SEPARATE_COMPLEX_FIELD,
+            _run_element_with_text("John Doe"),
+            self._END_COMPLEX_FIELD,
+            self._END_COMPLEX_FIELD,
+        ])
+        paragraph = _read_and_get_document_xml_element(element)
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            self._is_empty_hyperlinked_run,
+            self._is_empty_hyperlinked_run,
+            self._is_empty_hyperlinked_run,
+            self._is_hyperlinked_run(children=is_sequence(
+                is_text("John Doe"),
+            )),
+            self._is_empty_hyperlinked_run,
+            is_empty_run,
+        )))
 
 
 @istest
