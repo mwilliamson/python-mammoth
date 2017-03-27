@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import base64
 import io
 import shutil
 import os
@@ -157,6 +158,23 @@ def warn_if_images_stored_outside_of_document_are_not_found():
             assert_equal("warning", result.messages[0].type)
             assert result.messages[0].message.startswith(expected_warning), "message was: " + result.messages[0].message
             assert_equal(1, len(result.messages))
+
+
+@istest
+def image_conversion_can_be_customised():
+    @mammoth.images.img_element
+    def convert_image(image):
+        with image.open() as image_bytes:
+            encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
+        
+        return {
+            "src": encoded_src[:2] + "," + image.content_type
+        }
+    
+    with open(test_path("tiny-picture.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, convert_image=convert_image)
+        assert_equal("""<p><img src="iV,image/png" /></p>""", result.value)
+        assert_equal([], result.messages)
         
 
 @istest
