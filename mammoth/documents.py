@@ -29,6 +29,7 @@ class Run(HasChildren):
     is_underline = cobble.field()
     is_strikethrough = cobble.field()
     vertical_alignment = cobble.field()
+    font = cobble.field()
 
 @cobble.data
 class Text(Element):
@@ -84,12 +85,23 @@ def document(children, notes=None, comments=None):
 def paragraph(children, style_id=None, style_name=None, numbering=None):
     return Paragraph(children, style_id, style_name, numbering)
 
-def run(children, style_id=None, style_name=None, is_bold=None, is_italic=None, is_underline=None, is_strikethrough=None, vertical_alignment=None):
+def run(
+    children,
+    style_id=None,
+    style_name=None,
+    is_bold=None,
+    is_italic=None,
+    is_underline=None,
+    is_strikethrough=None,
+    vertical_alignment=None,
+    font=None,
+):
     if vertical_alignment is None:
         vertical_alignment = VerticalAlignment.baseline
     return Run(
         children, style_id, style_name, bool(is_bold), bool(is_italic),
         bool(is_underline), bool(is_strikethrough), vertical_alignment,
+        font=font,
     )
 
 class VerticalAlignment(object):

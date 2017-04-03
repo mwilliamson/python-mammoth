@@ -230,6 +230,17 @@ class RunTests(object):
     def run_has_vertical_alignment_read_from_vertical_alignment_element(self):
         run = self._read_run_with_properties([xml_element("w:vertAlign", {"w:val": "superscript"})])
         assert_equal(documents.VerticalAlignment.superscript, run.vertical_alignment)
+
+    @istest
+    def run_has_none_font_by_default(self):
+        run = self._read_run_with_properties([])
+        assert_equal(None, run.font)
+
+    @istest
+    def run_has_font_read_from_properties(self):
+        font_xml = xml_element("w:rFonts", {"w:ascii": "Arial"})
+        run = self._read_run_with_properties([font_xml])
+        assert_equal("Arial", run.font)
     
     def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
