@@ -1,8 +1,8 @@
-from . import docx, conversion, options, images, underline
+from . import docx, conversion, options, images, transforms, underline
 from .raw_text import extract_raw_text_from_element
 from .docx.style_map import write_style_map, read_style_map
 
-__all__ = ["convert_to_html", "extract_raw_text", "images", "underline"]
+__all__ = ["convert_to_html", "extract_raw_text", "images", "transforms", "underline"]
 
 
 _undefined = object()

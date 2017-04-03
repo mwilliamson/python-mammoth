@@ -2,7 +2,8 @@ import cobble
 
 
 class Element(object):
-    pass
+    def copy(self, **kwargs):
+        return cobble.copy(self, **kwargs)
 
 
 class HasChildren(Element):

@@ -306,6 +306,17 @@ def transform_document_is_applied_to_document_before_conversion():
 
 
 @istest
+def paragraph_transform_only_transforms_paragraphs():
+    def transform_paragraph(paragraph):
+        return paragraph.copy(style_id="Heading1")
+    transform_document = mammoth.transforms.paragraph(transform_paragraph)
+    with open(test_path("single-paragraph.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, transform_document=transform_document)
+        assert_equal("<h1>Walking on imported air</h1>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
 def docx_containing_one_paragraph_can_be_converted_to_markdown():
     with open(test_path("single-paragraph.docx"), "rb") as fileobj:
         result = mammoth.convert_to_markdown(fileobj=fileobj)
