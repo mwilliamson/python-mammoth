@@ -536,15 +536,7 @@ class TableTests(object):
 
 @istest
 def children_of_w_ins_are_converted_normally():
-    element = xml_element("w:p", {}, [
-        xml_element("w:ins", {}, [
-            xml_element("w:r")
-        ])
-    ])
-    assert_equal(
-        documents.paragraph([documents.run([])]),
-        _read_and_get_document_xml_element(element)
-    )
+    _assert_children_are_converted_normally("w:ins")
     
 @istest
 def children_of_w_object_are_converted_normally():
