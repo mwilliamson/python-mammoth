@@ -420,6 +420,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "v:shape": read_child_elements,
         "v:textbox": read_child_elements,
         "w:txbxContent": read_child_elements,
+        "w:object": read_child_elements,
         "w:pict": pict,
         "w:hyperlink": hyperlink,
         "w:bookmarkStart": bookmark_start,

@@ -547,9 +547,17 @@ def children_of_w_ins_are_converted_normally():
     )
     
 @istest
+def children_of_w_object_are_converted_normally():
+    _assert_children_are_converted_normally("w:object")
+
+@istest
 def children_of_w_smart_tag_are_converted_normally():
+    _assert_children_are_converted_normally("w:smartTag")
+
+
+def _assert_children_are_converted_normally(tag_name):
     element = xml_element("w:p", {}, [
-        xml_element("w:smartTag", {}, [
+        xml_element(tag_name, {}, [
             xml_element("w:r")
         ])
     ])
