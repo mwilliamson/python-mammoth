@@ -402,6 +402,28 @@ transform_document = mammoth.transforms.paragraph(transform_paragraph)
 mammoth.convert_to_html(fileobj, transform_document=transform_document)
 ```
 
+Or if you want paragraphs that have been explicitly set to use monospace fonts to represent code:
+
+```python
+import mammoth.documents
+import mammoth.transforms
+
+_monospace_fonts = set(["Courier New"])
+
+def transform_paragraph(paragraph):
+    runs = mammoth.transforms.get_descendants_of_type(paragraph, mammoth.documents.Run)
+    if runs and all(run.font in _monospace_fonts for run in runs):
+        return paragraph.copy(style_id="code", style_name="Code")
+    else:
+        return paragraph
+
+convert_to_html(
+    fileobj,
+    transform_document=mammoth.transforms.paragraph(transform_paragraph),
+    style_map="p[style-name='Code'] => pre:separator('\n')",
+)
+```
+
 #### `mammoth.transforms.paragraph(transform_paragraph)`
 
 Returns a function that can be used as the `transform_document` argument.
