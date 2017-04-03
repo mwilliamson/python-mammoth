@@ -111,6 +111,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
+        alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         
         return _ReadResult.map_results(
@@ -121,6 +122,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 style_id=style[0],
                 style_name=style[1],
                 numbering=numbering,
+                alignment=alignment,
             )).append_extra()
     
     def _read_paragraph_style(properties):

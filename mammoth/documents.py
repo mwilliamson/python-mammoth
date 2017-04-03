@@ -20,6 +20,7 @@ class Paragraph(HasChildren):
     style_id = cobble.field()
     style_name = cobble.field()
     numbering = cobble.field()
+    alignment = cobble.field()
 
 @cobble.data
 class Run(HasChildren):
@@ -83,8 +84,8 @@ def document(children, notes=None, comments=None):
         comments = []
     return Document(children, notes, comments=comments)
 
-def paragraph(children, style_id=None, style_name=None, numbering=None):
-    return Paragraph(children, style_id, style_name, numbering)
+def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None):
+    return Paragraph(children, style_id, style_name, numbering, alignment=alignment)
 
 def run(
     children,

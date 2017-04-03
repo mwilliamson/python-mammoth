@@ -77,6 +77,20 @@ class ParagraphTests(object):
         assert_equal([results.warning("Paragraph style with ID Heading1 was referenced but not defined in the document")], result.messages)
         
     @istest
+    def paragraph_has_no_justification_if_it_has_no_justificiation_properties(self):
+        paragraph_xml = xml_element("w:p")
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal(None, paragraph.alignment)
+        
+    @istest
+    def paragraph_has_justification_read_from_paragraph_properties_if_present(self):
+        justification_xml = xml_element("w:jc", {"w:val": "center"})
+        properties_xml = xml_element("w:pPr", {}, [justification_xml])
+        paragraph_xml = xml_element("w:p", {}, [properties_xml])
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("center", paragraph.alignment)
+        
+    @istest
     def paragraph_has_no_numbering_if_it_has_no_numbering_properties(self):
         element = xml_element("w:p")
         assert_equal(None, _read_and_get_document_xml_element(element).numbering)
