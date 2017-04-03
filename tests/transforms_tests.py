@@ -1,7 +1,7 @@
 from nose.tools import assert_equal, istest
 
 from mammoth import documents
-from mammoth.transforms import get_descendants
+from mammoth.transforms import get_descendants, get_descendants_of_type
 
 
 @istest
@@ -26,3 +26,13 @@ class GetDescendantsTests(object):
         child = documents.run(children=[grandchild])
         element = documents.paragraph(children=[child])
         assert_equal([grandchild, child], get_descendants(element))
+
+
+@istest
+class GetDescendantsOfTypeTests(object):
+    @istest
+    def filters_descendants_to_type(self):
+        tab = documents.tab()
+        run = documents.run(children=[])
+        element = documents.paragraph(children=[tab, run])
+        assert_equal([run], get_descendants_of_type(element, documents.Run))

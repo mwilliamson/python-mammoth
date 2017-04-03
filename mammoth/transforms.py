@@ -22,6 +22,13 @@ def _each_element(transform_element):
     return transform_element_and_children
 
 
+def get_descendants_of_type(element, element_type):
+    return list(filter(
+        lambda descendant: isinstance(descendant, element_type),
+        get_descendants(element),
+    ))
+
+
 def get_descendants(element):
     descendants = []
 
