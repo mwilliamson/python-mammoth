@@ -289,6 +289,11 @@ Converts the source document to HTML.
   a string to prepend to any generated IDs,
   such as those used by bookmarks, footnotes and endnotes.
   Defaults to an empty string.
+  
+* `transform_document`: if set,
+  this function is applied to the document read from the docx file before the conversion to HTML.
+  The API for document transforms should be considered unstable.
+  See [document transforms](#document-transforms).
 
 * Returns a result with the following properties:
 
@@ -367,6 +372,56 @@ def convert_image(image):
     }
 
 mammoth.images.img_element(convert_image)
+```
+
+### Document transforms
+
+**The API for document transforms should be considered unstable,
+and may change between any versions.
+If you rely on this behaviour,
+you should pin to a specific version of Mammoth,
+and test carefully before updating.**
+
+Mammoth allows a document to be transformed before it is converted.
+For instance,
+suppose that document has not been semantically marked up,
+but you know that any centre-aligned paragraph should be a heading.
+You can use the `transform_document` argument to modify the document appropriately:
+
+```python
+import mammoth.transforms
+
+def transform_paragraph(element):
+    if element.alignment == "center" and not element.style_id:
+        return element.copy(style_id="Heading2")
+    else:
+        return element
+
+transform_document = mammoth.transforms.paragraph(transform_paragraph)
+
+mammoth.convert_to_html(fileobj, transform_document=transform_document)
+```
+
+#### `mammoth.transforms.paragraph(transform_paragraph)`
+
+Returns a function that can be used as the `transform_document` argument.
+This will apply the function `transform_paragraph` to each paragraph element.
+`transform_paragraph` should return the new paragraph.
+
+#### `mammoth.transforms.get_descendants(element)`
+
+Gets all descendants of an element.
+
+#### `mammoth.transforms.get_descendants_of_type(element, type)`
+
+Gets all descendants of a particular type of an element.
+For instance, to get all runs within an element `paragraph`:
+
+```python
+import mammoth.documents
+import mammoth.transforms
+
+runs = mammoth.transforms.get_descendants_of_type(paragraph, documents.Run);
 ```
 
 ## Writing style maps

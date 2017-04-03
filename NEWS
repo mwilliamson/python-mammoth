@@ -2,6 +2,8 @@
 
 * Read children of w:object elements.
 
+* Add support for document transforms.
+
 # 1.3.2
 
 * Handle hyperlinks created with complex fields.
