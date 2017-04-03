@@ -408,11 +408,11 @@ Or if you want paragraphs that have been explicitly set to use monospace fonts t
 import mammoth.documents
 import mammoth.transforms
 
-_monospace_fonts = set(["Courier New"])
+_monospace_fonts = set(["courier new"])
 
 def transform_paragraph(paragraph):
     runs = mammoth.transforms.get_descendants_of_type(paragraph, mammoth.documents.Run)
-    if runs and all(run.font in _monospace_fonts for run in runs):
+    if runs and all(run.font and run.font.lower() in _monospace_fonts for run in runs):
         return paragraph.copy(style_id="code", style_name="Code")
     else:
         return paragraph
