@@ -20,3 +20,22 @@ def _each_element(transform_element):
         return transform_element(element)
     
     return transform_element_and_children
+
+
+def get_descendants(element):
+    descendants = []
+
+    def visit(element):
+        descendants.append(element)
+
+    _visit_descendants(element, visit)
+
+    return descendants
+
+
+def _visit_descendants(element, visit):
+    if isinstance(element, documents.HasChildren):
+        for child in element.children:
+            _visit_descendants(child, visit)
+            visit(child)
+
