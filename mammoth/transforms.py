@@ -2,9 +2,13 @@ from . import documents
 
 
 def paragraph(transform_paragraph):
+    return element_of_type(documents.Paragraph, transform_paragraph)
+
+
+def element_of_type(element_type, transform):
     def transform_element(element):
-        if isinstance(element, documents.Paragraph):
-            return transform_paragraph(element)
+        if isinstance(element, element_type):
+            return transform(element)
         else:
             return element
     
