@@ -1,8 +1,23 @@
 import cobble
 from nose.tools import assert_equal, istest
 
-from mammoth import documents
+from mammoth import documents, transforms
 from mammoth.transforms import get_descendants, get_descendants_of_type, _each_element
+
+
+@istest
+class ParagraphTests(object):
+    @istest
+    def paragraph_is_transformed(self):
+        paragraph = documents.paragraph(children=[])
+        result = transforms.paragraph(lambda _: documents.tab())(paragraph)
+        assert_equal(documents.tab(), result)
+        
+    @istest
+    def non_paragraph_elements_are_not_transformed(self):
+        run = documents.run(children=[])
+        result = transforms.paragraph(lambda _: documents.tab())(run)
+        assert_equal(documents.run(children=[]), result)
 
 
 @istest
