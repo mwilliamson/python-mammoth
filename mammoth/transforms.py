@@ -5,6 +5,10 @@ def paragraph(transform_paragraph):
     return element_of_type(documents.Paragraph, transform_paragraph)
 
 
+def run(transform_run):
+    return element_of_type(documents.Run, transform_run)
+
+
 def element_of_type(element_type, transform):
     def transform_element(element):
         if isinstance(element, element_type):

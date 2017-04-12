@@ -21,6 +21,21 @@ class ParagraphTests(object):
 
 
 @istest
+class RunTests(object):
+    @istest
+    def run_is_transformed(self):
+        run = documents.run(children=[])
+        result = transforms.run(lambda _: documents.tab())(run)
+        assert_equal(documents.tab(), result)
+        
+    @istest
+    def non_paragraph_elements_are_not_transformed(self):
+        paragraph = documents.paragraph(children=[])
+        result = transforms.run(lambda _: documents.tab())(paragraph)
+        assert_equal(documents.paragraph(children=[]), result)
+
+
+@istest
 class EachElementTests(object):
     @istest
     def all_descendants_are_transformed(self):
