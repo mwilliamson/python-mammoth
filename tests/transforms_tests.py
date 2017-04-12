@@ -1,7 +1,36 @@
+import cobble
 from nose.tools import assert_equal, istest
 
 from mammoth import documents
-from mammoth.transforms import get_descendants, get_descendants_of_type
+from mammoth.transforms import get_descendants, get_descendants_of_type, _each_element
+
+
+@istest
+class EachElementTests(object):
+    @istest
+    def all_descendants_are_transformed(self):
+        @cobble.data
+        class Count(documents.HasChildren):
+            count = cobble.field()
+        
+        root = Count(count=None, children=[
+            Count(count=None, children=[
+                Count(count=None, children=[]),
+            ]),
+        ])
+        
+        current_count = [0]
+        def set_count(node):
+            current_count[0] += 1
+            return node.copy(count=current_count[0])
+        
+        result = _each_element(set_count)(root)
+        
+        assert_equal(Count(count=3, children=[
+            Count(count=2, children=[
+                Count(count=1, children=[]),
+            ]),
+        ]), result)
 
 
 @istest

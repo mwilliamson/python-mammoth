@@ -18,7 +18,7 @@ def element_of_type(element_type, transform):
 def _each_element(transform_element):
     def transform_element_and_children(element):
         if isinstance(element, documents.HasChildren):
-            children = list(map(transform_element, element.children))
+            children = list(map(transform_element_and_children, element.children))
             element = element.copy(children=children)
         
         return transform_element(element)
