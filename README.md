@@ -430,6 +430,12 @@ Returns a function that can be used as the `transform_document` argument.
 This will apply the function `transform_paragraph` to each paragraph element.
 `transform_paragraph` should return the new paragraph.
 
+#### `mammoth.transforms.run(transform_run)`
+
+Returns a function that can be used as the `transform_document` argument.
+This will apply the function `transform_run` to each run element.
+`transform_run` should return the new run.
+
 #### `mammoth.transforms.get_descendants(element)`
 
 Gets all descendants of an element.
