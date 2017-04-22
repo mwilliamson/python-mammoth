@@ -141,6 +141,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def read_fld_char(element):
         fld_char_type = element.attributes.get("w:fldCharType")
         if fld_char_type == "begin":
+            complex_field_stack.append(complex_fields.unknown)
             del current_instr_text[:]
         elif fld_char_type == "end":
             complex_field_stack.pop()
@@ -151,6 +152,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 complex_field = complex_fields.unknown
             else:
                 complex_field = complex_fields.hyperlink(hyperlink_href)
+            complex_field_stack.pop()
             complex_field_stack.append(complex_field)
         return _empty_result
     
