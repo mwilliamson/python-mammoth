@@ -374,6 +374,8 @@ def convert_image(image):
 mammoth.images.img_element(convert_image)
 ```
 
+`mammoth.images.data_uri` is the default image converter.
+
 ### Document transforms
 
 **The API for document transforms should be considered unstable,

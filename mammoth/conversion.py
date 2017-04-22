@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from functools import partial
-import base64
 
 from . import documents, results, html_paths, images, writers, html, lists
 from .docx.files import InvalidFileReferenceError
@@ -23,7 +22,7 @@ def convert_document_element_to_html(element,
         id_prefix = ""
     
     if convert_image is None:
-        convert_image = images.img_element(_generate_image_attributes)
+        convert_image = images.data_uri
     
     if isinstance(element, documents.Document):
         comments = dict(
@@ -48,15 +47,6 @@ def convert_document_element_to_html(element,
     writer = writers.writer(output_format)
     html.write(writer, html.collapse(html.strip_empty(nodes)))
     return results.Result(writer.as_string(), messages)
-    
-    
-def _generate_image_attributes(image):
-    with image.open() as image_bytes:
-        encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
-    
-    return {
-        "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
-    }
 
 
 class _DocumentConverter(documents.ElementVisitor):
