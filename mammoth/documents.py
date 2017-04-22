@@ -69,12 +69,11 @@ class Tab(Element):
     pass
     
 
-@cobble.visitable
+@cobble.data
 class Image(Element):
-    def __init__(self, alt_text, content_type, open):
-        self.alt_text = alt_text
-        self.content_type = content_type
-        self.open = open
+    alt_text = cobble.field()
+    content_type = cobble.field()
+    open = cobble.field()
 
 
 def document(children, notes=None, comments=None):
