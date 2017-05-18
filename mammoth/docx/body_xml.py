@@ -4,6 +4,7 @@ import re
 from .. import documents
 from .. import results
 from .. import lists
+from ..compat import urldefrag
 from . import complex_fields
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
@@ -294,6 +295,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         children_result = _read_xml_elements(element.children)
         if relationship_id is not None:
             href = relationships[relationship_id].target
+            if anchor is not None:
+                href = urldefrag(href)[0] + "#" + anchor
+            
             return children_result.map(lambda children: documents.hyperlink(href=href, children=children))
         elif anchor is not None:
             return children_result.map(lambda children: documents.hyperlink(anchor=anchor, children=children))

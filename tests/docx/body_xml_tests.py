@@ -600,7 +600,7 @@ def _assert_children_are_converted_normally(tag_name):
 @istest
 class HyperlinkTests(object):
     @istest
-    def hyperlink_is_read_if_it_has_a_relationship_id(self):
+    def hyperlink_is_read_as_external_hyperlink_if_it_has_a_relationship_id(self):
         relationships = Relationships({
             "r42": Relationship(target="http://example.com")
         })
@@ -612,7 +612,19 @@ class HyperlinkTests(object):
         )
         
     @istest
-    def hyperlink_is_read_if_it_has_an_anchor_attribute(self):
+    def hyperlink_is_read_as_external_hyperlink_if_it_has_a_relationship_id_and_an_anchor(self):
+        relationships = Relationships({
+            "r42": Relationship(target="http://example.com/")
+        })
+        run_element = xml_element("w:r")
+        element = xml_element("w:hyperlink", {"r:id": "r42", "w:anchor": "fragment"}, [run_element])
+        assert_equal(
+            documents.hyperlink(href="http://example.com/#fragment", children=[documents.run([])]),
+            _read_and_get_document_xml_element(element, relationships=relationships)
+        )
+        
+    @istest
+    def hyperlink_is_read_as_internal_hyperlink_if_it_has_an_anchor_attribute(self):
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {"w:anchor": "start"}, [run_element])
         assert_equal(
