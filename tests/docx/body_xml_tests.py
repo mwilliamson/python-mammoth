@@ -624,6 +624,18 @@ class HyperlinkTests(object):
         )
         
     @istest
+    def existing_fragment_is_replaced_when_anchor_is_set_on_external_link(self):
+        relationships = Relationships({
+            "r42": Relationship(target="http://example.com/#previous")
+        })
+        run_element = xml_element("w:r")
+        element = xml_element("w:hyperlink", {"r:id": "r42", "w:anchor": "fragment"}, [run_element])
+        assert_equal(
+            documents.hyperlink(href="http://example.com/#fragment", children=[documents.run([])]),
+            _read_and_get_document_xml_element(element, relationships=relationships)
+        )
+        
+    @istest
     def hyperlink_is_read_as_internal_hyperlink_if_it_has_an_anchor_attribute(self):
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {"w:anchor": "start"}, [run_element])

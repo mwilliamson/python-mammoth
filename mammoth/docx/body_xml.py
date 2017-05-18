@@ -4,11 +4,10 @@ import re
 from .. import documents
 from .. import results
 from .. import lists
-from ..compat import urldefrag
 from . import complex_fields
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
-from .uris import uri_to_zip_entry_name
+from .uris import replace_fragment, uri_to_zip_entry_name
 
 
 def reader(
@@ -296,7 +295,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         if relationship_id is not None:
             href = relationships[relationship_id].target
             if anchor is not None:
-                href = urldefrag(href)[0] + "#" + anchor
+                href = replace_fragment(href, anchor)
             
             return children_result.map(lambda children: documents.hyperlink(href=href, children=children))
         elif anchor is not None:
