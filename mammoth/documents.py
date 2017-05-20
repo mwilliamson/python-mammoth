@@ -48,7 +48,7 @@ class Table(HasChildren):
 
 @cobble.data
 class TableRow(HasChildren):
-    pass
+    is_header = cobble.field()
 
 @cobble.data
 class TableCell(HasChildren):
@@ -132,7 +132,10 @@ bookmark = Bookmark
     
 
 table = Table
-table_row = TableRow
+
+def table_row(children, is_header=None):
+    return TableRow(children=children, is_header=bool(is_header))
+
 def table_cell(children, colspan=None, rowspan=None):
     if colspan is None:
         colspan = 1

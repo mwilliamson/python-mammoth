@@ -62,6 +62,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:rPr",
         "w:tblPr",
         "w:tblGrid",
+        "w:trPr",
         "w:tcPr",
     ])
 
@@ -208,8 +209,13 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def table_row(element):
+        properties = element.find_child_or_null("w:trPr")
+        is_header = bool(properties.find_child("w:tblHeader"))
         return _read_xml_elements(element.children) \
-            .map(documents.table_row)
+            .map(lambda children: documents.table_row(
+                children=children,
+                is_header=is_header,
+            ))
     
     
     def table_cell(element):

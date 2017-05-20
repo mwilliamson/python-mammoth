@@ -16,6 +16,8 @@ def create_element_matcher(element_type):
 is_paragraph = create_element_matcher(documents.Paragraph)
 is_run = create_element_matcher(documents.Run)
 is_hyperlink = create_element_matcher(documents.Hyperlink)
+is_table = create_element_matcher(documents.Table)
+is_row = create_element_matcher(documents.TableRow)
 
 
 is_empty_run = is_run(children=[])

@@ -17,6 +17,8 @@ from .document_matchers import (
     is_run,
     is_hyperlink,
     is_text,
+    is_table,
+    is_row,
 )
 
 
@@ -465,6 +467,24 @@ class TableTests(object):
             ])
         ])
         assert_equal(expected_result, table)
+    
+    @istest
+    def tbl_header_marks_table_row_as_header(self):
+        element = xml_element("w:tbl", {}, [
+            xml_element("w:tr", {}, [
+                xml_element("w:trPr", {}, [
+                    xml_element("w:tblHeader")
+                ]),
+            ]),
+            xml_element("w:tr"),
+        ])
+        table = _read_and_get_document_xml_element(element)
+        assert_that(table, is_table(
+            children=is_sequence(
+                is_row(is_header=True),
+                is_row(is_header=False),
+            ),
+        ))
     
     
     @istest
