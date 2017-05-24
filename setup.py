@@ -9,7 +9,7 @@ def read(fname):
 
 
 _install_requires = [
-    "cobble>=0.1.2,<0.2",
+    "cobble>=0.1.3,<0.2",
 ]
 
 if sys.version_info[:2] <= (2, 6):

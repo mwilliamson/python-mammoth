@@ -317,6 +317,35 @@ def docx_table_is_converted_to_table_in_html():
 
 
 @istest
+def header_rows_are_wrapped_in_thead():
+    table = documents.table([
+        documents.table_row([documents.table_cell([])], is_header=True),
+        documents.table_row([documents.table_cell([])], is_header=True),
+        documents.table_row([documents.table_cell([])], is_header=False),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<thead><tr><th></th></tr><tr><th></th></tr></thead>" +
+        "<tbody><tr><td></td></tr></tbody>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
+def tbody_is_omitted_if_all_rows_are_headers():
+    table = documents.table([
+        documents.table_row([documents.table_cell([])], is_header=True),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<thead><tr><th></th></tr></thead>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def empty_cells_are_preserved_in_table():
     table = documents.table([
         documents.table_row([

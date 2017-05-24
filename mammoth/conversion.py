@@ -4,8 +4,11 @@ from __future__ import unicode_literals
 
 from functools import partial
 
-from . import documents, results, html_paths, images, writers, html, lists
+import cobble
+
+from . import documents, results, html_paths, images, writers, html
 from .docx.files import InvalidFileReferenceError
+from .lists import find_index
 
 
 def convert_document_element_to_html(element,
@@ -42,14 +45,23 @@ def convert_document_element_to_html(element,
         note_references=[],
         comments=comments,
     )
-    nodes = converter.visit(element)
+    context = _ConversionContext(is_table_header=False)
+    nodes = converter.visit(element, context)
     
     writer = writers.writer(output_format)
     html.write(writer, html.collapse(html.strip_empty(nodes)))
     return results.Result(writer.as_string(), messages)
 
 
-class _DocumentConverter(documents.ElementVisitor):
+@cobble.data
+class _ConversionContext(object):
+    is_table_header = cobble.field()
+    
+    def copy(self, **kwargs):
+        return cobble.copy(self, **kwargs)
+
+
+class _DocumentConverter(documents.element_visitor(args=1)):
     def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
         self._messages = messages
         self._style_map = style_map
@@ -60,27 +72,31 @@ class _DocumentConverter(documents.ElementVisitor):
         self._convert_image = convert_image
         self._comments = comments
     
-    def visit_image(self, image):
+    def visit_image(self, image, context):
         try:
             return self._convert_image(image)
         except InvalidFileReferenceError as error:
             self._messages.append(results.warning(str(error)))
             return []
 
-    def visit_document(self, document):
-        nodes = self._visit_all(document.children)
+    def visit_document(self, document, context):
+        nodes = self._visit_all(document.children, context)
         notes = [
             document.notes.resolve(reference)
             for reference in self._note_references
         ]
-        notes_list = html.element("ol", {}, self._visit_all(notes))
-        comments = html.element("dl", {}, lists.flat_map(self.visit_comment, self._referenced_comments))
+        notes_list = html.element("ol", {}, self._visit_all(notes, context))
+        comments = html.element("dl", {}, [
+            html_node
+            for referenced_comment in self._referenced_comments
+            for html_node in self.visit_comment(referenced_comment, context)
+        ])
         return nodes + [notes_list, comments]
 
 
-    def visit_paragraph(self, paragraph):
+    def visit_paragraph(self, paragraph, context):
         def children():
-            content = self._visit_all(paragraph.children)
+            content = self._visit_all(paragraph.children, context)
             if self._ignore_empty_paragraphs:
                 return content
             else:
@@ -90,8 +106,8 @@ class _DocumentConverter(documents.ElementVisitor):
         return html_path.wrap(children)
 
 
-    def visit_run(self, run):
-        nodes = lambda: self._visit_all(run.children)
+    def visit_run(self, run, context):
+        nodes = lambda: self._visit_all(run.children, context)
         paths = []
         if run.is_strikethrough:
             paths.append(self._find_style_for_run_property("strikethrough", default="s"))
@@ -123,21 +139,21 @@ class _DocumentConverter(documents.ElementVisitor):
             return html_paths.empty
 
 
-    def visit_text(self, text):
+    def visit_text(self, text, context):
         return [html.text(text.value)]
     
     
-    def visit_hyperlink(self, hyperlink):
+    def visit_hyperlink(self, hyperlink, context):
         if hyperlink.anchor is None:
             href = hyperlink.href
         else:
             href = "#{0}".format(self._html_id(hyperlink.anchor))
         
-        nodes = self._visit_all(hyperlink.children)
+        nodes = self._visit_all(hyperlink.children, context)
         return [html.collapsible_element("a", {"href": href}, nodes)]
     
     
-    def visit_bookmark(self, bookmark):
+    def visit_bookmark(self, bookmark, context):
         element = html.collapsible_element(
             "a",
             {"id": self._html_id(bookmark.name)},
@@ -145,31 +161,49 @@ class _DocumentConverter(documents.ElementVisitor):
         return [element]
     
     
-    def visit_tab(self, tab):
+    def visit_tab(self, tab, context):
         return [html.text("\t")]
     
     
-    def visit_table(self, table):
-        return [html.element("table", {}, self._visit_all(table.children))]
+    def visit_table(self, table, context):
+        body_index = find_index(lambda child: not child.is_header, table.children)
+        if body_index is None:
+            body_index = len(table.children)
+            
+        if body_index == 0:
+            children = self._visit_all(table.children, context.copy(is_table_header=False))
+        else:
+            head_rows = self._visit_all(table.children[:body_index], context.copy(is_table_header=True))
+            body_rows = self._visit_all(table.children[body_index:], context.copy(is_table_header=False))
+            children = [
+                html.element("thead", {}, head_rows),
+                html.element("tbody", {}, body_rows),
+            ]
+            
+        return [html.element("table", {}, children)]
     
     
-    def visit_table_row(self, table_row):
-        return [html.element("tr", {}, self._visit_all(table_row.children))]
+    def visit_table_row(self, table_row, context):
+        return [html.element("tr", {}, self._visit_all(table_row.children, context))]
     
     
-    def visit_table_cell(self, table_cell):
+    def visit_table_cell(self, table_cell, context):
+        if context.is_table_header:
+            tag_name = "th"
+        else:
+            tag_name = "td"
         attributes = {}
         if table_cell.colspan != 1:
             attributes["colspan"] = str(table_cell.colspan)
         if table_cell.rowspan != 1:
             attributes["rowspan"] = str(table_cell.rowspan)
-        nodes = [html.force_write] + self._visit_all(table_cell.children)
+        nodes = [html.force_write] + self._visit_all(table_cell.children, context)
         return [
-            html.element("td", attributes, nodes)
+            html.element(tag_name, attributes, nodes)
         ]
 
 
-    def visit_break(self, break_):
+    def visit_break(self, break_, context):
         return self._find_html_path_for_break(break_).wrap(lambda: [])
 
 
@@ -183,7 +217,7 @@ class _DocumentConverter(documents.ElementVisitor):
             return html_paths.empty
 
 
-    def visit_note_reference(self, note_reference):
+    def visit_note_reference(self, note_reference, context):
         self._note_references.append(note_reference)
         note_number = len(self._note_references)
         return [
@@ -196,8 +230,8 @@ class _DocumentConverter(documents.ElementVisitor):
         ]
 
     
-    def visit_note(self, note):
-        note_body = self._visit_all(note.body) + [
+    def visit_note(self, note, context):
+        note_body = self._visit_all(note.body, context) + [
             html.collapsible_element("p", {}, [
                 html.text(" "),
                 html.element("a", {"href": "#" + self._note_ref_html_id(note)}, [
@@ -210,7 +244,7 @@ class _DocumentConverter(documents.ElementVisitor):
         ]
 
 
-    def visit_comment_reference(self, reference):
+    def visit_comment_reference(self, reference, context):
         def nodes():
             comment = self._comments[reference.comment_id]
             count = len(self._referenced_comments) + 1
@@ -232,10 +266,10 @@ class _DocumentConverter(documents.ElementVisitor):
         
         return html_path.wrap(nodes)
     
-    def visit_comment(self, referenced_comment):
+    def visit_comment(self, referenced_comment, context):
         label, comment = referenced_comment
         # TODO remove duplication with notes
-        body = self._visit_all(comment.body) + [
+        body = self._visit_all(comment.body, context) + [
             html.collapsible_element("p", {}, [
                 html.text(" "),
                 html.element("a", {"href": "#" + self._reference_html_id("comment", comment.comment_id)}, [
@@ -253,8 +287,12 @@ class _DocumentConverter(documents.ElementVisitor):
         ]
 
 
-    def _visit_all(self, elements):
-        return lists.flat_map(self.visit, elements)
+    def _visit_all(self, elements, context):
+        return [
+            html_node
+            for element in elements
+            for html_node in self.visit(element, context)
+        ]
 
 
     def _find_html_path_for_paragraph(self, paragraph):

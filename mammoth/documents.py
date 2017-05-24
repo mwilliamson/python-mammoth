@@ -216,4 +216,5 @@ class CommentReference(Element):
 
 comment_reference = CommentReference
 
-ElementVisitor = cobble.visitor(Element)
+def element_visitor(args):
+    return cobble.visitor(Element, args=args)

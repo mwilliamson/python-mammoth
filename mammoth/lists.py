@@ -23,6 +23,12 @@ def flat_map(func, values):
     ]
 
 
+def find_index(predicate, values):
+    for index, value in enumerate(values):
+        if predicate(value):
+            return index
+
+
 if sys.version_info[0] == 2:
     map = map
     filter = filter
