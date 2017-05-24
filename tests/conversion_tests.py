@@ -346,6 +346,16 @@ def tbody_is_omitted_if_all_rows_are_headers():
 
 
 @istest
+def unexpected_table_children_do_not_cause_error():
+    table = documents.table([
+        documents.tab(),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = "<table>\t</table>"
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def empty_cells_are_preserved_in_table():
     table = documents.table([
         documents.table_row([

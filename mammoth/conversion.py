@@ -166,7 +166,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     
     
     def visit_table(self, table, context):
-        body_index = find_index(lambda child: not child.is_header, table.children)
+        body_index = find_index(
+            lambda child: not isinstance(child, documents.TableRow) or not child.is_header,
+            table.children,
+        )
         if body_index is None:
             body_index = len(table.children)
             
