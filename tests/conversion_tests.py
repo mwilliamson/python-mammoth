@@ -281,6 +281,18 @@ def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
 
 
 @istest
+def hyperlink_target_frame_is_used_as_anchor_target():
+    result = convert_document_element_to_html(
+        documents.hyperlink(
+            anchor="start",
+            target_frame="_blank",
+            children=[documents.Text("Hello")],
+        ),
+    )
+    assert_equal('<a href="#start" target="_blank">Hello</a>', result.value)
+
+
+@istest
 def bookmarks_are_converted_to_anchors_with_ids():
     result = convert_document_element_to_html(
         documents.bookmark(name="start"),

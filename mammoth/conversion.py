@@ -149,8 +149,12 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         else:
             href = "#{0}".format(self._html_id(hyperlink.anchor))
         
+        attributes = {"href": href}
+        if hyperlink.target_frame is not None:
+            attributes["target"] = hyperlink.target_frame
+        
         nodes = self._visit_all(hyperlink.children, context)
-        return [html.collapsible_element("a", {"href": href}, nodes)]
+        return [html.collapsible_element("a", attributes, nodes)]
     
     
     def visit_bookmark(self, bookmark, context):
