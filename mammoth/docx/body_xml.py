@@ -297,7 +297,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
         anchor = element.attributes.get("w:anchor")
-        target_frame = element.attributes.get("w:tgtFrame")
+        target_frame = element.attributes.get("w:tgtFrame") or None
         children_result = _read_xml_elements(element.children)
         
         def create(**kwargs):
