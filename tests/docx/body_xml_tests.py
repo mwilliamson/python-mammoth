@@ -672,6 +672,17 @@ class HyperlinkTests(object):
             documents.run([]),
             _read_and_get_document_xml_element(element)
         )
+        
+    @istest
+    def target_frame_is_read(self):
+        element = xml_element("w:hyperlink", {
+            "w:anchor": "start",
+            "w:tgtFrame": "_blank",
+        })
+        assert_that(
+            _read_and_get_document_xml_element(element),
+            is_hyperlink(target_frame="_blank"),
+        )
 
 
 @istest

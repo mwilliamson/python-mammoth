@@ -41,6 +41,7 @@ class Text(Element):
 class Hyperlink(HasChildren):
     href = cobble.field()
     anchor = cobble.field()
+    target_frame = cobble.field()
 
 @cobble.data
 class Table(HasChildren):
@@ -120,8 +121,8 @@ def tab():
 
 image = Image
 
-def hyperlink(children, href=None, anchor=None):
-    return Hyperlink(href=href, anchor=anchor, children=children)
+def hyperlink(children, href=None, anchor=None, target_frame=None):
+    return Hyperlink(href=href, anchor=anchor, target_frame=target_frame, children=children)
 
 
 @cobble.data

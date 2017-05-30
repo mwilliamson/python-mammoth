@@ -297,15 +297,24 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
         anchor = element.attributes.get("w:anchor")
+        target_frame = element.attributes.get("w:tgtFrame")
         children_result = _read_xml_elements(element.children)
+        
+        def create(**kwargs):
+            return children_result.map(lambda children: documents.hyperlink(
+                children=children,
+                target_frame=target_frame,
+                **kwargs
+            ))
+        
         if relationship_id is not None:
             href = relationships[relationship_id].target
             if anchor is not None:
                 href = replace_fragment(href, anchor)
             
-            return children_result.map(lambda children: documents.hyperlink(href=href, children=children))
+            return create(href=href)
         elif anchor is not None:
-            return children_result.map(lambda children: documents.hyperlink(anchor=anchor, children=children))
+            return create(anchor=anchor)
         else:
             return children_result
 
