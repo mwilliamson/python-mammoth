@@ -1,5 +1,6 @@
 import contextlib
 import re
+import sys
 
 from .. import documents
 from .. import results
@@ -8,6 +9,9 @@ from . import complex_fields
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
+
+if sys.version_info >= (3, ):
+    unichr = chr
 
 
 def reader(
@@ -200,6 +204,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def tab(element):
         return _success(documents.tab())
+    
+    
+    def no_break_hyphen(element):
+        return _success(documents.text(unichr(0x2011)))
     
     
     def table(element):
@@ -432,6 +440,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:fldChar": read_fld_char,
         "w:instrText": read_instr_text,
         "w:tab": tab,
+        "w:noBreakHyphen": no_break_hyphen,
         "w:tbl": table,
         "w:tr": table_row,
         "w:tc": table_cell,

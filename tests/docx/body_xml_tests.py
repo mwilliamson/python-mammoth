@@ -1,4 +1,5 @@
 import io
+import sys
 
 from precisely import assert_that, is_sequence
 from nose.tools import istest, assert_equal
@@ -20,6 +21,9 @@ from .document_matchers import (
     is_table,
     is_row,
 )
+
+if sys.version_info >= (3, ):
+    unichr = chr
 
 
 @istest
@@ -445,6 +449,13 @@ def can_read_tab_element():
     element = xml_element("w:tab")
     tab = _read_and_get_document_xml_element(element)
     assert_equal(documents.tab(), tab)
+
+
+@istest
+def no_break_hyphen_element_is_read_as_non_breaking_hyphen_character():
+    element = xml_element("w:noBreakHyphen")
+    tab = _read_and_get_document_xml_element(element)
+    assert_equal(documents.text(unichr(0x2011)), tab)
     
 
 @istest
