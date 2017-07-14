@@ -616,6 +616,11 @@ def children_of_w_smart_tag_are_converted_normally():
     _assert_children_are_converted_normally("w:smartTag")
 
 
+@istest
+def children_of_v_group_are_converted_normally():
+    _assert_children_are_converted_normally("v:group")
+
+
 def _assert_children_are_converted_normally(tag_name):
     element = xml_element("w:p", {}, [
         xml_element(tag_name, {}, [
