@@ -228,6 +228,25 @@ def strikethrough_runs_can_be_configured_with_style_mapping():
         ]
     )
     assert_equal("<del>Hello</del>", result.value)
+    
+
+@istest
+def small_caps_runs_are_ignored_by_default():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_small_caps=True),
+    )
+    assert_equal("Hello", result.value)
+    
+
+@istest
+def small_caps_runs_can_be_mapped_using_style_mapping():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_small_caps=True),
+        style_map=[
+            _style_mapping("small-caps => span")
+        ]
+    )
+    assert_equal("<span>Hello</span>", result.value)
 
 
 @istest

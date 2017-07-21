@@ -213,12 +213,23 @@ class RunTests(object):
     def run_is_struckthrough_if_strikethrough_element_is_present(self):
         run = self._read_run_with_properties([xml_element("w:strike")])
         assert_equal(True, run.is_strikethrough)
+        
+    @istest
+    def run_is_not_small_caps_if_small_caps_element_is_not_present(self):
+        run = self._read_run_with_properties([])
+        assert_equal(False, run.is_small_caps)
+    
+    @istest
+    def run_is_small_caps_if_small_caps_element_is_present(self):
+        run = self._read_run_with_properties([xml_element("w:smallCaps")])
+        assert_equal(True, run.is_small_caps)
 
     run_boolean_property_test = lambda func: parameterized([
         param(attr_name="is_bold", tag_name="w:b"),
         param(attr_name="is_underline", tag_name="w:u"),
         param(attr_name="is_italic", tag_name="w:i"),
         param(attr_name="is_strikethrough", tag_name="w:strike"),
+        param(attr_name="is_small_caps", tag_name="w:smallCaps"),
     ])(istest(func))
 
     @run_boolean_property_test

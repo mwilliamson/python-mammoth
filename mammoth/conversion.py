@@ -109,6 +109,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def visit_run(self, run, context):
         nodes = lambda: self._visit_all(run.children, context)
         paths = []
+        if run.is_small_caps:
+            paths.append(self._find_style_for_run_property("small_caps"))
         if run.is_strikethrough:
             paths.append(self._find_style_for_run_property("strikethrough", default="s"))
         if run.is_underline:
@@ -346,7 +348,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type in ["underline", "strikethrough", "bold", "italic", "comment_reference"]:
+    if matcher.element_type in ["underline", "strikethrough", "small_caps", "bold", "italic", "comment_reference"]:
         return matcher.element_type == element_type
     elif matcher.element_type == "break":
         return (
