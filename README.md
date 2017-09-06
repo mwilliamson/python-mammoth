@@ -376,6 +376,12 @@ mammoth.images.img_element(convert_image)
 
 `mammoth.images.data_uri` is the default image converter.
 
+WMF images are not handled by default by Mammoth.
+The recipes directory contains [an example of how they can be converted using LibreOffice][wmf-libreoffice-recipe],
+although the fidelity of the conversion depends entirely on LibreOffice.
+
+[wmf-libreoffice-recipe]: https://github.com/mwilliamson/python-mammoth/blob/master/recipes/wmf_images.py
+
 ### Document transforms
 
 **The API for document transforms should be considered unstable,
