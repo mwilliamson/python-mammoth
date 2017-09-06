@@ -23,15 +23,7 @@ import tempfile
 #    
 #
 # fileobj = open("document.docx", "rb")
-# result = mammoth.convert_to_html(
-#     fileobj,
-#     convert_image=compose(
-#         mammoth.images.data_uri,
-#         libreoffice_wmf_conversion(post_process=imagemagick_trim),
-#     ),
-# )
-#
-# libreoffice_wmf_conversion uses LibreOffice to convert the image
+# result = mammoth.convert_to_html(fileobj, convert_image=convert_image)
 
 
 _wmf_extensions = {
