@@ -5,3 +5,4 @@ tempman>=0.1.2,<0.2
 pyflakes>=0.8.1,<0.9
 nose-parameterized==0.5.0
 PyHamcrest==1.9.0
+precisely==0.1.3

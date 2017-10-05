@@ -289,6 +289,11 @@ Converts the source document to HTML.
   a string to prepend to any generated IDs,
   such as those used by bookmarks, footnotes and endnotes.
   Defaults to an empty string.
+  
+* `transform_document`: if set,
+  this function is applied to the document read from the docx file before the conversion to HTML.
+  The API for document transforms should be considered unstable.
+  See [document transforms](#document-transforms).
 
 * Returns a result with the following properties:
 
@@ -367,6 +372,92 @@ def convert_image(image):
     }
 
 mammoth.images.img_element(convert_image)
+```
+
+`mammoth.images.data_uri` is the default image converter.
+
+WMF images are not handled by default by Mammoth.
+The recipes directory contains [an example of how they can be converted using LibreOffice][wmf-libreoffice-recipe],
+although the fidelity of the conversion depends entirely on LibreOffice.
+
+[wmf-libreoffice-recipe]: https://github.com/mwilliamson/python-mammoth/blob/master/recipes/wmf_images.py
+
+### Document transforms
+
+**The API for document transforms should be considered unstable,
+and may change between any versions.
+If you rely on this behaviour,
+you should pin to a specific version of Mammoth,
+and test carefully before updating.**
+
+Mammoth allows a document to be transformed before it is converted.
+For instance,
+suppose that document has not been semantically marked up,
+but you know that any centre-aligned paragraph should be a heading.
+You can use the `transform_document` argument to modify the document appropriately:
+
+```python
+import mammoth.transforms
+
+def transform_paragraph(element):
+    if element.alignment == "center" and not element.style_id:
+        return element.copy(style_id="Heading2")
+    else:
+        return element
+
+transform_document = mammoth.transforms.paragraph(transform_paragraph)
+
+mammoth.convert_to_html(fileobj, transform_document=transform_document)
+```
+
+Or if you want paragraphs that have been explicitly set to use monospace fonts to represent code:
+
+```python
+import mammoth.documents
+import mammoth.transforms
+
+_monospace_fonts = set(["courier new"])
+
+def transform_paragraph(paragraph):
+    runs = mammoth.transforms.get_descendants_of_type(paragraph, mammoth.documents.Run)
+    if runs and all(run.font and run.font.lower() in _monospace_fonts for run in runs):
+        return paragraph.copy(style_id="code", style_name="Code")
+    else:
+        return paragraph
+
+convert_to_html(
+    fileobj,
+    transform_document=mammoth.transforms.paragraph(transform_paragraph),
+    style_map="p[style-name='Code'] => pre:separator('\n')",
+)
+```
+
+#### `mammoth.transforms.paragraph(transform_paragraph)`
+
+Returns a function that can be used as the `transform_document` argument.
+This will apply the function `transform_paragraph` to each paragraph element.
+`transform_paragraph` should return the new paragraph.
+
+#### `mammoth.transforms.run(transform_run)`
+
+Returns a function that can be used as the `transform_document` argument.
+This will apply the function `transform_run` to each run element.
+`transform_run` should return the new run.
+
+#### `mammoth.transforms.get_descendants(element)`
+
+Gets all descendants of an element.
+
+#### `mammoth.transforms.get_descendants_of_type(element, type)`
+
+Gets all descendants of a particular type of an element.
+For instance, to get all runs within an element `paragraph`:
+
+```python
+import mammoth.documents
+import mammoth.transforms
+
+runs = mammoth.transforms.get_descendants_of_type(paragraph, documents.Run);
 ```
 
 ## Writing style maps
@@ -495,6 +586,17 @@ strike
 
 Note that this matches text that has had strikethrough explicitly applied to it.
 It will not match any text that is struckthrough because of its paragraph or run style.
+
+#### Small caps
+
+Match explicitly small caps text:
+
+```
+small-caps
+```
+
+Note that this matches text that has had small caps explicitly applied to it.
+It will not match any text that is small caps because of its paragraph or run style.
 
 ### HTML paths
 

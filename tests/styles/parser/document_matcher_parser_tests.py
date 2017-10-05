@@ -126,6 +126,13 @@ def reads_strikethrough():
     )
 
 @istest
+def reads_small_caps():
+    assert_equal(
+        document_matchers.small_caps,
+        read_document_matcher("small-caps")
+    )
+
+@istest
 def reads_comment_reference():
     assert_equal(
         document_matchers.comment_reference,

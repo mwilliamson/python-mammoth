@@ -228,6 +228,25 @@ def strikethrough_runs_can_be_configured_with_style_mapping():
         ]
     )
     assert_equal("<del>Hello</del>", result.value)
+    
+
+@istest
+def small_caps_runs_are_ignored_by_default():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_small_caps=True),
+    )
+    assert_equal("Hello", result.value)
+    
+
+@istest
+def small_caps_runs_can_be_mapped_using_style_mapping():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], is_small_caps=True),
+        style_map=[
+            _style_mapping("small-caps => span")
+        ]
+    )
+    assert_equal("<span>Hello</span>", result.value)
 
 
 @istest
@@ -281,6 +300,18 @@ def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
 
 
 @istest
+def hyperlink_target_frame_is_used_as_anchor_target():
+    result = convert_document_element_to_html(
+        documents.hyperlink(
+            anchor="start",
+            target_frame="_blank",
+            children=[documents.Text("Hello")],
+        ),
+    )
+    assert_equal('<a href="#start" target="_blank">Hello</a>', result.value)
+
+
+@istest
 def bookmarks_are_converted_to_anchors_with_ids():
     result = convert_document_element_to_html(
         documents.bookmark(name="start"),
@@ -313,6 +344,45 @@ def docx_table_is_converted_to_table_in_html():
         "<tr><td><p>Top left</p></td><td><p>Top right</p></td></tr>" +
         "<tr><td><p>Bottom left</p></td><td><p>Bottom right</p></td></tr>" +
         "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
+def header_rows_are_wrapped_in_thead():
+    table = documents.table([
+        documents.table_row([documents.table_cell([])], is_header=True),
+        documents.table_row([documents.table_cell([])], is_header=True),
+        documents.table_row([documents.table_cell([])], is_header=False),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<thead><tr><th></th></tr><tr><th></th></tr></thead>" +
+        "<tbody><tr><td></td></tr></tbody>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
+def tbody_is_omitted_if_all_rows_are_headers():
+    table = documents.table([
+        documents.table_row([documents.table_cell([])], is_header=True),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<thead><tr><th></th></tr></thead>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
+def unexpected_table_children_do_not_cause_error():
+    table = documents.table([
+        documents.tab(),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = "<table>\t</table>"
     assert_equal(expected_html, result.value)
 
 

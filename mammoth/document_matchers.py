@@ -35,6 +35,10 @@ class strikethrough(object):
     element_type = "strikethrough"
 
 
+class small_caps(object):
+    element_type = "small_caps"
+
+
 class comment_reference(object):
     element_type = "comment_reference"
 

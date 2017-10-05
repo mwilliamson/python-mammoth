@@ -37,6 +37,9 @@ def parse_document_matcher(tokens):
     elif tokens.try_skip(TokenType.IDENTIFIER, "strike"):
         return document_matchers.strikethrough
     
+    elif tokens.try_skip(TokenType.IDENTIFIER, "small-caps"):
+        return document_matchers.small_caps
+    
     elif tokens.try_skip(TokenType.IDENTIFIER, "comment-reference"):
         return document_matchers.comment_reference
 

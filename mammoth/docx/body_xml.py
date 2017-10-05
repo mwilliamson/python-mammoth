@@ -1,23 +1,32 @@
 import contextlib
+import re
+import sys
 
 from .. import documents
 from .. import results
 from .. import lists
+from . import complex_fields
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
+from .uris import replace_fragment, uri_to_zip_entry_name
+
+if sys.version_info >= (3, ):
+    unichr = chr
 
 
-def reader(numbering=None,
-        content_types=None,
-        relationships=None,
-        styles=None,
-        docx_file=None,
-        files=None):
+def reader(
+    numbering=None,
+    content_types=None,
+    relationships=None,
+    styles=None,
+    docx_file=None,
+    files=None
+):
     
     if styles is None:
         styles = Styles({}, {})
     
-    read, read_all = _create_reader(
+    read_all = _create_reader(
         numbering=numbering,
         content_types=content_types,
         relationships=relationships,
@@ -25,22 +34,13 @@ def reader(numbering=None,
         docx_file=docx_file,
         files=files,
     )
-    return _BodyReader(read, read_all)
+    return _BodyReader(read_all)
 
 
 
 class _BodyReader(object):
-    def __init__(self, read, read_all):
-        self._read = read
+    def __init__(self, read_all):
         self._read_all = read_all
-    
-    def read(self, element):
-        result = self._read(element)
-        if result.elements:
-            element = result.elements[0]
-        else:
-            element = None
-        return results.Result(element, result.messages)
     
     def read_all(self, elements):
         result = self._read_all(elements)
@@ -66,6 +66,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:rPr",
         "w:tblPr",
         "w:tblGrid",
+        "w:trPr",
         "w:tcPr",
     ])
 
@@ -77,15 +78,24 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         vertical_alignment = properties \
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
+        font = properties.find_child_or_null("w:rFonts").attributes.get("w:ascii")
         
         is_bold = read_boolean_element(properties.find_child("w:b"))
         is_italic = read_boolean_element(properties.find_child("w:i"))
         is_underline = read_boolean_element(properties.find_child("w:u"))
         is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
+        is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
+        
+        def add_complex_field_hyperlink(children):
+            hyperlink_href = current_hyperlink_href()
+            if hyperlink_href is None:
+                return children
+            else:
+                return [documents.hyperlink(href=hyperlink_href, children=children)]
         
         return _ReadResult.map_results(
             _read_run_style(properties),
-            _read_xml_elements(element.children),
+            _read_xml_elements(element.children).map(add_complex_field_hyperlink),
             lambda style, children: documents.run(
                 children=children,
                 style_id=style[0],
@@ -94,8 +104,13 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 is_italic=is_italic,
                 is_underline=is_underline,
                 is_strikethrough=is_strikethrough,
+                is_small_caps=is_small_caps,
                 vertical_alignment=vertical_alignment,
+                font=font,
             ))
+    
+    def _read_run_style(properties):
+        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
 
     def read_boolean_element(element):
         return element and element.attributes.get("w:val") not in ["false", "0"]
@@ -103,6 +118,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
+        alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         
         return _ReadResult.map_results(
@@ -113,13 +129,50 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 style_id=style[0],
                 style_name=style[1],
                 numbering=numbering,
+                alignment=alignment,
             )).append_extra()
     
     def _read_paragraph_style(properties):
         return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id)
     
-    def _read_run_style(properties):
-        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
+    current_instr_text = []
+    complex_field_stack = []
+    
+    def current_hyperlink_href():
+        for complex_field in reversed(complex_field_stack):
+            if isinstance(complex_field, complex_fields.Hyperlink):
+                return complex_field.href
+
+        return None
+    
+    def read_fld_char(element):
+        fld_char_type = element.attributes.get("w:fldCharType")
+        if fld_char_type == "begin":
+            complex_field_stack.append(complex_fields.unknown)
+            del current_instr_text[:]
+        elif fld_char_type == "end":
+            complex_field_stack.pop()
+        elif fld_char_type == "separate":
+            instr_text = "".join(current_instr_text)
+            hyperlink_href = parse_hyperlink_field_code(instr_text)
+            if hyperlink_href is None:
+                complex_field = complex_fields.unknown
+            else:
+                complex_field = complex_fields.hyperlink(hyperlink_href)
+            complex_field_stack.pop()
+            complex_field_stack.append(complex_field)
+        return _empty_result
+    
+    def parse_hyperlink_field_code(instr_text):
+        result = re.match(r'\s*HYPERLINK "(.*)"', instr_text)
+        if result is None:
+            return None
+        else:
+            return result.group(1)
+    
+    def read_instr_text(element):
+        current_instr_text.append(_inner_text(element))
+        return _empty_result
     
     def _read_style(properties, style_tag_name, style_type, find_style_by_id):
         messages = []
@@ -155,6 +208,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _success(documents.tab())
     
     
+    def no_break_hyphen(element):
+        return _success(documents.text(unichr(0x2011)))
+    
+    
     def table(element):
         return _read_xml_elements(element.children) \
             .flat_map(calculate_row_spans) \
@@ -162,8 +219,13 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def table_row(element):
+        properties = element.find_child_or_null("w:trPr")
+        is_header = bool(properties.find_child("w:tblHeader"))
         return _read_xml_elements(element.children) \
-            .map(documents.table_row)
+            .map(lambda children: documents.table_row(
+                children=children,
+                is_header=is_header,
+            ))
     
     
     def table_cell(element):
@@ -245,12 +307,24 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
         anchor = element.attributes.get("w:anchor")
+        target_frame = element.attributes.get("w:tgtFrame") or None
         children_result = _read_xml_elements(element.children)
+        
+        def create(**kwargs):
+            return children_result.map(lambda children: documents.hyperlink(
+                children=children,
+                target_frame=target_frame,
+                **kwargs
+            ))
+        
         if relationship_id is not None:
             href = relationships[relationship_id].target
-            return children_result.map(lambda children: documents.hyperlink(href=href, children=children))
+            if anchor is not None:
+                href = replace_fragment(href, anchor)
+            
+            return create(href=href)
         elif anchor is not None:
-            return children_result.map(lambda children: documents.hyperlink(anchor=anchor, children=children))
+            return create(anchor=anchor)
         else:
             return children_result
 
@@ -317,7 +391,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _find_linked_image(link_relationship_id)
     
     def _find_embedded_image(relationship_id):
-        image_path = "word/" + relationships[relationship_id].target.lstrip("/")
+        image_path = uri_to_zip_entry_name("word", relationships[relationship_id].target)
         
         def open_image():
             image_file = docx_file.open(image_path)
@@ -365,13 +439,18 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:t": text,
         "w:r": run,
         "w:p": paragraph,
+        "w:fldChar": read_fld_char,
+        "w:instrText": read_instr_text,
         "w:tab": tab,
+        "w:noBreakHyphen": no_break_hyphen,
         "w:tbl": table,
         "w:tr": table_row,
         "w:tc": table_cell,
         "w:ins": read_child_elements,
+        "w:object": read_child_elements,
         "w:smartTag": read_child_elements,
         "w:drawing": read_child_elements,
+        "v:group": read_child_elements,
         "v:roundrect": read_child_elements,
         "v:shape": read_child_elements,
         "v:textbox": read_child_elements,
@@ -406,7 +485,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         elements = filter(lambda node: isinstance(node, XmlElement), nodes)
         return _ReadResult.concat(lists.map(read, elements))
     
-    return read, _read_xml_elements
+    return _read_xml_elements
 
 
 def _inner_text(node):

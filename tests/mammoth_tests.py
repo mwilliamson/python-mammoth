@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import base64
 import io
 import shutil
 import os
@@ -108,8 +109,16 @@ p => h1"""
 
 
 @istest
-def inline_images_are_included_in_output():
+def inline_images_referenced_by_path_relative_to_part_are_included_in_output():
     with open(test_path("tiny-picture.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
+def inline_images_referenced_by_path_relative_to_base_are_included_in_output():
+    with open(test_path("tiny-picture-target-base-relative.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)
         assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
         assert_equal([], result.messages)
@@ -149,6 +158,23 @@ def warn_if_images_stored_outside_of_document_are_not_found():
             assert_equal("warning", result.messages[0].type)
             assert result.messages[0].message.startswith(expected_warning), "message was: " + result.messages[0].message
             assert_equal(1, len(result.messages))
+
+
+@istest
+def image_conversion_can_be_customised():
+    @mammoth.images.img_element
+    def convert_image(image):
+        with image.open() as image_bytes:
+            encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
+        
+        return {
+            "src": encoded_src[:2] + "," + image.content_type
+        }
+    
+    with open(test_path("tiny-picture.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, convert_image=convert_image)
+        assert_equal("""<p><img src="iV,image/png" /></p>""", result.value)
+        assert_equal([], result.messages)
         
 
 @istest
@@ -273,6 +299,17 @@ def transform_document_is_applied_to_document_before_conversion():
         document.children[0].style_id = "Heading1"
         return document
     
+    with open(test_path("single-paragraph.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, transform_document=transform_document)
+        assert_equal("<h1>Walking on imported air</h1>", result.value)
+        assert_equal([], result.messages)
+
+
+@istest
+def paragraph_transform_only_transforms_paragraphs():
+    def transform_paragraph(paragraph):
+        return paragraph.copy(style_id="Heading1")
+    transform_document = mammoth.transforms.paragraph(transform_paragraph)
     with open(test_path("single-paragraph.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj, transform_document=transform_document)
         assert_equal("<h1>Walking on imported air</h1>", result.value)

@@ -9,7 +9,7 @@ def read(fname):
 
 
 _install_requires = [
-    "cobble>=0.1.1,<0.2",
+    "cobble>=0.1.3,<0.2",
 ]
 
 if sys.version_info[:2] <= (2, 6):
@@ -17,7 +17,7 @@ if sys.version_info[:2] <= (2, 6):
 
 setup(
     name='mammoth',
-    version='1.3.0',
+    version='1.4.2',
     description='Convert Word documents from docx to simple and clean HTML and Markdown',
     long_description=read("README"),
     author='Michael Williamson',
