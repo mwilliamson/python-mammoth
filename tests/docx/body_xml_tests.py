@@ -1133,13 +1133,15 @@ def _create_anchored_image(description, blip):
     ])
 
     
-def _create_image_elements(blip, description=None, title=None):
+def _create_image_elements(blip, ext=None, description=None, title=None):
     properties = {}
     if description is not None:
         properties["descr"] = description
     if title is not None:
         properties["title"] = title
-    
+    if ext is None:
+        ext = _ext()
+
     return [
         xml_element("wp:docPr", properties),
         xml_element("a:graphic", {}, [
@@ -1147,6 +1149,11 @@ def _create_image_elements(blip, description=None, title=None):
                 xml_element("pic:pic", {}, [
                     xml_element("pic:blipFill", {}, [
                         blip
+                    ]),
+                    xml_element("pic:spPr", {}, [
+                        xml_element("a:xfrm", {}, [
+                            ext
+                        ])
                     ])
                 ])
             ])
@@ -1162,6 +1169,8 @@ def _linked_blip(relationship_id):
 def _blip(attributes):
     return xml_element("a:blip", attributes)
 
+def _ext(width='0', height='0'):
+    return xml_element("a:ext", {"cx": width, "cy": height})
 
 def w_tr(*children):
     return xml_element("w:tr", {}, children)
