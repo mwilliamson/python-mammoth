@@ -37,7 +37,6 @@ def reader(
     return _BodyReader(read_all)
 
 
-
 class _BodyReader(object):
     def __init__(self, read_all):
         self._read_all = read_all
@@ -361,11 +360,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             content_info['alt_text'] = properties.get("title")
 
         extAttributes = element.find_child("a:graphic") \
-						.find_child("a:graphicData") \
-						.find_child("pic:pic") \
-						.find_child("pic:spPr") \
-						.find_child("a:xfrm") \
-						.find_child("a:ext").attributes
+                        .find_child("a:graphicData") \
+                        .find_child("pic:pic") \
+                        .find_child("pic:spPr") \
+                        .find_child("a:xfrm") \
+                        .find_child("a:ext").attributes
     
         content_info['width'] = extAttributes.get("cx")
         content_info['height'] = extAttributes.get("cy")
@@ -386,11 +385,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     def _read_image(find_image, content_info):
         if 'width' not in content_info:
-    		content_info['width'] = ""
-    	if 'height' not in content_info:
-    		content_info['height'] = ""
-    	if 'alt_text' not in content_info:
-    		content_info['alt_text'] = ""
+            content_info['width'] = ""
+        if 'height' not in content_info:
+            content_info['height'] = ""
+        if 'alt_text' not in content_info:
+            content_info['alt_text'] = ""
         image_path, open_image = find_image()
         content_type = content_types.find_content_type(image_path)
         image = documents.image(alt_text=content_info['alt_text'], content_type=content_type, content_width=content_info['width'], content_height=content_info['height'], open=open_image)
