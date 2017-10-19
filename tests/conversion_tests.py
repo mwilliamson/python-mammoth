@@ -458,14 +458,14 @@ def breaks_can_be_mapped_using_style_mappings():
 
 @istest
 def images_are_converted_to_img_tags_with_data_uri():
-    image = documents.image(alt_text=None, content_type="image/png", content_height=None, content_width=None, open=lambda: io.BytesIO(b"abc"))
+    image = documents.image(alt_text=None, content_type="image/png", height=None, width=None, open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
     assert_equal('<img src="data:image/png;base64,YWJj" />', result.value)
 
 
 @istest
 def images_have_alt_tags_if_available():
-    image = documents.image(alt_text="It's a hat", content_type="image/png", content_height=None, content_width=None, open=lambda: io.BytesIO(b"abc"))
+    image = documents.image(alt_text="It's a hat", content_type="image/png", height=None, width=None, open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
     image_html = parse_xml(io.StringIO(result.value))
     assert_equal('It\'s a hat', image_html.attributes["alt"])
@@ -477,7 +477,7 @@ def can_define_custom_conversion_for_images():
         with image.open() as image_file:
             return [html.element("img", {"alt": image_file.read().decode("ascii")})]
         
-    image = documents.image(alt_text=None, content_type="image/png", content_height=None, content_width=None,  open=lambda: io.BytesIO(b"abc"))
+    image = documents.image(alt_text=None, content_type="image/png", height=None, width=None,  open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)
     assert_equal('<img alt="abc" />', result.value)
 

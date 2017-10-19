@@ -350,24 +350,29 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _empty_result_with_message(warning)
 
     def inline(element):
-        content_info = {'width': '', 'height': '', 'alt_text': ''}
-        
         properties = element.find_child_or_null("wp:docPr").attributes
 
         if properties.get("descr", "").strip():
-            content_info['alt_text'] = properties.get("descr")
+            alt_text = properties.get("descr")
         else:
-            content_info['alt_text'] = properties.get("title")
+            alt_text = properties.get("title")
 
-        extAttributes = element.find_child("a:graphic") \
-                        .find_child("a:graphicData") \
-                        .find_child("pic:pic") \
-                        .find_child("pic:spPr") \
-                        .find_child("a:xfrm") \
-                        .find_child("a:ext").attributes
-    
-        content_info['width'] = extAttributes.get("cx")
-        content_info['height'] = extAttributes.get("cy")
+        exts = element.find_child_or_null("a:graphic") \
+            .find_child_or_null("a:graphicData") \
+            .find_child_or_null("pic:pic") \
+            .find_child_or_null("pic:spPr") \
+            .find_child_or_null("a:xfrm") \
+            .find_child_or_null("a:ext")
+
+        if exts.attributes:
+            # Parse a number or None
+            try: width  = int( exts.attributes.get("cx") )
+            except ValueError: width  = None
+            try: height = int( exts.attributes.get("cy") )
+            except ValueError: height = None
+        else:
+           width  = None
+           height = None
 
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
@@ -375,24 +380,18 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             .find_children("pic:blipFill") \
             .find_children("a:blip")
 
-        return _read_blips(blips, content_info)
+        return _read_blips(blips, alt_text, width, height)
 
-    def _read_blips(blips, content_info):
-        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, content_info), blips))
+    def _read_blips(blips, alt_text, width=None, height=None):
+        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text, width, height), blips))
     
-    def _read_blip(element, content_info):
-        return _read_image(lambda: _find_blip_image(element), content_info)
+    def _read_blip(element, alt_text, width=None, height=None):
+        return _read_image(lambda: _find_blip_image(element), alt_text, width, height)
     
-    def _read_image(find_image, content_info):
-        if 'width' not in content_info:
-            content_info['width'] = ""
-        if 'height' not in content_info:
-            content_info['height'] = ""
-        if 'alt_text' not in content_info:
-            content_info['alt_text'] = ""
+    def _read_image(find_image, alt_text, width=None, height=None):
         image_path, open_image = find_image()
         content_type = content_types.find_content_type(image_path)
-        image = documents.image(alt_text=content_info['alt_text'], content_type=content_type, content_width=content_info['width'], content_height=content_info['height'], open=open_image)
+        image = documents.image(alt_text=alt_text, content_type=content_type, width=width, height=height, open=open_image)
         
         if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
             messages = []
@@ -437,7 +436,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _empty_result_with_message(warning)
         else:
             title = element.attributes.get("o:title")
-            return _read_image(lambda: _find_embedded_image(relationship_id), {'alt_text': title})
+            return _read_image(lambda: _find_embedded_image(relationship_id), title)
     
     def note_reference_reader(note_type):
         def note_reference(element):

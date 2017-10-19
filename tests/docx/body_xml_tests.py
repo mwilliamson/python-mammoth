@@ -1139,23 +1139,27 @@ def _create_image_elements(blip, ext=None, description=None, title=None):
         properties["descr"] = description
     if title is not None:
         properties["title"] = title
-    if ext is None:
-        ext = _ext()
+    
+    def get_pic_elements_with( blip ):
+        pic_elements = [
+            xml_element("pic:blipFill", {}, [
+                blip
+            ])]
+        if ext is not None:
+            pic_elements.append(
+                xml_element("pic:spPr", {}, [
+                    xml_element("a:xfrm", {}, [
+                        ext
+                    ])
+                ])
+            )
+        return pic_elements
 
     return [
         xml_element("wp:docPr", properties),
         xml_element("a:graphic", {}, [
             xml_element("a:graphicData", {}, [
-                xml_element("pic:pic", {}, [
-                    xml_element("pic:blipFill", {}, [
-                        blip
-                    ]),
-                    xml_element("pic:spPr", {}, [
-                        xml_element("a:xfrm", {}, [
-                            ext
-                        ])
-                    ])
-                ])
+                xml_element("pic:pic", {}, get_pic_elements_with( blip ) )
             ])
         ])
     ]
@@ -1169,7 +1173,7 @@ def _linked_blip(relationship_id):
 def _blip(attributes):
     return xml_element("a:blip", attributes)
 
-def _ext(width='0', height='0'):
+def _ext(width=None, height=None):
     return xml_element("a:ext", {"cx": width, "cy": height})
 
 def w_tr(*children):
