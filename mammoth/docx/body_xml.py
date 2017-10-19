@@ -364,11 +364,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             .find_child_or_null("a:xfrm") \
             .find_child_or_null("a:ext")
 
+        width = exts.attributes.get("cx")
+        height = exts.attributes.get("cy")
+
         # Parse a number or None
-        try: width  = int( exts.attributes.get("cx") )
-        except (TypeError, ValueError): width  = None
-        try: height = int( exts.attributes.get("cy") )
-        except (TypeError, ValueError): height = None
+        int(width) if width else None
+        int(height) if height else None
         
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
