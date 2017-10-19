@@ -837,8 +837,19 @@ class ImageTests(object):
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
+
+    @istest
+    def image_dimension_is_parsed_as_integer(self):
+        drawing_element = _create_inline_image(
+            blip=_embedded_blip(self.IMAGE_RELATIONSHIP_ID),
+            ext=_ext(width="10", height="10")
+        )
         
-        
+        image = self._read_embedded_image(drawing_element)
+
+        assert_equal(10, image.width)
+        assert_equal(10, image.height)
+
     @istest
     def alt_text_title_is_used_if_alt_text_description_is_blank(self):
         drawing_element = _create_inline_image(
@@ -1119,20 +1130,20 @@ def _run_element_with_text(text):
 
 def _text_element(value):
     return xml_element("w:t", {}, [xml_text(value)])
-    
 
-def _create_inline_image(blip, description=None, title=None):
+
+def _create_inline_image(blip, ext=None, description=None, title=None):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:inline", {}, _create_image_elements(blip, description=description, title=title))
+        xml_element("wp:inline", {}, _create_image_elements(blip, ext=ext, description=description, title=title))
     ])
 
 
-def _create_anchored_image(description, blip):
+def _create_anchored_image(description, blip, ext=None):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:anchor", {}, _create_image_elements(blip, description=description, ))
+        xml_element("wp:anchor", {}, _create_image_elements(blip, ext=ext, description=description))
     ])
 
-    
+
 def _create_image_elements(blip, ext=None, description=None, title=None):
     properties = {}
     if description is not None:
