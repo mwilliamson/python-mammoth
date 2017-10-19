@@ -1,4 +1,3 @@
-from __future__ import division
 import base64
 
 # An example of how to add the source file dimensions to the img tag
@@ -9,7 +8,7 @@ def add_dimensions(image):
     def getPixels( emus, dpi ):
         emu = 914400
         if dpi is None: dpi = 72
-        return str(int((emus/emu)*dpi))
+        return str(int((float(emus)/emu)*dpi))
 
     with image.open() as image_bytes:
         encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
