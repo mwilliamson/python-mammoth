@@ -367,10 +367,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         width = exts.attributes.get("cx")
         height = exts.attributes.get("cy")
 
-        # Parse a number or None
+        # Parse Emus as integer or None
         int(width) if width else None
         int(height) if height else None
-        
+
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
             .find_children("pic:pic") \
