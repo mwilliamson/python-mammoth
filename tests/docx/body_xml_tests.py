@@ -838,17 +838,6 @@ class ImageTests(object):
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
 
-    @istest
-    def image_dimension_is_parsed_as_integer(self):
-        drawing_element = _create_inline_image(
-            blip=_embedded_blip(self.IMAGE_RELATIONSHIP_ID),
-            ext=_ext(width="10", height="10")
-        )
-        
-        image = self._read_embedded_image(drawing_element)
-
-        assert_equal(10, image.width)
-        assert_equal(10, image.height)
 
     @istest
     def alt_text_title_is_used_if_alt_text_description_is_blank(self):

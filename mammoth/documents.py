@@ -75,8 +75,6 @@ class Tab(Element):
 class Image(Element):
     alt_text = cobble.field()
     content_type = cobble.field()
-    width = cobble.field()
-    height = cobble.field()
     open = cobble.field()
 
 
