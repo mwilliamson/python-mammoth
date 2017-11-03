@@ -213,9 +213,22 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def table(element):
-        return _read_xml_elements(element.children) \
-            .flat_map(calculate_row_spans) \
-            .map(documents.table)
+        properties = element.find_child_or_null("w:tblPr")
+        return _ReadResult.map_results(
+            read_table_style(properties),
+            _read_xml_elements(element.children)
+                .flat_map(calculate_row_spans),
+                
+            lambda style, children: documents.table(
+                children=children,
+                style_id=style[0],
+                style_name=style[1],
+            ),
+        )
+            
+    
+    def read_table_style(properties):
+        return _read_style(properties, "w:tblStyle", "Table", styles.find_table_style_by_id)
     
     
     def table_row(element):

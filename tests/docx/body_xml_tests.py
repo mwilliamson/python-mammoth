@@ -493,6 +493,39 @@ class TableTests(object):
             ])
         ])
         assert_equal(expected_result, table)
+        
+    @istest
+    def table_has_no_style_if_it_has_no_properties(self):
+        element = xml_element("w:tbl")
+        assert_equal(None, _read_and_get_document_xml_element(element).style_id)
+        
+    @istest
+    def table_has_style_id_and_name_read_from_paragraph_properties_if_present(self):
+        style_xml = xml_element("w:tblStyle", {"w:val": "TableNormal"})
+        properties_xml = xml_element("w:tblPr", {}, [style_xml])
+        table_xml = xml_element("w:tbl", {}, [properties_xml])
+        
+        styles = Styles(
+            paragraph_styles={},
+            character_styles={},
+            table_styles={"TableNormal": Style(style_id="TableNormal", name="Normal Table")},
+        )
+        
+        paragraph = _read_and_get_document_xml_element(table_xml, styles=styles)
+        assert_equal("TableNormal", paragraph.style_id)
+        assert_equal("Normal Table", paragraph.style_name)
+        
+    @istest
+    def warning_is_emitted_when_table_style_cannot_be_found(self):
+        style_xml = xml_element("w:tblStyle", {"w:val": "TableNormal"})
+        properties_xml = xml_element("w:tblPr", {}, [style_xml])
+        table_xml = xml_element("w:tbl", {}, [properties_xml])
+        
+        result = _read_document_xml_element(table_xml, styles=Styles.EMPTY)
+        table = result.value
+        assert_equal("TableNormal", table.style_id)
+        assert_equal(None, table.style_name)
+        assert_equal([results.warning("Table style with ID TableNormal was referenced but not defined in the document")], result.messages)
     
     @istest
     def tbl_header_marks_table_row_as_header(self):
@@ -1101,6 +1134,9 @@ class FakeStyles(object):
         return Style(style_id, style_id)
     
     def find_character_style_by_id(self, style_id):
+        return None
+    
+    def find_table_style_by_id(self, style_id):
         return None
 
 def _document_element_with_text(text):

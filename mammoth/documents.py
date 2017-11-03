@@ -46,7 +46,8 @@ class Hyperlink(HasChildren):
 
 @cobble.data
 class Table(HasChildren):
-    pass
+    style_id = cobble.field()
+    style_name = cobble.field()
 
 @cobble.data
 class TableRow(HasChildren):
@@ -141,7 +142,8 @@ class Bookmark(Element):
 bookmark = Bookmark
     
 
-table = Table
+def table(children, style_id=None, style_name=None):
+    return Table(children=children, style_id=style_id, style_name=style_name)
 
 def table_row(children, is_header=None):
     return TableRow(children=children, is_header=bool(is_header))
