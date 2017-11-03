@@ -24,7 +24,7 @@ def reader(
 ):
     
     if styles is None:
-        styles = Styles({}, {})
+        styles = Styles.EMPTY
     
     read_all = _create_reader(
         numbering=numbering,

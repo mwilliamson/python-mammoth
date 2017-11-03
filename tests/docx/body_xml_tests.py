@@ -62,7 +62,11 @@ class ParagraphTests(object):
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        styles = Styles({"Heading1": Style(style_id="Heading1", name="Heading 1")}, {})
+        styles = Styles(
+            paragraph_styles={"Heading1": Style(style_id="Heading1", name="Heading 1")},
+            character_styles={},
+            table_styles={},
+        )
         
         paragraph = _read_and_get_document_xml_element(paragraph_xml, styles=styles)
         assert_equal("Heading1", paragraph.style_id)
@@ -74,9 +78,7 @@ class ParagraphTests(object):
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        styles = Styles({}, {})
-        
-        result = _read_document_xml_element(paragraph_xml, styles=styles)
+        result = _read_document_xml_element(paragraph_xml, styles=Styles.EMPTY)
         paragraph = result.value
         assert_equal("Heading1", paragraph.style_id)
         assert_equal(None, paragraph.style_name)
@@ -153,7 +155,11 @@ class RunTests(object):
     def run_has_style_id_and_name_read_from_run_properties_if_present(self):
         style_xml = xml_element("w:rStyle", {"w:val": "Heading1Char"})
         
-        styles = Styles({}, {"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")})
+        styles = Styles(
+            paragraph_styles={},
+            character_styles={"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")},
+            table_styles={},
+        )
         
         run = self._read_run_with_properties([style_xml], styles=styles)
         assert_equal("Heading1Char", run.style_id)
@@ -165,9 +171,7 @@ class RunTests(object):
         properties_xml = xml_element("w:rPr", {}, [style_xml])
         run_xml = xml_element("w:r", {}, [properties_xml])
         
-        styles = Styles({}, {})
-        
-        result = _read_document_xml_element(run_xml, styles=styles)
+        result = _read_document_xml_element(run_xml, styles=Styles.EMPTY)
         run = result.value
         assert_equal("Heading1Char", run.style_id)
         assert_equal(None, run.style_name)

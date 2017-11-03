@@ -2,23 +2,36 @@ import collections
 
 
 class Styles(object):
-    def __init__(self, paragraph_styles, character_styles):
+    def __init__(self, paragraph_styles, character_styles, table_styles):
         self._paragraph_styles = paragraph_styles
         self._character_styles = character_styles
+        self._table_styles = table_styles
     
     def find_paragraph_style_by_id(self, style_id):
         return self._paragraph_styles.get(style_id)
     
     def find_character_style_by_id(self, style_id):
         return self._character_styles.get(style_id)
+    
+    def find_table_style_by_id(self, style_id):
+        return self._table_styles.get(style_id)
+
+
+Styles.EMPTY = Styles(
+    paragraph_styles={},
+    character_styles={},
+    table_styles={},
+)
 
 
 def read_styles_xml_element(element):
     paragraph_styles = {}
     character_styles = {}
+    table_styles = {}
     styles = {
         "paragraph": paragraph_styles,
         "character": character_styles,
+        "table": table_styles,
     }
     
     for style_element in element.find_children("w:style"):
@@ -28,7 +41,11 @@ def read_styles_xml_element(element):
         if style_set is not None:
             style_set[style.style_id] = style
     
-    return Styles(paragraph_styles, character_styles)
+    return Styles(
+        paragraph_styles=paragraph_styles,
+        character_styles=character_styles,
+        table_styles=table_styles,
+    )
 
 
 def _read_style_element(element):
