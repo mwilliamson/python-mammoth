@@ -348,6 +348,19 @@ def docx_table_is_converted_to_table_in_html():
 
 
 @istest
+def table_style_mappings_can_be_used_to_map_tables():
+    table = documents.table([], style_name="Normal Table")
+    result = convert_document_element_to_html(
+        table,
+        style_map=[
+            _style_mapping("table[style-name='Normal Table'] => table.normal-table:fresh"),
+        ],
+    )
+    expected_html = '<table class="normal-table"></table>'
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def header_rows_are_wrapped_in_thead():
     table = documents.table([
         documents.table_row([documents.table_cell([])], is_header=True),

@@ -24,7 +24,16 @@ def parse_document_matcher(tokens):
             style_id=style_id,
             style_name=style_name,
         )
-    
+
+    elif tokens.try_skip(TokenType.IDENTIFIER, "table"):
+        style_id = try_parse_class_name(tokens)
+        style_name = _parse_style_name(tokens)
+
+        return document_matchers.table(
+            style_id=style_id,
+            style_name=style_name,
+        )
+
     elif tokens.try_skip(TokenType.IDENTIFIER, "b"):
         return document_matchers.bold
     
