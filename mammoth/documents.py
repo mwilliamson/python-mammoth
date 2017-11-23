@@ -21,6 +21,24 @@ class Paragraph(HasChildren):
     style_name = cobble.field()
     numbering = cobble.field()
     alignment = cobble.field()
+    indent = cobble.field()
+
+
+@cobble.data
+class ParagraphIndent(object):
+    start = cobble.field()
+    end = cobble.field()
+    first_line = cobble.field()
+    hanging = cobble.field()
+    
+
+@cobble.data
+class Indent(object):
+    left = cobble.field()
+    right = cobble.field()
+    first_line = cobble.field()
+    hanging = cobble.field()
+
 
 @cobble.data
 class Run(HasChildren):
@@ -86,8 +104,14 @@ def document(children, notes=None, comments=None):
         comments = []
     return Document(children, notes, comments=comments)
 
-def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None):
-    return Paragraph(children, style_id, style_name, numbering, alignment=alignment)
+def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None, indent=None):
+    if indent is None:
+        indent = paragraph_indent()
+    
+    return Paragraph(children, style_id, style_name, numbering, alignment=alignment, indent=indent)
+
+def paragraph_indent(start=None, end=None, first_line=None, hanging=None):
+    return ParagraphIndent(start=start, end=end, first_line=first_line, hanging=hanging)
 
 def run(
     children,

@@ -120,6 +120,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         properties = element.find_child_or_null("w:pPr")
         alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
+        indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
         
         return _ReadResult.map_results(
             _read_paragraph_style(properties),
@@ -130,6 +131,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 style_name=style[1],
                 numbering=numbering,
                 alignment=alignment,
+                indent=indent,
             )).append_extra()
     
     def _read_paragraph_style(properties):
@@ -203,6 +205,14 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             return numbering.find_level(num_id, level_index)
 
+    def _read_paragraph_indent(element):
+        attributes = element.attributes
+        return documents.paragraph_indent(
+            start=attributes.get("w:start") or attributes.get("w:left"),
+            end=attributes.get("w:end") or attributes.get("w:right"),
+            first_line=attributes.get("w:firstLine"),
+            hanging=attributes.get("w:hanging"),
+        )
 
     def tab(element):
         return _success(documents.tab())
