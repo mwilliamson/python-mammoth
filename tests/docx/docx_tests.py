@@ -65,9 +65,12 @@ def when_document_xml_is_not_present_then_document_is_found_using_file_relations
 def _create_zip(files):
     fileobj = io.BytesIO()
     
-    with zipfile.ZipFile(fileobj, "w") as zip_file:
+    zip_file = zipfile.ZipFile(fileobj, "w")
+    try:
         for name, contents in files.items():
             zip_file.writestr(name, contents)
+    finally:
+        zip_file.close()
     
     fileobj.seek(0)
     return fileobj
