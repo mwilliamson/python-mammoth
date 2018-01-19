@@ -1,8 +1,7 @@
 from nose.tools import istest, assert_equal
 
 from mammoth.docx.xmlparser import element as xml_element
-from mammoth.docx.relationships_xml import \
-    read_relationships_xml_element, Relationship
+from mammoth.docx.relationships_xml import read_relationships_xml_element
 
 
 @istest
@@ -16,6 +15,6 @@ def target_is_read_from_relationship_element():
     ])
     relationships = read_relationships_xml_element(element)
     assert_equal(
-        Relationship(target="http://example.com"),
-        relationships["rId8"],
+        "http://example.com",
+        relationships.find_target_by_relationship_id("rId8"),
     )

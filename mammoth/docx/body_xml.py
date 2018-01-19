@@ -341,7 +341,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             ))
         
         if relationship_id is not None:
-            href = relationships[relationship_id].target
+            href = relationships.find_target_by_relationship_id(relationship_id)
             if anchor is not None:
                 href = replace_fragment(href, anchor)
             
@@ -414,7 +414,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _find_linked_image(link_relationship_id)
     
     def _find_embedded_image(relationship_id):
-        image_path = uri_to_zip_entry_name("word", relationships[relationship_id].target)
+        target = relationships.find_target_by_relationship_id(relationship_id)
+        image_path = uri_to_zip_entry_name("word", target)
         
         def open_image():
             image_file = docx_file.open(image_path)
@@ -427,7 +428,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def _find_linked_image(relationship_id):
-        image_path = relationships[relationship_id].target
+        image_path = relationships.find_target_by_relationship_id(relationship_id)
         
         def open_image():
             return files.open(image_path)

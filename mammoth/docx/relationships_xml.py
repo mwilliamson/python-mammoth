@@ -5,8 +5,8 @@ class Relationships(object):
     def __init__(self, relationships):
         self._relationships = relationships
     
-    def __getitem__(self, key):
-        return self._relationships[key]
+    def find_target_by_relationship_id(self, key):
+        return self._relationships[key].target
 
 
 Relationship = collections.namedtuple("Relationship", ["target"])
