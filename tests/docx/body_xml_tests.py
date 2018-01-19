@@ -738,9 +738,9 @@ def _assert_children_are_converted_normally(tag_name):
 class HyperlinkTests(object):
     @istest
     def hyperlink_is_read_as_external_hyperlink_if_it_has_a_relationship_id(self):
-        relationships = Relationships({
-            "r42": Relationship(target="http://example.com")
-        })
+        relationships = Relationships([
+            _hyperlink_relationship("r42", "http://example.com"),
+        ])
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {"r:id": "r42"}, [run_element])
         assert_equal(
@@ -750,9 +750,9 @@ class HyperlinkTests(object):
         
     @istest
     def hyperlink_is_read_as_external_hyperlink_if_it_has_a_relationship_id_and_an_anchor(self):
-        relationships = Relationships({
-            "r42": Relationship(target="http://example.com/")
-        })
+        relationships = Relationships([
+            _hyperlink_relationship("r42", "http://example.com/"),
+        ])
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {"r:id": "r42", "w:anchor": "fragment"}, [run_element])
         assert_equal(
@@ -762,9 +762,9 @@ class HyperlinkTests(object):
         
     @istest
     def existing_fragment_is_replaced_when_anchor_is_set_on_external_link(self):
-        relationships = Relationships({
-            "r42": Relationship(target="http://example.com/#previous")
-        })
+        relationships = Relationships([
+            _hyperlink_relationship("r42", "http://example.com/#previous"),
+        ])
         run_element = xml_element("w:r")
         element = xml_element("w:hyperlink", {"r:id": "r42", "w:anchor": "fragment"}, [run_element])
         assert_equal(
@@ -870,9 +870,9 @@ class ImageTests(object):
     IMAGE_RELATIONSHIP_ID = "rId5"
     
     def _read_embedded_image(self, element):
-        relationships = Relationships({
-            self.IMAGE_RELATIONSHIP_ID: Relationship(target="media/hat.png")
-        })
+        relationships = Relationships([
+            _image_relationship(self.IMAGE_RELATIONSHIP_ID, "media/hat.png"),
+        ])
         
         mocks = funk.Mocks()
         docx_file = mocks.mock()
@@ -1002,9 +1002,9 @@ class ImageTests(object):
             description="It's a hat",
         )
         
-        relationships = Relationships({
-            "rId5": Relationship(target="media/hat.emf")
-        })
+        relationships = Relationships([
+            _image_relationship("rId5", "media/hat.emf"),
+        ])
         
         docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.emf").returns(io.BytesIO(self.IMAGE_BYTES))
@@ -1031,9 +1031,9 @@ class ImageTests(object):
             description="It's a hat",
         )
         
-        relationships = Relationships({
-            "rId5": Relationship(target="file:///media/hat.png")
-        })
+        relationships = Relationships([
+            _image_relationship("rId5", "file:///media/hat.png"),
+        ])
         
         files = mocks.mock()
         funk.allows(files).verify("file:///media/hat.png")
@@ -1276,3 +1276,19 @@ def single(values):
         return values[0]
     else:
         raise Exception("Had {0} elements".format(len(values)))
+
+
+def _hyperlink_relationship(relationship_id, target):
+    return Relationship(
+        relationship_id=relationship_id,
+        target=target,
+        type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+    )
+
+
+def _image_relationship(relationship_id, target):
+    return Relationship(
+        relationship_id=relationship_id,
+        target=target,
+        type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+    )
