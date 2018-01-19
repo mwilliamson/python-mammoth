@@ -2,10 +2,10 @@ import os
 
 from .. import results, lists
 from .document_xml import read_document_xml_element
-from .content_types_xml import read_content_types_xml_element
+from .content_types_xml import empty_content_types, read_content_types_xml_element
 from .relationships_xml import read_relationships_xml_element, Relationships
 from .numbering_xml import read_numbering_xml_element, Numbering
-from .styles_xml import read_styles_xml_element
+from .styles_xml import read_styles_xml_element, Styles
 from .notes_xml import create_footnotes_reader, create_endnotes_reader
 from .comments_xml import create_comments_reader
 from .files import Files
@@ -50,7 +50,16 @@ def _read_comments(zip_file, body_readers):
 
     
 def _read_document(zip_file, body_readers, notes, comments):
-    with zip_file.open("word/document.xml") as document_fileobj:
+    file_relationships = _try_read_entry_or_default(
+        zip_file,
+        "_rels/.rels",
+        read_relationships_xml_element,
+        default=Relationships.EMPTY,
+    )
+    
+    document_filename = _find_document_filename(zip_file, file_relationships)
+    
+    with zip_file.open(document_filename) as document_fileobj:
         document_xml = office_xml.read(document_fileobj)
         return read_document_xml_element(
             document_xml,
@@ -60,21 +69,41 @@ def _read_document(zip_file, body_readers, notes, comments):
         )
 
 
+def _find_document_filename(zip_file, relationships):
+    targets = ["word/document.xml"] + [
+        target.lstrip("/")
+        for target in relationships.find_targets_by_type("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument")
+    ]
+    valid_targets = list(filter(lambda target: zip_file.exists(target), targets))
+    if len(valid_targets) == 0:
+        return None
+    else:
+        return valid_targets[0]
+
+
 def _body_readers(document_path, zip_file):
-    with zip_file.open("[Content_Types].xml") as content_types_fileobj:
-        content_types = read_content_types_xml_element(office_xml.read(content_types_fileobj))
+    content_types = _try_read_entry_or_default(
+        zip_file,
+        "[Content_Types].xml",
+        read_content_types_xml_element,
+        empty_content_types,
+    )
 
     numbering = _try_read_entry_or_default(
         zip_file, "word/numbering.xml", read_numbering_xml_element, default=Numbering({}))
     
-    with zip_file.open("word/styles.xml") as styles_fileobj:
-        styles = read_styles_xml_element(office_xml.read(styles_fileobj))
+    styles = _try_read_entry_or_default(
+        zip_file,
+        "word/styles.xml",
+        read_styles_xml_element,
+        Styles.EMPTY,
+    )
     
     def for_name(name):
         relationships_path = "word/_rels/{0}.xml.rels".format(name)
         relationships = _try_read_entry_or_default(
             zip_file, relationships_path, read_relationships_xml_element,
-            default=Relationships({}))
+            default=Relationships.EMPTY)
             
         return body_xml.reader(
             numbering=numbering,

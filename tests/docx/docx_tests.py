@@ -1,3 +1,7 @@
+import io
+import textwrap
+import zipfile
+
 from nose.tools import istest, assert_equal
 
 from mammoth import docx, documents
@@ -18,3 +22,52 @@ class ReadTests(object):
                 ])
             ])
             assert_equal(expected_document, result.value)
+
+
+_relationship_namespaces = {
+    "r": "http://schemas.openxmlformats.org/package/2006/relationships",
+}
+
+
+@istest
+def when_document_xml_is_not_present_then_document_is_found_using_file_relationships():
+    fileobj = _create_zip({
+        "word/document2.xml": textwrap.dedent("""\
+            <?xml version="1.0" encoding="utf-8" ?>
+            <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+                <w:body>
+                    <w:p>
+                        <w:r>
+                            <w:t>Hello.</w:t>
+                        </w:r>
+                    </w:p>
+                </w:body>
+            </w:document>
+        """),
+        "_rels/.rels": textwrap.dedent("""\
+            <?xml version="1.0" encoding="utf-8"?>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document2.xml" Id="rId1"/>
+            </Relationships>
+        """),
+    })
+    result = docx.read(fileobj=fileobj)
+    expected_document = documents.document([
+        documents.paragraph([
+            documents.run([
+                documents.text("Hello.")
+            ])
+        ])
+    ])
+    assert_equal(expected_document, result.value)
+
+
+def _create_zip(files):
+    fileobj = io.BytesIO()
+    
+    with zipfile.ZipFile(fileobj, "w") as zip_file:
+        for name, contents in files.items():
+            zip_file.writestr(name, contents)
+    
+    fileobj.seek(0)
+    return fileobj

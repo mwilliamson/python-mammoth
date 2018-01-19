@@ -52,6 +52,7 @@ class _ContentTypes(object):
         
         return None
 
+empty_content_types = _ContentTypes({}, {})
 
 def _get_extension(path):
     return path.rpartition(".")[2]

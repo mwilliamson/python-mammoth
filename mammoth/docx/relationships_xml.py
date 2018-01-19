@@ -18,6 +18,9 @@ class Relationships(object):
         return self._targets_by_type[relationship_type]
 
 
+Relationships.EMPTY = Relationships([])
+
+
 Relationship = collections.namedtuple("Relationship", ["relationship_id", "target", "type"])
 
 
