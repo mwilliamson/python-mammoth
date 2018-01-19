@@ -24,7 +24,7 @@ def reader(
 ):
     
     if styles is None:
-        styles = Styles({}, {})
+        styles = Styles.EMPTY
     
     read_all = _create_reader(
         numbering=numbering,
@@ -119,6 +119,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         properties = element.find_child_or_null("w:pPr")
         alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
         numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
+        indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
         
         return _ReadResult.map_results(
             _read_paragraph_style(properties),
@@ -129,6 +130,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 style_name=style[1],
                 numbering=numbering,
                 alignment=alignment,
+                indent=indent,
             )).append_extra()
     
     def _read_paragraph_style(properties):
@@ -202,6 +204,14 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             return numbering.find_level(num_id, level_index)
 
+    def _read_paragraph_indent(element):
+        attributes = element.attributes
+        return documents.paragraph_indent(
+            start=attributes.get("w:start") or attributes.get("w:left"),
+            end=attributes.get("w:end") or attributes.get("w:right"),
+            first_line=attributes.get("w:firstLine"),
+            hanging=attributes.get("w:hanging"),
+        )
 
     def tab(element):
         return _success(documents.tab())
@@ -212,9 +222,22 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     
     
     def table(element):
-        return _read_xml_elements(element.children) \
-            .flat_map(calculate_row_spans) \
-            .map(documents.table)
+        properties = element.find_child_or_null("w:tblPr")
+        return _ReadResult.map_results(
+            read_table_style(properties),
+            _read_xml_elements(element.children)
+                .flat_map(calculate_row_spans),
+                
+            lambda style, children: documents.table(
+                children=children,
+                style_id=style[0],
+                style_name=style[1],
+            ),
+        )
+            
+    
+    def read_table_style(properties):
+        return _read_style(properties, "w:tblStyle", "Table", styles.find_table_style_by_id)
     
     
     def table_row(element):

@@ -169,9 +169,14 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     
     def visit_tab(self, tab, context):
         return [html.text("\t")]
-    
-    
+
+    _default_table_path = html_paths.path([html_paths.element(["table"], fresh=True)])
+
     def visit_table(self, table, context):
+        return self._find_html_path(table, "table", self._default_table_path) \
+            .wrap(lambda: self._convert_table_children(table, context))
+
+    def _convert_table_children(self, table, context):
         body_index = find_index(
             lambda child: not isinstance(child, documents.TableRow) or not child.is_header,
             table.children,
@@ -189,7 +194,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
                 html.element("tbody", {}, body_rows),
             ]
             
-        return [html.element("table", {}, children)]
+        return [html.force_write] + children
     
     
     def visit_table_row(self, table_row, context):
@@ -306,18 +311,18 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
     def _find_html_path_for_paragraph(self, paragraph):
         default = html_paths.path([html_paths.element("p", fresh=True)])
-        return self._find_html_path(paragraph, "paragraph", default)
+        return self._find_html_path(paragraph, "paragraph", default, warn_unrecognised=True)
     
     def _find_html_path_for_run(self, run):
-        return self._find_html_path(run, "run", default=html_paths.empty)
+        return self._find_html_path(run, "run", default=html_paths.empty, warn_unrecognised=True)
         
     
-    def _find_html_path(self, element, element_type, default):
+    def _find_html_path(self, element, element_type, default, warn_unrecognised=False):
         style = self._find_style(element, element_type)
         if style is not None:
             return style.html_path
         
-        if getattr(element, "style_id", None) is not None:
+        if warn_unrecognised and getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(
                 "Unrecognised {0} style: {1} (Style ID: {2})".format(
                     element_type, element.style_name, element.style_id)

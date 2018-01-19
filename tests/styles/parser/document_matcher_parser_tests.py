@@ -97,6 +97,31 @@ def reads_run_with_style_name():
         read_document_matcher("r[style-name='Emphasis']")
     )
 
+
+@istest
+def reads_plain_table():
+    assert_equal(
+        document_matchers.table(),
+        read_document_matcher("table")
+    )
+
+
+@istest
+def reads_table_with_style_id():
+    assert_equal(
+        document_matchers.table(style_id="TableNormal"),
+        read_document_matcher("table.TableNormal")
+    )
+
+
+@istest
+def reads_table_with_style_name():
+    assert_equal(
+        document_matchers.table(style_name=document_matchers.equal_to("Normal Table")),
+        read_document_matcher("table[style-name='Normal Table']")
+    )
+
+
 @istest
 def reads_bold():
     assert_equal(

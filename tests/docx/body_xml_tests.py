@@ -62,7 +62,11 @@ class ParagraphTests(object):
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        styles = Styles({"Heading1": Style(style_id="Heading1", name="Heading 1")}, {})
+        styles = Styles(
+            paragraph_styles={"Heading1": Style(style_id="Heading1", name="Heading 1")},
+            character_styles={},
+            table_styles={},
+        )
         
         paragraph = _read_and_get_document_xml_element(paragraph_xml, styles=styles)
         assert_equal("Heading1", paragraph.style_id)
@@ -74,9 +78,7 @@ class ParagraphTests(object):
         properties_xml = xml_element("w:pPr", {}, [style_xml])
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         
-        styles = Styles({}, {})
-        
-        result = _read_document_xml_element(paragraph_xml, styles=styles)
+        result = _read_document_xml_element(paragraph_xml, styles=Styles.EMPTY)
         paragraph = result.value
         assert_equal("Heading1", paragraph.style_id)
         assert_equal(None, paragraph.style_name)
@@ -95,7 +97,7 @@ class ParagraphTests(object):
         paragraph_xml = xml_element("w:p", {}, [properties_xml])
         paragraph = _read_and_get_document_xml_element(paragraph_xml)
         assert_equal("center", paragraph.alignment)
-        
+    
     @istest
     def paragraph_has_no_numbering_if_it_has_no_numbering_properties(self):
         element = xml_element("w:p")
@@ -143,6 +145,59 @@ class ParagraphTests(object):
 
 
 @istest
+class ParagraphIndentTests(object):
+    @istest
+    def when_w_start_is_set_then_start_indent_is_read_from_w_start(self):
+        paragraph_xml = self._paragraph_with_indent({"w:start": "720", "w:left": "40"})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("720", paragraph.indent.start)
+    
+    @istest
+    def when_w_start_is_not_set_then_start_indent_is_read_from_w_left(self):
+        paragraph_xml = self._paragraph_with_indent({"w:left": "720"})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("720", paragraph.indent.start)
+
+    @istest
+    def when_w_end_is_set_then_end_indent_is_read_from_w_end(self):
+        paragraph_xml = self._paragraph_with_indent({"w:end": "720", "w:right": "40"})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("720", paragraph.indent.end)
+
+    @istest
+    def when_w_end_is_not_set_then_end_indent_is_read_from_w_right(self):
+        paragraph_xml = self._paragraph_with_indent({"w:right": "720"})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("720", paragraph.indent.end)
+
+    @istest
+    def paragraph_has_indent_first_line_read_from_paragraph_properties_if_present(self):
+        paragraph_xml = self._paragraph_with_indent({"w:firstLine": "720"})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("720", paragraph.indent.first_line)
+
+    @istest
+    def paragraph_has_indent_hanging_read_from_paragraph_properties_if_present(self):
+        paragraph_xml = self._paragraph_with_indent({"w:hanging": "720"})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal("720", paragraph.indent.hanging)
+
+    @istest
+    def when_indent_attributes_arent_set_then_indents_are_none(self):
+        paragraph_xml = self._paragraph_with_indent({})
+        paragraph = _read_and_get_document_xml_element(paragraph_xml)
+        assert_equal(None, paragraph.indent.start)
+        assert_equal(None, paragraph.indent.end)
+        assert_equal(None, paragraph.indent.first_line)
+        assert_equal(None, paragraph.indent.hanging)
+    
+    def _paragraph_with_indent(self, attributes):
+        indent_xml = xml_element("w:ind", attributes)
+        properties_xml = xml_element("w:pPr", {}, [indent_xml])
+        return xml_element("w:p", {}, [properties_xml])
+
+
+@istest
 class RunTests(object):
     @istest
     def run_has_no_style_if_it_has_no_properties(self):
@@ -153,7 +208,11 @@ class RunTests(object):
     def run_has_style_id_and_name_read_from_run_properties_if_present(self):
         style_xml = xml_element("w:rStyle", {"w:val": "Heading1Char"})
         
-        styles = Styles({}, {"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")})
+        styles = Styles(
+            paragraph_styles={},
+            character_styles={"Heading1Char": Style(style_id="Heading1Char", name="Heading 1 Char")},
+            table_styles={},
+        )
         
         run = self._read_run_with_properties([style_xml], styles=styles)
         assert_equal("Heading1Char", run.style_id)
@@ -165,9 +224,7 @@ class RunTests(object):
         properties_xml = xml_element("w:rPr", {}, [style_xml])
         run_xml = xml_element("w:r", {}, [properties_xml])
         
-        styles = Styles({}, {})
-        
-        result = _read_document_xml_element(run_xml, styles=styles)
+        result = _read_document_xml_element(run_xml, styles=Styles.EMPTY)
         run = result.value
         assert_equal("Heading1Char", run.style_id)
         assert_equal(None, run.style_name)
@@ -489,6 +546,39 @@ class TableTests(object):
             ])
         ])
         assert_equal(expected_result, table)
+        
+    @istest
+    def table_has_no_style_if_it_has_no_properties(self):
+        element = xml_element("w:tbl")
+        assert_equal(None, _read_and_get_document_xml_element(element).style_id)
+        
+    @istest
+    def table_has_style_id_and_name_read_from_paragraph_properties_if_present(self):
+        style_xml = xml_element("w:tblStyle", {"w:val": "TableNormal"})
+        properties_xml = xml_element("w:tblPr", {}, [style_xml])
+        table_xml = xml_element("w:tbl", {}, [properties_xml])
+        
+        styles = Styles(
+            paragraph_styles={},
+            character_styles={},
+            table_styles={"TableNormal": Style(style_id="TableNormal", name="Normal Table")},
+        )
+        
+        paragraph = _read_and_get_document_xml_element(table_xml, styles=styles)
+        assert_equal("TableNormal", paragraph.style_id)
+        assert_equal("Normal Table", paragraph.style_name)
+        
+    @istest
+    def warning_is_emitted_when_table_style_cannot_be_found(self):
+        style_xml = xml_element("w:tblStyle", {"w:val": "TableNormal"})
+        properties_xml = xml_element("w:tblPr", {}, [style_xml])
+        table_xml = xml_element("w:tbl", {}, [properties_xml])
+        
+        result = _read_document_xml_element(table_xml, styles=Styles.EMPTY)
+        table = result.value
+        assert_equal("TableNormal", table.style_id)
+        assert_equal(None, table.style_name)
+        assert_equal([results.warning("Table style with ID TableNormal was referenced but not defined in the document")], result.messages)
     
     @istest
     def tbl_header_marks_table_row_as_header(self):
@@ -1097,6 +1187,9 @@ class FakeStyles(object):
         return Style(style_id, style_id)
     
     def find_character_style_by_id(self, style_id):
+        return None
+    
+    def find_table_style_by_id(self, style_id):
         return None
 
 def _document_element_with_text(text):

@@ -36,6 +36,18 @@ def character_style_can_be_found_by_id():
 
 
 @istest
+def table_style_can_be_found_by_id():
+    element = xml_element("w:styles", {}, [
+        _table_style_element("TableNormal", "Normal Table"),
+    ])
+    styles = read_styles_xml_element(element)
+    assert_equal(
+        "TableNormal",
+        styles.find_table_style_by_id("TableNormal").style_id
+    )
+
+
+@istest
 def paragraph_and_character_styles_are_distinct():
     element = xml_element("w:styles", {}, [
         _paragraph_style_element("Heading1", "Heading 1"),
@@ -74,6 +86,9 @@ def _paragraph_style_element(style_id, name):
 
 def _character_style_element(style_id, name):
     return _style_element("character", style_id, name)
+
+def _table_style_element(style_id, name):
+    return _style_element("table", style_id, name)
 
 def _style_element(element_type, style_id, name):
     children = [xml_element("w:name", {"w:val": name}, [])]
