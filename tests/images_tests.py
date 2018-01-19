@@ -19,7 +19,7 @@ def data_uri_encodes_images_in_base64():
         content_type="image/jpeg",
         open=lambda: io.BytesIO(image_bytes),
     )
-
+    
     result = mammoth.images.data_uri(image)
     
     assert_that(result, contains(

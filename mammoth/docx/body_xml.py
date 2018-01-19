@@ -37,6 +37,7 @@ def reader(
     return _BodyReader(read_all)
 
 
+
 class _BodyReader(object):
     def __init__(self, read_all):
         self._read_all = read_all
@@ -372,27 +373,25 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             warning = results.warning("Unsupported break type: {0}".format(break_type))
             return _empty_result_with_message(warning)
 
+    
     def inline(element):
         properties = element.find_child_or_null("wp:docPr").attributes
-
         if properties.get("descr", "").strip():
             alt_text = properties.get("descr")
         else:
             alt_text = properties.get("title")
-
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
             .find_children("pic:pic") \
             .find_children("pic:blipFill") \
             .find_children("a:blip")
-
         return _read_blips(blips, alt_text)
-
+    
     def _read_blips(blips, alt_text):
         return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
     
-    def _read_blip(blip, alt_text):
-        return _read_image(lambda: _find_blip_image(blip), alt_text)
+    def _read_blip(element, alt_text):
+        return _read_image(lambda: _find_blip_image(element), alt_text)
     
     def _read_image(find_image, alt_text):
         image_path, open_image = find_image()

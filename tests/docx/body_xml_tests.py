@@ -927,8 +927,8 @@ class ImageTests(object):
         assert_equal("image/png", image.content_type)
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
-
-
+        
+        
     @istest
     def alt_text_title_is_used_if_alt_text_description_is_blank(self):
         drawing_element = _create_inline_image(
@@ -1212,47 +1212,36 @@ def _run_element_with_text(text):
 
 def _text_element(value):
     return xml_element("w:t", {}, [xml_text(value)])
+    
 
-
-def _create_inline_image(blip, ext=None, description=None, title=None):
+def _create_inline_image(blip, description=None, title=None):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:inline", {}, _create_image_elements(blip, ext=ext, description=description, title=title))
+        xml_element("wp:inline", {}, _create_image_elements(blip, description=description, title=title))
     ])
 
 
-def _create_anchored_image(description, blip, ext=None):
+def _create_anchored_image(description, blip):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:anchor", {}, _create_image_elements(blip, ext=ext, description=description))
+        xml_element("wp:anchor", {}, _create_image_elements(blip, description=description, ))
     ])
 
-
-def _create_image_elements(blip, ext=None, description=None, title=None):
+    
+def _create_image_elements(blip, description=None, title=None):
     properties = {}
     if description is not None:
         properties["descr"] = description
     if title is not None:
         properties["title"] = title
     
-    def get_pic_elements_with( blip ):
-        pic_elements = [
-            xml_element("pic:blipFill", {}, [
-                blip
-            ])]
-        if ext is not None:
-            pic_elements.append(
-                xml_element("pic:spPr", {}, [
-                    xml_element("a:xfrm", {}, [
-                        ext
-                    ])
-                ])
-            )
-        return pic_elements
-
     return [
         xml_element("wp:docPr", properties),
         xml_element("a:graphic", {}, [
             xml_element("a:graphicData", {}, [
-                xml_element("pic:pic", {}, get_pic_elements_with( blip ) )
+                xml_element("pic:pic", {}, [
+                    xml_element("pic:blipFill", {}, [
+                        blip
+                    ])
+                ])
             ])
         ])
     ]
@@ -1266,8 +1255,6 @@ def _linked_blip(relationship_id):
 def _blip(attributes):
     return xml_element("a:blip", attributes)
 
-def _ext(width=None, height=None):
-    return xml_element("a:ext", {"cx": width, "cy": height})
 
 def w_tr(*children):
     return xml_element("w:tr", {}, children)
