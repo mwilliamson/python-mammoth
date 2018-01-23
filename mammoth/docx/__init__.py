@@ -1,3 +1,4 @@
+from functools import partial
 import os
 
 from .. import results, lists
@@ -6,8 +7,8 @@ from .content_types_xml import empty_content_types, read_content_types_xml_eleme
 from .relationships_xml import read_relationships_xml_element, Relationships
 from .numbering_xml import read_numbering_xml_element, Numbering
 from .styles_xml import read_styles_xml_element, Styles
-from .notes_xml import create_footnotes_reader, create_endnotes_reader
-from .comments_xml import create_comments_reader
+from .notes_xml import read_endnotes_xml_element, read_footnotes_xml_element
+from .comments_xml import read_comments_xml_element
 from .files import Files
 from . import body_xml, office_xml
 from ..zips import open_zip
@@ -18,38 +19,40 @@ _empty_result = results.success([])
 
 def read(fileobj):
     zip_file = open_zip(fileobj, "r")
-    body_readers = _body_readers(getattr(fileobj, "name", None), zip_file)
+    read_part_with_body = _part_with_body_reader(getattr(fileobj, "name", None), zip_file)
     
     return results.combine([
-        _read_notes(zip_file, body_readers),
-        _read_comments(zip_file, body_readers),
+        _read_notes(zip_file, read_part_with_body),
+        _read_comments(zip_file, read_part_with_body),
     ]).bind(lambda referents:
-        _read_document(zip_file, body_readers, notes=referents[0], comments=referents[1])
+        _read_document(zip_file, read_part_with_body, notes=referents[0], comments=referents[1])
     )
 
 
-def _read_notes(zip_file, body_readers):
-    read_footnotes_xml = create_footnotes_reader(body_readers("footnotes"))
-    footnotes = _try_read_entry_or_default(
-        zip_file, "word/footnotes.xml", read_footnotes_xml, default=_empty_result)
-    
-    read_endnotes_xml = create_endnotes_reader(body_readers("endnotes"))
-    endnotes = _try_read_entry_or_default(
-        zip_file, "word/endnotes.xml", read_endnotes_xml, default=_empty_result)
+def _read_notes(zip_file, read_part_with_body):
+    footnotes = read_part_with_body(
+        "word/footnotes.xml",
+        lambda root, body_reader: read_footnotes_xml_element(root, body_reader=body_reader),
+        default=_empty_result,
+    )
+    endnotes = read_part_with_body(
+        "word/endnotes.xml",
+        lambda root, body_reader: read_endnotes_xml_element(root, body_reader=body_reader),
+        default=_empty_result,
+    )
     
     return results.combine([footnotes, endnotes]).map(lists.flatten)
 
 
-def _read_comments(zip_file, body_readers):
-    return _try_read_entry_or_default(
-        zip_file,
+def _read_comments(zip_file, read_part_with_body):
+    return read_part_with_body(
         "word/comments.xml",
-        create_comments_reader(body_readers("comments")),
+        lambda root, body_reader: read_comments_xml_element(root, body_reader=body_reader),
         default=_empty_result,
     )
 
     
-def _read_document(zip_file, body_readers, notes, comments):
+def _read_document(zip_file, read_part_with_body, notes, comments):
     package_relationships = _try_read_entry_or_default(
         zip_file,
         "_rels/.rels",
@@ -59,14 +62,14 @@ def _read_document(zip_file, body_readers, notes, comments):
     
     document_filename = _find_document_filename(zip_file, package_relationships)
     
-    with zip_file.open(document_filename) as document_fileobj:
-        document_xml = office_xml.read(document_fileobj)
-        return read_document_xml_element(
-            document_xml,
-            body_reader=body_readers("document"),
+    return read_part_with_body(
+        document_filename,
+        partial(
+            read_document_xml_element,
             notes=notes,
             comments=comments,
-        )
+        ),
+    )
 
 
 def _find_document_filename(zip_file, relationships):
@@ -82,7 +85,7 @@ def _find_document_filename(zip_file, relationships):
         return valid_targets[0]
 
 
-def _body_readers(document_path, zip_file):
+def _part_with_body_reader(document_path, zip_file):
     content_types = _try_read_entry_or_default(
         zip_file,
         "[Content_Types].xml",
@@ -100,13 +103,10 @@ def _body_readers(document_path, zip_file):
         Styles.EMPTY,
     )
     
-    def for_name(name):
-        relationships_path = "word/_rels/{0}.xml.rels".format(name)
-        relationships = _try_read_entry_or_default(
-            zip_file, relationships_path, read_relationships_xml_element,
-            default=Relationships.EMPTY)
+    def read_part(name, reader, default=_undefined):
+        relationships = _read_relationships(zip_file, _find_relationships_path_for(name))
             
-        return body_xml.reader(
+        body_reader = body_xml.reader(
             numbering=numbering,
             content_types=content_types,
             relationships=relationships,
@@ -114,13 +114,39 @@ def _body_readers(document_path, zip_file):
             docx_file=zip_file,
             files=Files(None if document_path is None else os.path.dirname(document_path)),
         )
-    
-    return for_name
 
+        if default is _undefined:
+            return _read_entry(zip_file, name, partial(reader, body_reader=body_reader))
+        else:
+            return _try_read_entry_or_default(zip_file, name, partial(reader, body_reader=body_reader), default=default)
+    
+    return read_part
+
+
+
+def _find_relationships_path_for(name):
+    parts = name.split("/")
+    return "/".join(parts[:-1] + ["_rels/" + parts[-1] + ".rels"])
+    
+
+def _read_relationships(zip_file, name):
+    return _try_read_entry_or_default(
+        zip_file,
+        name,
+        read_relationships_xml_element,
+        default=Relationships.EMPTY,
+    )
 
 def _try_read_entry_or_default(zip_file, name, reader, default):
     if zip_file.exists(name):
-        with zip_file.open(name) as fileobj:
-            return reader(office_xml.read(fileobj))
+        return _read_entry(zip_file, name, reader)
     else:
         return default
+
+
+def _read_entry(zip_file, name, reader):
+    with zip_file.open(name) as fileobj:
+        return reader(office_xml.read(fileobj))
+
+
+_undefined = object()

@@ -5,7 +5,7 @@ from .. import documents
 from .. import results
 
 
-def create_reader(note_type, body_reader):
+def _read_notes(note_type, element, body_reader):
     def read_notes_xml_element(element):
         note_elements = lists.filter(
             _is_note_element,
@@ -26,7 +26,7 @@ def create_reader(note_type, body_reader):
                 body=body
             ))
     
-    return read_notes_xml_element
+    return read_notes_xml_element(element)
 
-create_footnotes_reader = functools.partial(create_reader, "footnote")
-create_endnotes_reader = functools.partial(create_reader, "endnote")
+read_footnotes_xml_element = functools.partial(_read_notes, "footnote")
+read_endnotes_xml_element = functools.partial(_read_notes, "endnote")

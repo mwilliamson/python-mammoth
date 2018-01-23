@@ -3,7 +3,7 @@ from .. import documents
 from .. import results
 
 
-def create_comments_reader(body_reader):
+def read_comments_xml_element(element, body_reader):
     def read_comments_xml_element(element):
         comment_elements = element.find_children("w:comment")
         return results.combine(lists.map(_read_comment_element, comment_elements))
@@ -21,4 +21,4 @@ def create_comments_reader(body_reader):
                 author_initials=read_optional_attribute("w:initials"),
             ))
 
-    return read_comments_xml_element
+    return read_comments_xml_element(element)
