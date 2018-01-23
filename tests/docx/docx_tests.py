@@ -5,7 +5,7 @@ import zipfile
 from nose.tools import istest, assert_equal
 
 from mammoth import docx, documents
-from ..testing import test_path
+from ..testing import assert_raises, test_path
 
 
 @istest
@@ -60,6 +60,23 @@ def main_document_is_found_using_package_relationships():
         ])
     ])
     assert_equal(expected_document, result.value)
+
+
+@istest
+def error_is_raised_when_main_document_part_does_not_exist():
+    fileobj = _create_zip({
+        "_rels/.rels": textwrap.dedent("""\
+            <?xml version="1.0" encoding="utf-8"?>
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document2.xml" Id="rId1"/>
+            </Relationships>
+        """),
+    })
+    error = assert_raises(IOError, lambda: docx.read(fileobj=fileobj))
+    assert_equal(
+        "Could not find main document part. Are you sure this is a valid .docx file?",
+        str(error),
+    )
 
 
 def _create_zip(files):

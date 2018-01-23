@@ -77,7 +77,7 @@ def _find_document_filename(zip_file, relationships):
     ] + ["word/document.xml"]
     valid_targets = list(filter(lambda target: zip_file.exists(target), targets))
     if len(valid_targets) == 0:
-        return None
+        raise IOError("Could not find main document part. Are you sure this is a valid .docx file?")
     else:
         return valid_targets[0]
 
