@@ -50,14 +50,14 @@ def _read_comments(zip_file, body_readers):
 
     
 def _read_document(zip_file, body_readers, notes, comments):
-    file_relationships = _try_read_entry_or_default(
+    package_relationships = _try_read_entry_or_default(
         zip_file,
         "_rels/.rels",
         read_relationships_xml_element,
         default=Relationships.EMPTY,
     )
     
-    document_filename = _find_document_filename(zip_file, file_relationships)
+    document_filename = _find_document_filename(zip_file, package_relationships)
     
     with zip_file.open(document_filename) as document_fileobj:
         document_xml = office_xml.read(document_fileobj)
