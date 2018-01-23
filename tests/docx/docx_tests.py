@@ -30,7 +30,7 @@ _relationship_namespaces = {
 
 
 @istest
-def when_document_xml_is_not_present_then_document_is_found_using_file_relationships():
+def main_document_is_found_using_package_relationships():
     fileobj = _create_zip({
         "word/document2.xml": textwrap.dedent("""\
             <?xml version="1.0" encoding="utf-8" ?>

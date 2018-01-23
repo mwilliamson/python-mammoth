@@ -70,10 +70,11 @@ def _read_document(zip_file, body_readers, notes, comments):
 
 
 def _find_document_filename(zip_file, relationships):
-    targets = ["word/document.xml"] + [
+    office_document_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+    targets = [
         target.lstrip("/")
-        for target in relationships.find_targets_by_type("http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument")
-    ]
+        for target in relationships.find_targets_by_type(office_document_type)
+    ] + ["word/document.xml"]
     valid_targets = list(filter(lambda target: zip_file.exists(target), targets))
     if len(valid_targets) == 0:
         return None
