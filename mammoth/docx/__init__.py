@@ -22,14 +22,14 @@ def read(fileobj):
     read_part_with_body = _part_with_body_reader(getattr(fileobj, "name", None), zip_file)
     
     return results.combine([
-        _read_notes(zip_file, read_part_with_body),
-        _read_comments(zip_file, read_part_with_body),
+        _read_notes(read_part_with_body),
+        _read_comments(read_part_with_body),
     ]).bind(lambda referents:
         _read_document(zip_file, read_part_with_body, notes=referents[0], comments=referents[1])
     )
 
 
-def _read_notes(zip_file, read_part_with_body):
+def _read_notes(read_part_with_body):
     footnotes = read_part_with_body(
         "word/footnotes.xml",
         lambda root, body_reader: read_footnotes_xml_element(root, body_reader=body_reader),
@@ -44,7 +44,7 @@ def _read_notes(zip_file, read_part_with_body):
     return results.combine([footnotes, endnotes]).map(lists.flatten)
 
 
-def _read_comments(zip_file, read_part_with_body):
+def _read_comments(read_part_with_body):
     return read_part_with_body(
         "word/comments.xml",
         lambda root, body_reader: read_comments_xml_element(root, body_reader=body_reader),
