@@ -54,3 +54,15 @@ def update_zip(fileobj, files):
     fileobj.seek(0)
     destination_fileobj.seek(0)
     shutil.copyfileobj(destination_fileobj, fileobj)
+
+
+def split_path(path):
+    parts = path.rsplit("/", 1)
+    if len(parts) == 1:
+        return ("", path)
+    else:
+        return tuple(parts)
+
+
+def join_path(*args):
+    return "/".join(list(filter(None, args)))

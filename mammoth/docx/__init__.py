@@ -1,7 +1,7 @@
 from functools import partial
 import os
 
-from .. import results, lists
+from .. import results, lists, zips
 from .document_xml import read_document_xml_element
 from .content_types_xml import empty_content_types, read_content_types_xml_element
 from .relationships_xml import read_relationships_xml_element, Relationships
@@ -125,8 +125,8 @@ def _part_with_body_reader(document_path, zip_file):
 
 
 def _find_relationships_path_for(name):
-    parts = name.split("/")
-    return "/".join(parts[:-1] + ["_rels/" + parts[-1] + ".rels"])
+    dirname, basename = zips.split_path(name)
+    return zips.join_path(dirname, "_rels", basename + ".rels")
     
 
 def _read_relationships(zip_file, name):
