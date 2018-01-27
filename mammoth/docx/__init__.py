@@ -1,6 +1,8 @@
 from functools import partial
 import os
 
+import cobble   
+
 from .. import results, lists, zips
 from .document_xml import read_document_xml_element
 from .content_types_xml import empty_content_types, read_content_types_xml_element
@@ -19,50 +21,42 @@ _empty_result = results.success([])
 
 def read(fileobj):
     zip_file = open_zip(fileobj, "r")
-    read_part_with_body = _part_with_body_reader(getattr(fileobj, "name", None), zip_file)
+    part_paths = _find_part_paths(zip_file)
+    read_part_with_body = _part_with_body_reader(
+        getattr(fileobj, "name", None),
+        zip_file,
+        part_paths=part_paths,
+    )
     
     return results.combine([
-        _read_notes(read_part_with_body),
-        _read_comments(read_part_with_body),
+        _read_notes(read_part_with_body, part_paths),
+        _read_comments(read_part_with_body, part_paths),
     ]).bind(lambda referents:
-        _read_document(zip_file, read_part_with_body, notes=referents[0], comments=referents[1])
+        _read_document(zip_file, read_part_with_body, notes=referents[0], comments=referents[1], part_paths=part_paths)
     )
 
 
-def _read_notes(read_part_with_body):
-    footnotes = read_part_with_body(
-        "word/footnotes.xml",
-        lambda root, body_reader: read_footnotes_xml_element(root, body_reader=body_reader),
-        default=_empty_result,
-    )
-    endnotes = read_part_with_body(
-        "word/endnotes.xml",
-        lambda root, body_reader: read_endnotes_xml_element(root, body_reader=body_reader),
-        default=_empty_result,
-    )
-    
-    return results.combine([footnotes, endnotes]).map(lists.flatten)
+@cobble.data
+class _PartPaths(object):
+    main_document = cobble.field()
+    comments = cobble.field()
+    endnotes = cobble.field()
+    footnotes = cobble.field()
+    numbering = cobble.field()
+    styles = cobble.field()
 
 
-def _read_comments(read_part_with_body):
-    return read_part_with_body(
-        "word/comments.xml",
-        lambda root, body_reader: read_comments_xml_element(root, body_reader=body_reader),
-        default=_empty_result,
-    )
-
-    
-def _read_document(zip_file, read_part_with_body, notes, comments):
+def _find_part_paths(zip_file):
     package_relationships = _read_relationships(zip_file, "_rels/.rels")
     document_filename = _find_document_filename(zip_file, package_relationships)
     
-    return read_part_with_body(
-        document_filename,
-        partial(
-            read_document_xml_element,
-            notes=notes,
-            comments=comments,
-        ),
+    return _PartPaths(
+        main_document=document_filename,
+        comments="word/comments.xml",
+        endnotes="word/endnotes.xml",
+        footnotes="word/footnotes.xml",
+        numbering="word/numbering.xml",
+        styles="word/styles.xml",
     )
 
 
@@ -79,7 +73,41 @@ def _find_document_filename(zip_file, relationships):
         return valid_targets[0]
 
 
-def _part_with_body_reader(document_path, zip_file):
+def _read_notes(read_part_with_body, part_paths):
+    footnotes = read_part_with_body(
+        part_paths.footnotes,
+        lambda root, body_reader: read_footnotes_xml_element(root, body_reader=body_reader),
+        default=_empty_result,
+    )
+    endnotes = read_part_with_body(
+        part_paths.endnotes,
+        lambda root, body_reader: read_endnotes_xml_element(root, body_reader=body_reader),
+        default=_empty_result,
+    )
+    
+    return results.combine([footnotes, endnotes]).map(lists.flatten)
+
+
+def _read_comments(read_part_with_body, part_paths):
+    return read_part_with_body(
+        part_paths.comments,
+        lambda root, body_reader: read_comments_xml_element(root, body_reader=body_reader),
+        default=_empty_result,
+    )
+
+    
+def _read_document(zip_file, read_part_with_body, notes, comments, part_paths):
+    return read_part_with_body(
+        part_paths.main_document,
+        partial(
+            read_document_xml_element,
+            notes=notes,
+            comments=comments,
+        ),
+    )
+
+
+def _part_with_body_reader(document_path, zip_file, part_paths):
     content_types = _try_read_entry_or_default(
         zip_file,
         "[Content_Types].xml",
@@ -88,11 +116,15 @@ def _part_with_body_reader(document_path, zip_file):
     )
 
     numbering = _try_read_entry_or_default(
-        zip_file, "word/numbering.xml", read_numbering_xml_element, default=Numbering({}))
+        zip_file,
+        part_paths.numbering,
+        read_numbering_xml_element,
+        default=Numbering({}),
+    )
     
     styles = _try_read_entry_or_default(
         zip_file,
-        "word/styles.xml",
+        part_paths.styles,
         read_styles_xml_element,
         Styles.EMPTY,
     )
