@@ -24,7 +24,7 @@ def join_path_joins_arguments_with_forward_slashes():
 
 @istest
 def empty_parts_are_ignored_when_joining_paths():
-    assert_equal("a", zips.join_path("", "a"))
+    assert_equal("a", zips.join_path("a", ""))
     assert_equal("b", zips.join_path("", "b"))
     assert_equal("a/b", zips.join_path("a", "", "b"))
     
