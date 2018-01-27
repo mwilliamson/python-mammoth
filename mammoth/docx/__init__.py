@@ -53,13 +53,7 @@ def _read_comments(read_part_with_body):
 
     
 def _read_document(zip_file, read_part_with_body, notes, comments):
-    package_relationships = _try_read_entry_or_default(
-        zip_file,
-        "_rels/.rels",
-        read_relationships_xml_element,
-        default=Relationships.EMPTY,
-    )
-    
+    package_relationships = _read_relationships(zip_file, "_rels/.rels")
     document_filename = _find_document_filename(zip_file, package_relationships)
     
     return read_part_with_body(
