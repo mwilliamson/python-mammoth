@@ -4,7 +4,7 @@ import zipfile
 
 from nose.tools import istest, assert_equal
 
-from mammoth import docx, documents
+from mammoth import docx, documents, zips
 from ..testing import assert_raises, test_path
 
 
@@ -77,6 +77,32 @@ def error_is_raised_when_main_document_part_does_not_exist():
         "Could not find main document part. Are you sure this is a valid .docx file?",
         str(error),
     )
+
+class TestPartPaths(object):
+    @istest
+    def main_document_part_is_found_using_package_relationships(self):
+        fileobj = _create_zip({
+            "word/document2.xml": " ",
+            "_rels/.rels": textwrap.dedent("""\
+                <?xml version="1.0" encoding="utf-8"?>
+                <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+                    <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document2.xml" Id="rId1"/>
+                </Relationships>
+            """),
+        })
+        part_paths = self._find_part_paths(fileobj)
+        assert_equal("word/document2.xml", part_paths.main_document)
+        
+    @istest
+    def when_relationship_for_main_document_cannot_be_found_then_fallback_is_used(self):
+        fileobj = _create_zip({
+            "word/document.xml": " ",
+        })
+        part_paths = self._find_part_paths(fileobj)
+        assert_equal("word/document.xml", part_paths.main_document)
+    
+    def _find_part_paths(self, fileobj):
+        return docx._find_part_paths(zips.open_zip(fileobj, "r"))
 
 
 def _create_zip(files):
