@@ -50,9 +50,23 @@ def _find_part_paths(zip_file):
     package_relationships = _read_relationships(zip_file, "_rels/.rels")
     document_filename = _find_document_filename(zip_file, package_relationships)
     
+    document_relationships = _read_relationships(
+        zip_file,
+        _find_relationships_path_for(document_filename),
+    )
+    
+    def find(name):
+        return _find_part_path(
+            zip_file=zip_file,
+            relationships=document_relationships,
+            relationship_type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/" + name,
+            fallback_path="word/{0}.xml".format(name),
+            base_path=zips.split_path(document_filename)[0],
+        )
+    
     return _PartPaths(
         main_document=document_filename,
-        comments="word/comments.xml",
+        comments=find("comments"),
         endnotes="word/endnotes.xml",
         footnotes="word/footnotes.xml",
         numbering="word/numbering.xml",
@@ -61,14 +75,27 @@ def _find_part_paths(zip_file):
 
 
 def _find_document_filename(zip_file, relationships):
-    office_document_type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+    path = _find_part_path(
+        zip_file,
+        relationships,
+        relationship_type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+        base_path="",
+        fallback_path="word/document.xml",
+    )
+    if zip_file.exists(path):
+        return path
+    else:
+        raise IOError("Could not find main document part. Are you sure this is a valid .docx file?")
+
+
+def _find_part_path(zip_file, relationships, relationship_type, base_path, fallback_path):
     targets = [
-        target.lstrip("/")
-        for target in relationships.find_targets_by_type(office_document_type)
-    ] + ["word/document.xml"]
+        zips.join_path(base_path, target).lstrip("/")
+        for target in relationships.find_targets_by_type(relationship_type)
+    ]
     valid_targets = list(filter(lambda target: zip_file.exists(target), targets))
     if len(valid_targets) == 0:
-        raise IOError("Could not find main document part. Are you sure this is a valid .docx file?")
+        return fallback_path
     else:
         return valid_targets[0]
 
