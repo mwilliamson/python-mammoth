@@ -67,10 +67,10 @@ def _find_part_paths(zip_file):
     return _PartPaths(
         main_document=document_filename,
         comments=find("comments"),
-        endnotes="word/endnotes.xml",
-        footnotes="word/footnotes.xml",
-        numbering="word/numbering.xml",
-        styles="word/styles.xml",
+        endnotes=find("endnotes"),
+        footnotes=find("footnotes"),
+        numbering=find("numbering"),
+        styles=find("styles"),
     )
 
 

@@ -103,6 +103,45 @@ class TestPartPaths(object):
     
     @istest
     def comments_part_is_found_using_main_document_relationships(self):
+        self._assert_path_is_found_using_main_document_relationships("comments")
+    
+    @istest
+    def when_relationship_for_comments_cannot_be_found_then_fallback_is_used(self):
+        self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("comments")
+    
+    @istest
+    def endnotes_part_is_found_using_main_document_relationships(self):
+        self._assert_path_is_found_using_main_document_relationships("endnotes")
+    
+    @istest
+    def when_relationship_for_endnotes_cannot_be_found_then_fallback_is_used(self):
+        self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("endnotes")
+    
+    @istest
+    def footnotes_part_is_found_using_main_document_relationships(self):
+        self._assert_path_is_found_using_main_document_relationships("footnotes")
+    
+    @istest
+    def when_relationship_for_footnotes_cannot_be_found_then_fallback_is_used(self):
+        self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("footnotes")
+    
+    @istest
+    def numbering_part_is_found_using_main_document_relationships(self):
+        self._assert_path_is_found_using_main_document_relationships("numbering")
+    
+    @istest
+    def when_relationship_for_numbering_cannot_be_found_then_fallback_is_used(self):
+        self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("numbering")
+    
+    @istest
+    def styles_part_is_found_using_main_document_relationships(self):
+        self._assert_path_is_found_using_main_document_relationships("styles")
+    
+    @istest
+    def when_relationship_for_styles_cannot_be_found_then_fallback_is_used(self):
+        self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("styles")
+    
+    def _assert_path_is_found_using_main_document_relationships(self, name):
         fileobj = _create_zip({
             "_rels/.rels": textwrap.dedent("""\
                 <?xml version="1.0" encoding="utf-8"?>
@@ -114,16 +153,15 @@ class TestPartPaths(object):
             "word/_rels/document.xml.rels": textwrap.dedent("""\
                 <?xml version="1.0" encoding="utf-8"?>
                 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-                    <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="target-path.xml" Id="rId2"/>
+                    <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/{name}" Target="target-path.xml" Id="rId2"/>
                 </Relationships>
-            """),
+            """.format(name=name)),
             "word/target-path.xml": " "
         })
         part_paths = self._find_part_paths(fileobj)
-        assert_equal("word/target-path.xml", part_paths.comments)
+        assert_equal("word/target-path.xml", getattr(part_paths, name))
     
-    @istest
-    def when_relationship_for_comments_cannot_be_found_then_fallback_is_used(self):
+    def _assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used(self, name):
         fileobj = _create_zip({
             "_rels/.rels": textwrap.dedent("""\
                 <?xml version="1.0" encoding="utf-8"?>
@@ -134,7 +172,7 @@ class TestPartPaths(object):
             "word/document.xml": " ",
         })
         part_paths = self._find_part_paths(fileobj)
-        assert_equal("word/comments.xml", part_paths.comments)
+        assert_equal("word/{0}.xml".format(name), getattr(part_paths, name))
         
     
     def _find_part_paths(self, fileobj):
