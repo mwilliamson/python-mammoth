@@ -27,4 +27,11 @@ def empty_parts_are_ignored_when_joining_paths():
     assert_equal("a", zips.join_path("a", ""))
     assert_equal("b", zips.join_path("", "b"))
     assert_equal("a/b", zips.join_path("a", "", "b"))
-    
+
+
+@istest
+def when_joining_paths_then_absolute_paths_ignore_earlier_paths():
+    assert_equal("/b", zips.join_path("a", "/b"))
+    assert_equal("/b/c", zips.join_path("a", "/b", "c"))
+    assert_equal("/b", zips.join_path("/a", "/b"))
+    assert_equal("/a", zips.join_path("/a"))

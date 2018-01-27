@@ -65,4 +65,13 @@ def split_path(path):
 
 
 def join_path(*args):
-    return "/".join(list(filter(None, args)))
+    non_empty_paths = list(filter(None, args))
+    
+    relevant_paths = []
+    for path in non_empty_paths:
+        if path.startswith("/"):
+            relevant_paths = [path]
+        else:
+            relevant_paths.append(path)
+    
+    return "/".join(relevant_paths)
