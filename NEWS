@@ -1,3 +1,7 @@
+# 1.4.5
+
+* Read the children of v:rect elements.
+
 # 1.4.4
 
 * Parse paragraph indents.

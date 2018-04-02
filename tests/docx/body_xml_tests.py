@@ -722,6 +722,11 @@ def children_of_v_group_are_converted_normally():
     _assert_children_are_converted_normally("v:group")
 
 
+@istest
+def children_of_v_rect_are_converted_normally():
+    _assert_children_are_converted_normally("v:rect")
+
+
 def _assert_children_are_converted_normally(tag_name):
     element = xml_element("w:p", {}, [
         xml_element(tag_name, {}, [
