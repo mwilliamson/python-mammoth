@@ -5,7 +5,9 @@ def read_document_xml_element(
         element,
         body_reader,
         notes=None,
-        comments=None):
+        comments=None,
+        headers=None,
+        footers=None):
     
     if notes is None:
         notes = []
@@ -17,5 +19,7 @@ def read_document_xml_element(
         .map(lambda children: documents.document(
             children,
             notes=documents.notes(notes),
-            comments=comments
+            comments=comments,
+            headers=headers,
+            footers=footers
         ))

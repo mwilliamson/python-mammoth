@@ -9,6 +9,9 @@ class Node(object):
 class TextNode(Node):
     value = cobble.field()
 
+    def to_text(self):
+        return self.value
+
 
 @cobble.data
 class Tag(object):
@@ -52,6 +55,8 @@ class Element(Node):
     def is_void(self):
         return not self.children and self.tag_name in self._VOID_TAG_NAMES
 
+    def to_text(self):
+        return "".join([s.to_text() for s in iter(self.children)])
 
 @cobble.visitable
 class ForceWrite(Node):
