@@ -95,26 +95,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             return []
 
     def visit_document(self, document, context):
+        headers = self.visit_headers(document.headers, context)
         nodes = self._visit_all(document.children, context)
-
-        headers = []
-        footers = []
-
-        if self._include_headers_and_footers:
-            headers = self.visit_headers(document.headers, context)
-            footers = self.visit_footers(document.footers, context)
-
-        notes = [
-            document.notes.resolve(reference)
-            for reference in self._note_references
-        ]
-        notes_list = html.element("ol", {}, self._visit_all(notes, context))
-        
-        comments = html.element("dl", {}, [
-            html_node
-            for referenced_comment in self._referenced_comments
-            for html_node in self.visit_comment(referenced_comment, context)
-        ])
+        notes_list = self.visit_notes(document.notes, context)
+        comments = self.visit_comments(context)
+        footers = self.visit_footers(document.footers, context)
 
         return headers + nodes + [notes_list, comments] + footers
 
@@ -282,6 +267,12 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("li", {"id": self._note_html_id(note)}, note_body)
         ]
 
+    def visit_notes(self, notes, context):
+        resolved_notes = [
+            notes.resolve(reference)
+            for reference in self._note_references
+        ]
+        return html.element("ol", {}, self._visit_all(resolved_notes, context))
 
     def visit_comment_reference(self, reference, context):
         def nodes():
@@ -325,10 +316,20 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("dd", {}, body),
         ]
 
+    def visit_comments(self, context):
+        return html.element("dl", {}, [
+            html_node
+            for referenced_comment in self._referenced_comments
+            for html_node in self.visit_comment(referenced_comment, context)
+        ])
+
     def visit_header(self, header, context):
         return self._visit_all(header.children, context)
 
     def visit_headers(self, headers, context):
+        if not self._include_headers_and_footers:
+            return []
+
         all_headers = [
             html_node
             for h in headers
@@ -336,7 +337,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         ]
 
         if not self._deduplicate_headers_and_footers:
-            return all_headers
+            return [
+                html.element("header", {}, [h])
+                for h in headers
+            ]
 
         header_values = set()
         filtered_headers = []
@@ -345,12 +349,18 @@ class _DocumentConverter(documents.element_visitor(args=1)):
                 filtered_headers.append(h)
                 header_values.add(h.to_text())
 
-        return filtered_headers
+        return [
+            html.element("header", {}, [f])
+            for f in filtered_headers
+        ]
 
     def visit_footer(self, footer, context):
         return self._visit_all(footer.children, context)
 
     def visit_footers(self, footers, context):
+        if not self._include_headers_and_footers:
+            return []
+
         all_footers = [
             html_node
             for f in footers
@@ -358,7 +368,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         ]
 
         if not self._deduplicate_headers_and_footers:
-            return all_footers
+            return [
+                html.element("footer", {}, [f])
+                for f in all_footers
+            ]
 
         footer_values = set()
         filtered_footers = []
@@ -366,8 +379,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             if not h.to_text() in footer_values:
                 filtered_footers.append(h)
                 footer_values.add(h.to_text())
-
-        return filtered_footers
+        
+        return [
+            html.element("footer", {}, [f])
+            for f in filtered_footers
+        ]
 
     def _visit_all(self, elements, context):
         return [
