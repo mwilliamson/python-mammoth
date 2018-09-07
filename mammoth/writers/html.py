@@ -1,8 +1,7 @@
 from __future__ import unicode_literals
+from xml.sax.saxutils import escape
 
 from .abc import Writer
-
-import cgi
 
 
 class HtmlWriter(Writer):
@@ -31,7 +30,7 @@ class HtmlWriter(Writer):
 
 
 def _escape_html(text):
-    return cgi.escape(text, quote=True)
+    return escape(text, {'"': "&quot;"})
 
 
 def _generate_attribute_string(attributes):
