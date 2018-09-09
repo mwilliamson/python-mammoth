@@ -8,8 +8,12 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7"
   - "pypy"
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
 install:
   - "pip install 'virtualenv<14.0.0' 'tox<3.2'"
   - "make README"
