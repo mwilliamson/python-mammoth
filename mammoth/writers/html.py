@@ -2,7 +2,10 @@ from __future__ import unicode_literals
 
 from .abc import Writer
 
-import cgi
+try:
+    from html import escape as _stdlib_escape_html
+except:
+    from cgi import escape as _stdlib_escape_html
 
 
 class HtmlWriter(Writer):
@@ -31,7 +34,7 @@ class HtmlWriter(Writer):
 
 
 def _escape_html(text):
-    return cgi.escape(text, quote=True)
+    return _stdlib_escape_html(text, quote=True)
 
 
 def _generate_attribute_string(attributes):
