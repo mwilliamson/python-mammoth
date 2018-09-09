@@ -8,6 +8,7 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
   - "pypy"
 install:
   - "pip install 'virtualenv<14.0.0' 'tox<3.2'"
