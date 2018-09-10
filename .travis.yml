@@ -9,7 +9,12 @@ python:
   - "3.5"
   - "3.6"
   - "pypy"
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
 install:
-  - "pip install 'virtualenv<14.0.0' tox"
+  - "pip install 'virtualenv<14.0.0' 'tox<3.2'"
   - "make README"
 script: tox -e py
