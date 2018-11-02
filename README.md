@@ -285,6 +285,12 @@ Converts the source document to HTML.
 * `ignore_empty_paragraphs`: by default, empty paragraphs are ignored.
   Set this option to `False` to preserve empty paragraphs in the output.
 
+* `include_headers_and_footers`: by default, headers and footers are not included in the output.
+  Set this option to `True` to include them at the start and end of the output.
+
+* `deduplicate_headers_and_footers`: by default, all headers and footers are included.
+  Set this option to `True` to only include unique headers and footers.
+
 * `id_prefix`:
   a string to prepend to any generated IDs,
   such as those used by bookmarks, footnotes and endnotes.

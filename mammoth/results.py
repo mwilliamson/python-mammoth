@@ -31,9 +31,13 @@ def combine(results):
     values = []
     messages = []
     for result in results:
-        values.append(result.value)
-        for message in result.messages:
-            messages.append(message)
+        if isinstance(result, list):
+            values.append([r.value for r in result])
+            for r in result:
+                messages.extend(r.messages)
+        else:
+            values.append(result.value)
+            messages.extend(result.messages)
         
     return Result(values, messages)
 

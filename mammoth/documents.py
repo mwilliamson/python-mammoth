@@ -14,6 +14,8 @@ class HasChildren(Element):
 class Document(HasChildren):
     notes = cobble.field()
     comments = cobble.field()
+    headers = cobble.field()
+    footers = cobble.field()
 
 @cobble.data
 class Paragraph(HasChildren):
@@ -97,12 +99,16 @@ class Image(Element):
     open = cobble.field()
 
 
-def document(children, notes=None, comments=None):
+def document(children, notes=None, comments=None, headers=None, footers=None):
     if notes is None:
         notes = Notes({})
     if comments is None:
         comments = []
-    return Document(children, notes, comments=comments)
+    if headers is None:
+        headers = []
+    if footers is None:
+        footers = []
+    return Document(children, notes, comments=comments, headers=headers, footers=footers)
 
 def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None, indent=None):
     if indent is None:
@@ -251,6 +257,18 @@ class CommentReference(Element):
     comment_id = cobble.field()
 
 comment_reference = CommentReference
+
+@cobble.data
+class Header(HasChildren):
+    pass
+
+header = Header
+
+@cobble.data
+class Footer(HasChildren):
+    pass
+
+footer = Footer
 
 def element_visitor(args):
     return cobble.visitor(Element, args=args)

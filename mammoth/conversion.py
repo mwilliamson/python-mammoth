@@ -16,7 +16,9 @@ def convert_document_element_to_html(element,
         convert_image=None,
         id_prefix=None,
         output_format=None,
-        ignore_empty_paragraphs=True):
+        ignore_empty_paragraphs=True,
+        include_headers_and_footers=False,
+        deduplicate_headers_and_footers=False):
             
     if style_map is None:
         style_map = []
@@ -42,6 +44,8 @@ def convert_document_element_to_html(element,
         convert_image=convert_image,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
+        include_headers_and_footers=include_headers_and_footers,
+        deduplicate_headers_and_footers=deduplicate_headers_and_footers,
         note_references=[],
         comments=comments,
     )
@@ -62,11 +66,22 @@ class _ConversionContext(object):
 
 
 class _DocumentConverter(documents.element_visitor(args=1)):
-    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
+    def __init__(self, 
+                messages, 
+                style_map, 
+                convert_image, 
+                id_prefix, 
+                ignore_empty_paragraphs,
+                include_headers_and_footers,
+                deduplicate_headers_and_footers,
+                note_references, 
+                comments):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
+        self._include_headers_and_footers = include_headers_and_footers
+        self._deduplicate_headers_and_footers = deduplicate_headers_and_footers
         self._note_references = note_references
         self._referenced_comments = []
         self._convert_image = convert_image
@@ -80,18 +95,13 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             return []
 
     def visit_document(self, document, context):
+        headers = self.visit_headers(document.headers, context)
         nodes = self._visit_all(document.children, context)
-        notes = [
-            document.notes.resolve(reference)
-            for reference in self._note_references
-        ]
-        notes_list = html.element("ol", {}, self._visit_all(notes, context))
-        comments = html.element("dl", {}, [
-            html_node
-            for referenced_comment in self._referenced_comments
-            for html_node in self.visit_comment(referenced_comment, context)
-        ])
-        return nodes + [notes_list, comments]
+        notes_list = self.visit_notes(document.notes, context)
+        comments = self.visit_comments(context)
+        footers = self.visit_footers(document.footers, context)
+
+        return headers + nodes + [notes_list, comments] + footers
 
 
     def visit_paragraph(self, paragraph, context):
@@ -257,6 +267,12 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("li", {"id": self._note_html_id(note)}, note_body)
         ]
 
+    def visit_notes(self, notes, context):
+        resolved_notes = [
+            notes.resolve(reference)
+            for reference in self._note_references
+        ]
+        return html.element("ol", {}, self._visit_all(resolved_notes, context))
 
     def visit_comment_reference(self, reference, context):
         def nodes():
@@ -300,6 +316,74 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("dd", {}, body),
         ]
 
+    def visit_comments(self, context):
+        return html.element("dl", {}, [
+            html_node
+            for referenced_comment in self._referenced_comments
+            for html_node in self.visit_comment(referenced_comment, context)
+        ])
+
+    def visit_header(self, header, context):
+        return self._visit_all(header.children, context)
+
+    def visit_headers(self, headers, context):
+        if not self._include_headers_and_footers:
+            return []
+
+        all_headers = [
+            html_node
+            for h in headers
+            for html_node in self.visit_header(h, context)
+        ]
+
+        if not self._deduplicate_headers_and_footers:
+            return [
+                html.element("header", {}, [h])
+                for h in headers
+            ]
+
+        header_values = set()
+        filtered_headers = []
+        for h in all_headers:
+            if not h.to_text() in header_values:
+                filtered_headers.append(h)
+                header_values.add(h.to_text())
+
+        return [
+            html.element("header", {}, [f])
+            for f in filtered_headers
+        ]
+
+    def visit_footer(self, footer, context):
+        return self._visit_all(footer.children, context)
+
+    def visit_footers(self, footers, context):
+        if not self._include_headers_and_footers:
+            return []
+
+        all_footers = [
+            html_node
+            for f in footers
+            for html_node in self.visit_footer(f, context)
+        ]
+
+        if not self._deduplicate_headers_and_footers:
+            return [
+                html.element("footer", {}, [f])
+                for f in all_footers
+            ]
+
+        footer_values = set()
+        filtered_footers = []
+        for h in all_footers:
+            if not h.to_text() in footer_values:
+                filtered_footers.append(h)
+                footer_values.add(h.to_text())
+        
+        return [
+            html.element("footer", {}, [f])
+            for f in filtered_footers
+        ]
 
     def _visit_all(self, elements, context):
         return [
