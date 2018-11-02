@@ -1,3 +1,7 @@
+# 1.4.7
+
+* Always write files as UTF-8 in the CLI.
+
 # 1.4.6
 
 * Fix: default style mappings caused footnotes, endnotes and comments

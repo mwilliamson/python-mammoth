@@ -1,8 +1,8 @@
 import argparse
-import contextlib
-import sys
+import io
 import os
 import shutil
+import sys
 
 import mammoth
 from . import writers
@@ -36,8 +36,7 @@ def main():
             sys.stderr.write(message.message)
             sys.stderr.write("\n")
         
-        with _open_output(output_path) as output:
-            output.write(result.value)
+        _write_output(output_path, result.value)
 
 
 class ImageWriter(object):
@@ -57,28 +56,18 @@ class ImageWriter(object):
         return {"src": image_filename}
 
 
-@contextlib.contextmanager
-def _open_output(name):
-    if name is None:
-        try:
-            yield Output(sys.stdout)
-        finally:
-            sys.stdout.flush()
-    else:
-        with open(name, "w") as output:
-            yield Output(output)
-
-
-class Output(object):
-    def __init__(self, fileobj):
-        self._fileobj = fileobj
-    
-    def write(self, value):
-        if sys.version_info[0] <= 2: 
-            self._fileobj.write(value.encode("utf8"))
+def _write_output(path, contents):
+    if path is None:
+        if sys.version_info[0] <= 2:
+            stdout = sys.stdout
         else:
-            self._fileobj.write(value)
-            
+            stdout = sys.stdout.buffer
+
+        stdout.write(contents.encode("utf-8"))
+        stdout.flush()
+    else:
+        with io.open(path, "w", encoding="utf-8") as fileobj:
+            fileobj.write(contents)
 
 
 def _parse_args():
