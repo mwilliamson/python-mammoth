@@ -1,3 +1,7 @@
+# 1.4.8
+
+* Preserve empty table rows.
+
 # 1.4.7
 
 * Always write files as UTF-8 in the CLI.
@@ -95,7 +99,7 @@
 
 * Use alt text title as alt text for images when the alt text description is
   blank or missing.
-  
+
 # 1.1.1
 
 * Handle comments without author initials.
@@ -298,5 +302,5 @@
 
 * Allow paragraphs and runs to be matched by style name. For instance, to match
   a paragraph with the style name `Heading 1`:
-  
+
     p[style-name='Heading 1']

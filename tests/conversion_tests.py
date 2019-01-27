@@ -99,7 +99,7 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
         ]
     )
     assert_equal('<p class="tip">Tip</p>', result.value)
-    
+
 
 @istest
 def warning_is_emitted_if_paragraph_style_is_unrecognised():
@@ -111,7 +111,7 @@ def warning_is_emitted_if_paragraph_style_is_unrecognised():
         ),
     )
     assert_equal([results.warning("Unrecognised paragraph style: Heading 1 (Style ID: Heading1)")], result.messages)
-    
+
 
 @istest
 def no_warning_if_there_is_no_style_for_plain_paragraphs():
@@ -145,7 +145,7 @@ def bulleted_styles_dont_match_plain_paragraph():
         ]
     )
     assert_equal('<p>Hello</p>', result.value)
-    
+
 
 @istest
 def bold_runs_are_wrapped_in_strong_tags_by_default():
@@ -153,7 +153,7 @@ def bold_runs_are_wrapped_in_strong_tags_by_default():
         documents.run(children=[documents.text("Hello")], is_bold=True),
     )
     assert_equal("<strong>Hello</strong>", result.value)
-    
+
 
 @istest
 def bold_runs_can_be_configured_with_style_mapping():
@@ -162,7 +162,7 @@ def bold_runs_can_be_configured_with_style_mapping():
         style_map=[_style_mapping("b => em")]
     )
     assert_equal("<em>Hello</em>", result.value)
-    
+
 
 @istest
 def italic_runs_are_wrapped_in_emphasis_tags_by_default():
@@ -170,7 +170,7 @@ def italic_runs_are_wrapped_in_emphasis_tags_by_default():
         documents.run(children=[documents.text("Hello")], is_italic=True),
     )
     assert_equal("<em>Hello</em>", result.value)
-    
+
 
 @istest
 def italic_runs_can_be_configured_with_style_mapping():
@@ -179,7 +179,7 @@ def italic_runs_can_be_configured_with_style_mapping():
         style_map=[_style_mapping("i => strong")]
     )
     assert_equal("<strong>Hello</strong>", result.value)
-    
+
 
 @istest
 def underline_runs_are_ignored_by_default():
@@ -187,7 +187,7 @@ def underline_runs_are_ignored_by_default():
         documents.run(children=[documents.text("Hello")], is_underline=True),
     )
     assert_equal("Hello", result.value)
-    
+
 
 @istest
 def underline_runs_can_be_mapped_using_style_mapping():
@@ -209,7 +209,7 @@ def style_mapping_for_underline_runs_does_not_close_parent_elements():
         ]
     )
     assert_equal("<strong><em>Hello</em></strong>", result.value)
-    
+
 
 @istest
 def strikethrough_runs_are_wrapped_in_s_elements_by_default():
@@ -228,7 +228,7 @@ def strikethrough_runs_can_be_configured_with_style_mapping():
         ]
     )
     assert_equal("<del>Hello</del>", result.value)
-    
+
 
 @istest
 def small_caps_runs_are_ignored_by_default():
@@ -236,7 +236,7 @@ def small_caps_runs_are_ignored_by_default():
         documents.run(children=[documents.text("Hello")], is_small_caps=True),
     )
     assert_equal("Hello", result.value)
-    
+
 
 @istest
 def small_caps_runs_can_be_mapped_using_style_mapping():
@@ -258,7 +258,7 @@ def superscript_runs_are_wrapped_in_sup_tags():
         ),
     )
     assert_equal("<sup>Hello</sup>", result.value)
-    
+
 
 @istest
 def subscript_runs_are_wrapped_in_sub_tags():
@@ -269,8 +269,8 @@ def subscript_runs_are_wrapped_in_sub_tags():
         ),
     )
     assert_equal("<sub>Hello</sub>", result.value)
-    
-    
+
+
 @istest
 def runs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(
@@ -416,6 +416,22 @@ def empty_cells_are_preserved_in_table():
 
 
 @istest
+def empty_rows_are_preserved_in_table():
+    table = documents.table([
+        documents.table_row([
+            documents.table_cell([_paragraph_with_text("Row 1")]),
+        ]),
+        documents.table_row([]),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<tr><td><p>Row 1</p></td></tr><tr></tr>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
+@istest
 def table_cells_are_written_with_colspan_if_not_equal_to_one():
     table = documents.table([
         documents.table_row([
@@ -489,7 +505,7 @@ def can_define_custom_conversion_for_images():
     def convert_image(image):
         with image.open() as image_file:
             return [html.element("img", {"alt": image_file.read().decode("ascii")})]
-        
+
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image, convert_image=convert_image)
     assert_equal('<img alt="abc" />', result.value)
