@@ -9,7 +9,6 @@ import funk
 from mammoth import documents, results
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx import body_xml
-from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 from mammoth.docx.styles_xml import Styles, Style
 from .document_matchers import (
@@ -108,7 +107,7 @@ class ParagraphTests(object):
             xml_element("w:numId", {"w:val": "42"}),
         ])
 
-        numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
+        numbering = _NumberingMap({"42": {"1": documents.numbering_level("1", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
         assert_equal("1", paragraph.numbering.level_index)
@@ -120,7 +119,7 @@ class ParagraphTests(object):
             xml_element("w:numId", {"w:val": "42"}),
         ])
 
-        numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
+        numbering = _NumberingMap({"42": {"1": documents.numbering_level("1", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
         assert_equal(None, paragraph.numbering)
@@ -131,7 +130,7 @@ class ParagraphTests(object):
             xml_element("w:ilvl", {"w:val": "1"}),
         ])
 
-        numbering = Numbering({"42": {"1": documents.numbering_level("1", True)}})
+        numbering = _NumberingMap({"42": {"1": documents.numbering_level("1", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
         assert_equal(None, paragraph.numbering)
@@ -1291,3 +1290,11 @@ def _image_relationship(relationship_id, target):
         target=target,
         type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
     )
+
+
+class _NumberingMap(object):
+    def __init__(self, nums):
+        self._nums = nums
+
+    def find_level(self, num_id, level):
+        return self._nums[num_id][level]

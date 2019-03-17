@@ -1,7 +1,7 @@
 from functools import partial
 import os
 
-import cobble   
+import cobble
 
 from .. import results, lists, zips
 from .document_xml import read_document_xml_element
@@ -27,7 +27,7 @@ def read(fileobj):
         zip_file,
         part_paths=part_paths,
     )
-    
+
     return results.combine([
         _read_notes(read_part_with_body, part_paths),
         _read_comments(read_part_with_body, part_paths),
@@ -49,12 +49,12 @@ class _PartPaths(object):
 def _find_part_paths(zip_file):
     package_relationships = _read_relationships(zip_file, "_rels/.rels")
     document_filename = _find_document_filename(zip_file, package_relationships)
-    
+
     document_relationships = _read_relationships(
         zip_file,
         _find_relationships_path_for(document_filename),
     )
-    
+
     def find(name):
         return _find_part_path(
             zip_file=zip_file,
@@ -63,7 +63,7 @@ def _find_part_paths(zip_file):
             fallback_path="word/{0}.xml".format(name),
             base_path=zips.split_path(document_filename)[0],
         )
-    
+
     return _PartPaths(
         main_document=document_filename,
         comments=find("comments"),
@@ -111,7 +111,7 @@ def _read_notes(read_part_with_body, part_paths):
         lambda root, body_reader: read_endnotes_xml_element(root, body_reader=body_reader),
         default=_empty_result,
     )
-    
+
     return results.combine([footnotes, endnotes]).map(lists.flatten)
 
 
@@ -122,7 +122,7 @@ def _read_comments(read_part_with_body, part_paths):
         default=_empty_result,
     )
 
-    
+
 def _read_document(zip_file, read_part_with_body, notes, comments, part_paths):
     return read_part_with_body(
         part_paths.main_document,
@@ -146,19 +146,19 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
         zip_file,
         part_paths.numbering,
         read_numbering_xml_element,
-        default=Numbering({}),
+        default=Numbering(abstract_nums={}, nums={}),
     )
-    
+
     styles = _try_read_entry_or_default(
         zip_file,
         part_paths.styles,
         read_styles_xml_element,
         Styles.EMPTY,
     )
-    
+
     def read_part(name, reader, default=_undefined):
         relationships = _read_relationships(zip_file, _find_relationships_path_for(name))
-            
+
         body_reader = body_xml.reader(
             numbering=numbering,
             content_types=content_types,
@@ -172,7 +172,7 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
             return _read_entry(zip_file, name, partial(reader, body_reader=body_reader))
         else:
             return _try_read_entry_or_default(zip_file, name, partial(reader, body_reader=body_reader), default=default)
-    
+
     return read_part
 
 
@@ -180,7 +180,7 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
 def _find_relationships_path_for(name):
     dirname, basename = zips.split_path(name)
     return zips.join_path(dirname, "_rels", basename + ".rels")
-    
+
 
 def _read_relationships(zip_file, name):
     return _try_read_entry_or_default(

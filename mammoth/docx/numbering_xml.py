@@ -1,10 +1,12 @@
+import cobble
+
 from ..documents import numbering_level
 
 
 def read_numbering_xml_element(element):
     abstract_nums = _read_abstract_nums(element)
-    nums = _read_nums(element, abstract_nums)
-    return Numbering(nums)
+    nums = _read_nums(element)
+    return Numbering(abstract_nums=abstract_nums, nums=nums)
 
 
 def _read_abstract_nums(element):
@@ -33,27 +35,34 @@ def _read_abstract_num_level(element):
     return numbering_level(level_index, is_ordered)
 
 
-def _read_nums(element, abstract_nums):
+def _read_nums(element):
     num_elements = element.find_children("w:num")
     return dict(
-        _read_num(num_element, abstract_nums)
+        _read_num(num_element)
         for num_element in num_elements
     )
 
 
-def _read_num(element, abstract_nums):
+def _read_num(element):
     num_id = element.attributes.get("w:numId")
     abstract_num_id = element.find_child_or_null("w:abstractNumId").attributes["w:val"]
-    return num_id, abstract_nums[abstract_num_id]
+    return num_id, _Num(abstract_num_id=abstract_num_id)
+
+
+@cobble.data
+class _Num(object):
+    abstract_num_id = cobble.field()
 
 
 class Numbering(object):
-    def __init__(self, nums):
+    def __init__(self, abstract_nums, nums):
+        self._abstract_nums = abstract_nums
         self._nums = nums
-    
+
     def find_level(self, num_id, level):
         num = self._nums.get(num_id)
         if num is None:
             return None
         else:
-            return num.get(level)
+            abstract_num = self._abstract_nums[num.abstract_num_id]
+            return abstract_num.get(level)
