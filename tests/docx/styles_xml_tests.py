@@ -81,6 +81,37 @@ def style_name_is_none_if_name_element_does_not_exist():
     assert_equal(None, styles.find_character_style_by_id("Heading1Char").name)
 
 
+@istest
+def numbering_style_is_none_if_no_style_with_that_id_exists():
+    element = xml_element("w:styles", {}, [])
+    styles = read_styles_xml_element(element)
+    assert_equal(None, styles.find_numbering_style_by_id("List1"))
+
+
+@istest
+def numbering_style_has_none_num_id_if_style_has_no_paragraph_properties():
+    element = xml_element("w:styles", {}, [
+        xml_element("w:style", {"w:type": "numbering", "w:styleId": "List1"}),
+    ])
+    styles = read_styles_xml_element(element)
+    assert_equal(None, styles.find_numbering_style_by_id("List1").num_id)
+
+
+@istest
+def numbering_style_has_num_id_read_from_paragraph_properties():
+    element = xml_element("w:styles", {}, [
+        xml_element("w:style", {"w:type": "numbering", "w:styleId": "List1"}, [
+            xml_element("w:pPr", {}, [
+                xml_element("w:numPr", {}, [
+                    xml_element("w:numId", {"w:val": "42"})
+                ]),
+            ]),
+        ]),
+    ])
+    styles = read_styles_xml_element(element)
+    assert_equal("42", styles.find_numbering_style_by_id("List1").num_id)
+
+
 def _paragraph_style_element(style_id, name):
     return _style_element("paragraph", style_id, name)
 
