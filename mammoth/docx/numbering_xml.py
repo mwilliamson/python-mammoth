@@ -17,7 +17,12 @@ def _read_abstract_nums(element):
 def _read_abstract_num(element):
     abstract_num_id = element.attributes.get("w:abstractNumId")
     levels = _read_abstract_num_levels(element)
-    return abstract_num_id, levels
+    return abstract_num_id, _AbstractNum(levels=levels)
+
+
+@cobble.data
+class _AbstractNum(object):
+    levels = cobble.field()
 
 
 def _read_abstract_num_levels(element):
@@ -65,4 +70,4 @@ class Numbering(object):
             return None
         else:
             abstract_num = self._abstract_nums[num.abstract_num_id]
-            return abstract_num.get(level)
+            return abstract_num.levels.get(level)
