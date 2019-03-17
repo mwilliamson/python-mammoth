@@ -153,7 +153,7 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
         zip_file,
         part_paths.numbering,
         lambda element: read_numbering_xml_element(element, styles=styles),
-        default=Numbering(abstract_nums={}, nums={}),
+        default=Numbering.EMPTY,
     )
 
     def read_part(name, reader, default=_undefined):

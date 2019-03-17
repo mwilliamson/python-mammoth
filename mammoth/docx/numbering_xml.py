@@ -1,12 +1,13 @@
 import cobble
 
 from ..documents import numbering_level
+from .styles_xml import Styles
 
 
 def read_numbering_xml_element(element, styles):
     abstract_nums = _read_abstract_nums(element)
     nums = _read_nums(element)
-    return Numbering(abstract_nums=abstract_nums, nums=nums)
+    return Numbering(abstract_nums=abstract_nums, nums=nums, styles=styles)
 
 
 def _read_abstract_nums(element):
@@ -17,12 +18,14 @@ def _read_abstract_nums(element):
 def _read_abstract_num(element):
     abstract_num_id = element.attributes.get("w:abstractNumId")
     levels = _read_abstract_num_levels(element)
-    return abstract_num_id, _AbstractNum(levels=levels)
+    num_style_link = element.find_child_or_null("w:numStyleLink").attributes.get("w:val")
+    return abstract_num_id, _AbstractNum(levels=levels, num_style_link=num_style_link)
 
 
 @cobble.data
 class _AbstractNum(object):
     levels = cobble.field()
+    num_style_link = cobble.field()
 
 
 def _read_abstract_num_levels(element):
@@ -60,9 +63,10 @@ class _Num(object):
 
 
 class Numbering(object):
-    def __init__(self, abstract_nums, nums):
+    def __init__(self, abstract_nums, nums, styles):
         self._abstract_nums = abstract_nums
         self._nums = nums
+        self._styles = styles
 
     def find_level(self, num_id, level):
         num = self._nums.get(num_id)
@@ -70,4 +74,11 @@ class Numbering(object):
             return None
         else:
             abstract_num = self._abstract_nums[num.abstract_num_id]
-            return abstract_num.levels.get(level)
+            if abstract_num.num_style_link is None:
+                return abstract_num.levels.get(level)
+            else:
+                style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)
+                return self.find_level(style.num_id, level)
+
+
+Numbering.EMPTY = Numbering(abstract_nums={}, nums={}, styles=Styles.EMPTY)
