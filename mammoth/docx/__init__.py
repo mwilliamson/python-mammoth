@@ -142,18 +142,18 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
         empty_content_types,
     )
 
-    numbering = _try_read_entry_or_default(
-        zip_file,
-        part_paths.numbering,
-        read_numbering_xml_element,
-        default=Numbering(abstract_nums={}, nums={}),
-    )
-
     styles = _try_read_entry_or_default(
         zip_file,
         part_paths.styles,
         read_styles_xml_element,
         Styles.EMPTY,
+    )
+
+    numbering = _try_read_entry_or_default(
+        zip_file,
+        part_paths.numbering,
+        lambda element: read_numbering_xml_element(element, styles=styles),
+        default=Numbering(abstract_nums={}, nums={}),
     )
 
     def read_part(name, reader, default=_undefined):

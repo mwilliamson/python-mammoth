@@ -3,7 +3,7 @@ import cobble
 from ..documents import numbering_level
 
 
-def read_numbering_xml_element(element):
+def read_numbering_xml_element(element, styles):
     abstract_nums = _read_abstract_nums(element)
     nums = _read_nums(element)
     return Numbering(abstract_nums=abstract_nums, nums=nums)
