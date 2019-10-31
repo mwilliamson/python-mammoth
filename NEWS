@@ -1,3 +1,7 @@
+# 1.4.10
+
+* Update supported Python versions to 2.7 and 3.4 to 3.8.
+
 # 1.4.9
 
 * Improve list support by following w:numStyleLink in w:abstractNum.
