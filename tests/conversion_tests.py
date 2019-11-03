@@ -291,6 +291,17 @@ def docx_hyperlink_with_href_is_converted_to_anchor_tag():
 
 
 @istest
+def docx_hyperlinks_can_be_collapsed():
+    result = convert_document_element_to_html(
+        documents.document(children=[
+            documents.hyperlink(href="http://example.com", children=[documents.Text("Hello ")]),
+            documents.hyperlink(href="http://example.com", children=[documents.Text("world")]),
+        ])
+    )
+    assert_equal('<a href="http://example.com">Hello world</a>', result.value)
+
+
+@istest
 def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
     result = convert_document_element_to_html(
         documents.hyperlink(anchor="start", children=[documents.Text("Hello")]),
