@@ -21,13 +21,13 @@ The following features are currently supported:
 
 * Customisable mapping from your own docx styles to HTML.
   For instance, you could convert `WarningHeading` to `h1.warning` by providing an appropriate style mapping.
-  
+
 * Tables.
   The formatting of the table itself, such as borders, is currently ignored,
   but the formatting of the text is treated the same as in the rest of the document.
-  
+
 * Footnotes and endnotes.
-  
+
 * Images.
 
 * Bold, italics, underlines, strikethrough, superscript and subscript.
@@ -57,7 +57,7 @@ The following features are currently supported:
 
 * [.NET](https://github.com/mwilliamson/dotnet-mammoth).
   Available [on NuGet](https://www.nuget.org/packages/Mammoth/).
-    
+
 ## Usage
 
 ### CLI
@@ -90,7 +90,7 @@ A custom style map can be read from a file using `--style-map`.
 For instance:
 
     mammoth document.docx output.html --style-map=custom-style-map
-    
+
 Where `custom-style-map` looks something like:
 
     p[style-name='Aside Heading'] => div.aside > h2:fresh
@@ -178,7 +178,7 @@ For instance, the following would replicate the default behaviour:
 def convert_image(image):
     with image.open() as image_bytes:
         encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
-    
+
     return {
         "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
     }
@@ -266,7 +266,7 @@ Converts the source document to HTML.
 
 * `fileobj`: a file-like object containing the source document.
   Files should be opened in binary mode.
-  
+
 * `style_map`: a string to specify the mapping of Word styles to HTML.
   See the section "Writing style maps" for a description of the syntax.
 
@@ -278,10 +278,10 @@ Converts the source document to HTML.
 * `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
-    
+
 * `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
   Set this argument to an [image converter](#image-converters) to override the default behaviour.
-  
+
 * `ignore_empty_paragraphs`: by default, empty paragraphs are ignored.
   Set this option to `False` to preserve empty paragraphs in the output.
 
@@ -289,7 +289,7 @@ Converts the source document to HTML.
   a string to prepend to any generated IDs,
   such as those used by bookmarks, footnotes and endnotes.
   Defaults to an empty string.
-  
+
 * `transform_document`: if set,
   this function is applied to the document read from the docx file before the conversion to HTML.
   The API for document transforms should be considered unstable.
@@ -352,7 +352,7 @@ This argument is the image element being converted,
 and has the following properties:
 
 * `open()`: open the image file. Returns a file-like object.
-  
+
 * `content_type`: the content type of the image, such as `image/png`.
 
 `func` should return a `dict` of attributes for the `<img>` element.
@@ -366,7 +366,7 @@ For instance, the following replicates the default image conversion:
 def convert_image(image):
     with image.open() as image_bytes:
         encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
-    
+
     return {
         "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
     }
@@ -665,3 +665,12 @@ div.aside > h2
 ```
 
 You can nest elements to any depth.
+
+#### Ignoring document elements
+
+Use `!` to ignore a document element.
+For instance, to ignore any paragraph with the style `Comment`:
+
+```
+p[style-name='Comment'] => !
+```
