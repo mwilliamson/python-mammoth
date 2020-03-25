@@ -8,5 +8,7 @@ def extract_raw_text_from_element(element):
         text = "".join(map(extract_raw_text_from_element, getattr(element, "children", [])))
         if isinstance(element, documents.Paragraph):
             return text + "\n\n"
+        if isinstance(element, documents.Break):
+            return text + "\n"
         else:
             return text
