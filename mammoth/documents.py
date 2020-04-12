@@ -30,7 +30,7 @@ class ParagraphIndent(object):
     end = cobble.field()
     first_line = cobble.field()
     hanging = cobble.field()
-    
+
 
 @cobble.data
 class Indent(object):
@@ -51,6 +51,7 @@ class Run(HasChildren):
     is_small_caps = cobble.field()
     vertical_alignment = cobble.field()
     font = cobble.field()
+    font_size = cobble.field()
 
 @cobble.data
 class Text(Element):
@@ -88,7 +89,7 @@ column_break = Break("column")
 @cobble.data
 class Tab(Element):
     pass
-    
+
 
 @cobble.data
 class Image(Element):
@@ -107,7 +108,7 @@ def document(children, notes=None, comments=None):
 def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None, indent=None):
     if indent is None:
         indent = paragraph_indent()
-    
+
     return Paragraph(children, style_id, style_name, numbering, alignment=alignment, indent=indent)
 
 def paragraph_indent(start=None, end=None, first_line=None, hanging=None):
@@ -124,6 +125,7 @@ def run(
     is_small_caps=None,
     vertical_alignment=None,
     font=None,
+    font_size=None,
 ):
     if vertical_alignment is None:
         vertical_alignment = VerticalAlignment.baseline
@@ -138,6 +140,7 @@ def run(
         is_small_caps=bool(is_small_caps),
         vertical_alignment=vertical_alignment,
         font=font,
+        font_size=font_size,
     )
 
 class VerticalAlignment(object):
@@ -164,7 +167,7 @@ class Bookmark(Element):
     name = cobble.field()
 
 bookmark = Bookmark
-    
+
 
 def table(children, style_id=None, style_name=None):
     return Table(children=children, style_id=style_id, style_name=style_name)
@@ -201,13 +204,13 @@ note = Note
 class Notes(object):
     def __init__(self, notes):
         self._notes = notes
-    
+
     def find_note(self, note_type, note_id):
         return self._notes[(note_type, note_id)]
-    
+
     def resolve(self, reference):
         return self.find_note(reference.note_type, reference.note_id)
-    
+
     def __eq__(self, other):
         return isinstance(other, Notes) and self._notes == other._notes
 
@@ -219,7 +222,7 @@ def notes(notes_list):
         (_note_key(note), note)
         for note in notes_list
     ))
-    
+
 def _note_key(note):
     return (note.note_type, note.note_id)
 

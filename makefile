@@ -7,10 +7,10 @@ test:
 test-all:
 	tox
 
-upload: setup assert-converted-readme test-all
+upload: setup assert-converted-readme
 	python setup.py sdist bdist_wheel upload
 	make clean
-	
+
 register: setup
 	python setup.py register
 
@@ -24,16 +24,16 @@ clean:
 	rm -f README
 	rm -f MANIFEST
 	rm -rf dist
-	
+
 bootstrap: _virtualenv setup
 	_virtualenv/bin/pip install -e .
-ifneq ($(wildcard test-requirements.txt),) 
+ifneq ($(wildcard test-requirements.txt),)
 	_virtualenv/bin/pip install -r test-requirements.txt
 endif
 	make clean
 
 setup: README
 
-_virtualenv: 
+_virtualenv:
 	virtualenv _virtualenv
 	_virtualenv/bin/pip install 'distribute>=0.6.45'

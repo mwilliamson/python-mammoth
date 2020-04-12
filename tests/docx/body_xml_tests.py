@@ -325,6 +325,17 @@ class RunTests(object):
         run = self._read_run_with_properties([font_xml])
         assert_equal("Arial", run.font)
 
+    @istest
+    def run_has_none_font_size_by_default(self):
+        run = self._read_run_with_properties([])
+        assert_equal(None, run.font_size)
+
+    @istest
+    def run_has_font_size_read_from_properties(self):
+        font_size_xml = xml_element("w:sz", {"w:val": "28"})
+        run = self._read_run_with_properties([font_size_xml])
+        assert_equal(14, run.font_size)
+
     def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
