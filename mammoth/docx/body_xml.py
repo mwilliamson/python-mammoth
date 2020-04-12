@@ -81,7 +81,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         font = properties.find_child_or_null("w:rFonts").attributes.get("w:ascii")
 
         font_size_string = properties.find_child_or_null("w:sz").attributes.get("w:val")
-        if font_size_string:
+        if _is_int(font_size_string):
             # w:sz gives the font size in half points, so halve the value to get the size in points
             font_size = int(font_size_string) / 2
         else:
@@ -602,3 +602,15 @@ def _add_attrs(obj, **kwargs):
         setattr(obj, key, value)
 
     return obj
+
+
+def _is_int(value):
+    if value is None:
+        return False
+
+    try:
+        int(value)
+    except ValueError:
+        return False
+
+    return True

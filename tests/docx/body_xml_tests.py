@@ -336,6 +336,12 @@ class RunTests(object):
         run = self._read_run_with_properties([font_size_xml])
         assert_equal(14, run.font_size)
 
+    @istest
+    def run_with_invalid_w_sz_has_none_font_size(self):
+        font_size_xml = xml_element("w:sz", {"w:val": "28a"})
+        run = self._read_run_with_properties([font_size_xml])
+        assert_equal(None, run.font_size)
+
     def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
