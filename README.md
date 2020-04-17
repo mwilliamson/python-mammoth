@@ -96,6 +96,8 @@ Where `custom-style-map` looks something like:
     p[style-name='Aside Heading'] => div.aside > h2:fresh
     p[style-name='Aside Text'] => div.aside > p:fresh
 
+A description of the syntax for style maps can be found in the section ["Writing style maps"](#writing-style-maps).
+
 #### Markdown
 
 Markdown support is deprecated.
@@ -144,7 +146,7 @@ Mammoth maps some common .docx styles to HTML elements.
 For instance,
 a paragraph with the style name `Heading 1` is converted to a `h1` element.
 You can pass in a custom map for styles by passing an options object with a `style_map` property as a second argument to `convert_to_html`.
-A description of the syntax for style maps can be found in the section "Writing style maps".
+A description of the syntax for style maps can be found in the section ["Writing style maps"](#writing-style-maps).
 For instance, if paragraphs with the style name `Section Title` should be converted to `h1` elements,
 and paragraphs with the style name `Subsection Title` should be converted to `h2` elements:
 
@@ -269,7 +271,7 @@ Converts the source document to HTML.
   Files should be opened in binary mode.
 
 * `style_map`: a string to specify the mapping of Word styles to HTML.
-  See the section "Writing style maps" for a description of the syntax.
+  See the section ["Writing style maps"](#writing-style-maps) for a description of the syntax.
 
 * `include_embedded_style_map`: by default,
   if the document contains an embedded style map, then it is combined with the default style map.
