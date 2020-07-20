@@ -82,6 +82,11 @@ class TableCell(HasChildren):
 class Break(Element):
     break_type = cobble.field()
 
+@cobble.data
+class Size(object):
+    width = cobble.field()
+    height = cobble.field()
+
 line_break = Break("line")
 page_break = Break("page")
 column_break = Break("column")
@@ -97,6 +102,7 @@ class Image(Element):
     alt_text = cobble.field()
     content_type = cobble.field()
     open = cobble.field()
+    size = cobble.field(default=None)
 
 
 def document(children, notes=None, comments=None):
