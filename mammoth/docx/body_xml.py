@@ -11,7 +11,7 @@ from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
 
-EMU_TO_PIXEL = 1 / 9525
+EMU_PER_PIXEL = 9525
 
 if sys.version_info >= (3, ):
     unichr = chr
@@ -439,7 +439,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _read_blips(blips, alt_text, size)
 
     def _emu_to_pixel(emu):
-        return round(int(emu) * EMU_TO_PIXEL)
+        return round(int(emu) / EMU_PER_PIXEL)
 
     def _read_blips(blips, alt_text, size):
         return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text, size), blips))
@@ -489,14 +489,37 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         return image_path, open_image
 
-    def read_imagedata(element):
+    def shape(element):
+        if len(element.children) == 1:
+            imagedata = element.find_child("v:imagedata")
+            if imagedata:
+                size = _read_shape_size(element)
+                return read_imagedata(imagedata, size)
+        return read_child_elements(element)
+
+    def _read_shape_size(element):
+        style_attribute = element.attributes.get("style")
+        if not style_attribute:
+            return None
+        style = style_attribute.split(";")
+        width = _extract_size_from_style("width", style)
+        height = _extract_size_from_style("height", style)
+        size = documents.Size(width=width, height=height)
+        return size
+
+    def _extract_size_from_style(style_name, style):
+        with_column = "{}:".format(style_name)
+        raw_size = next(iter(filter(lambda s: s.startswith(with_column), style)))
+        return raw_size.replace(with_column, "")
+
+    def read_imagedata(element, style=None):
         relationship_id = element.attributes.get("r:id")
         if relationship_id is None:
             warning = results.warning("A v:imagedata element without a relationship ID was ignored")
             return _empty_result_with_message(warning)
         else:
             title = element.attributes.get("o:title")
-            return _read_image(lambda: _find_embedded_image(relationship_id), title)
+            return _read_image(lambda: _find_embedded_image(relationship_id), title, style)
 
     def note_reference_reader(note_type):
         def note_reference(element):
@@ -533,7 +556,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "v:group": read_child_elements,
         "v:rect": read_child_elements,
         "v:roundrect": read_child_elements,
-        "v:shape": read_child_elements,
+        "v:shape": shape,
         "v:textbox": read_child_elements,
         "w:txbxContent": read_child_elements,
         "w:pict": pict,
