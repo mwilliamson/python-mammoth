@@ -439,7 +439,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _read_blips(blips, alt_text, size)
 
     def _emu_to_pixel(emu):
-        return round(int(emu) / EMU_PER_PIXEL)
+        return int(round(float(emu) / EMU_PER_PIXEL))
 
     def _read_blips(blips, alt_text, size):
         return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text, size), blips))
