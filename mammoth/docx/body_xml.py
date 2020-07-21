@@ -425,26 +425,32 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             alt_text = properties.get("descr")
         else:
             alt_text = properties.get("title")
+        dimensions = element.find_child_or_null("wp:extent").attributes
+        size = documents.Size(
+            width=str(_emu_to_pixel(dimensions.get("cx"))),
+            height=str(_emu_to_pixel(dimensions.get("cy")))
+        )
+
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
             .find_children("pic:pic") \
             .find_children("pic:blipFill") \
             .find_children("a:blip")
-        return _read_blips(blips, alt_text)
+        return _read_blips(blips, alt_text, size)
 
     def _emu_to_pixel(emu):
         return round(int(emu) * EMU_TO_PIXEL)
 
-    def _read_blips(blips, alt_text):
-        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
+    def _read_blips(blips, alt_text, size):
+        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text, size), blips))
 
-    def _read_blip(element, alt_text):
-        return _read_image(lambda: _find_blip_image(element), alt_text)
+    def _read_blip(element, alt_text, size):
+        return _read_image(lambda: _find_blip_image(element), alt_text, size)
 
-    def _read_image(find_image, alt_text):
+    def _read_image(find_image, alt_text, size=None):
         image_path, open_image = find_image()
         content_type = content_types.find_content_type(image_path)
-        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
+        image = documents.image(alt_text=alt_text, content_type=content_type, size=size, open=open_image)
 
         if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
             messages = []
