@@ -539,6 +539,13 @@ def no_break_hyphen_element_is_read_as_non_breaking_hyphen_character():
 
 
 @istest
+def soft_hyphen_element_is_read_as_soft_hyphen_character():
+    element = xml_element("w:softHyphen")
+    tab = _read_and_get_document_xml_element(element)
+    assert_equal(documents.text(u"\u00ad"), tab)
+
+
+@istest
 class TableTests(object):
     @istest
     def word_table_is_read_as_document_table_element(self):

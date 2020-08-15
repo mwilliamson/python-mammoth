@@ -230,6 +230,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _success(documents.text(unichr(0x2011)))
 
 
+    def soft_hyphen(element):
+        return _success(documents.text(u"\u00ad"))
+
+
     def table(element):
         properties = element.find_child_or_null("w:tblPr")
         return _ReadResult.map_results(
@@ -475,6 +479,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:instrText": read_instr_text,
         "w:tab": tab,
         "w:noBreakHyphen": no_break_hyphen,
+        "w:softHyphen": soft_hyphen,
         "w:tbl": table,
         "w:tr": table_row,
         "w:tc": table_cell,
