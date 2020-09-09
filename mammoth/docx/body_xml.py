@@ -89,7 +89,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         is_bold = read_boolean_element(properties.find_child("w:b"))
         is_italic = read_boolean_element(properties.find_child("w:i"))
-        is_underline = read_boolean_element(properties.find_child("w:u"))
+        is_underline = read_underline_element(properties.find_child("w:u"))
         is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
         is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
 
@@ -123,6 +123,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def read_boolean_element(element):
         return element and element.attributes.get("w:val") not in ["false", "0"]
 
+    def read_underline_element(element):
+        return element and element.attributes.get("w:val") not in ["false", "0", "none"]
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
