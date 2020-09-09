@@ -677,3 +677,10 @@ For instance, to ignore any paragraph with the style `Comment`:
 ```
 p[style-name='Comment'] => !
 ```
+
+## Donations
+
+If you'd like to say thanks, feel free to [make a donation through Ko-fi](https://ko-fi.com/S6S01MG20).
+
+If you use Mammoth as part of your business,
+please consider supporting the ongoing maintenance of Mammoth by [making a weekly donation through Liberapay](https://liberapay.com/mwilliamson/donate).
