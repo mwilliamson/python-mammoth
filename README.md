@@ -13,7 +13,7 @@ There's a large mismatch between the structure used by .docx and the structure o
 meaning that the conversion is unlikely to be perfect for more complicated documents.
 Mammoth works best if you only use styles to semantically mark up your document.
 
-The following features are currently supported:
+The following features are currently supported:-
 
 * Headings.
 
@@ -148,7 +148,7 @@ a paragraph with the style name `Heading 1` is converted to a `h1` element.
 You can pass in a custom map for styles by passing an options object with a `style_map` property as a second argument to `convert_to_html`.
 A description of the syntax for style maps can be found in the section ["Writing style maps"](#writing-style-maps).
 For instance, if paragraphs with the style name `Section Title` should be converted to `h1` elements,
-and paragraphs with the style name `Subsection Title` should be converted to `h2` elements:
+and paragraphs with the style name `Subsection Title` should be converted to `h2` elements:-
 
 ```python
 import mammoth
