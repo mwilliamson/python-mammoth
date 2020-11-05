@@ -48,6 +48,7 @@ class Run(HasChildren):
     is_italic = cobble.field()
     is_underline = cobble.field()
     is_strikethrough = cobble.field()
+    is_all_caps = cobble.field()
     is_small_caps = cobble.field()
     vertical_alignment = cobble.field()
     font = cobble.field()
@@ -122,6 +123,7 @@ def run(
     is_italic=None,
     is_underline=None,
     is_strikethrough=None,
+    is_all_caps=None,
     is_small_caps=None,
     vertical_alignment=None,
     font=None,
@@ -137,6 +139,7 @@ def run(
         is_italic=bool(is_italic),
         is_underline=bool(is_underline),
         is_strikethrough=bool(is_strikethrough),
+        is_all_caps=bool(is_all_caps),
         is_small_caps=bool(is_small_caps),
         vertical_alignment=vertical_alignment,
         font=font,

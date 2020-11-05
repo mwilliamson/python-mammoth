@@ -301,6 +301,7 @@ class RunTests(object):
         param(attr_name="is_underline", tag_name="w:u"),
         param(attr_name="is_italic", tag_name="w:i"),
         param(attr_name="is_strikethrough", tag_name="w:strike"),
+        param(attr_name="is_all_caps", tag_name="w:caps"),
         param(attr_name="is_small_caps", tag_name="w:smallCaps"),
     ])(istest(func))
 

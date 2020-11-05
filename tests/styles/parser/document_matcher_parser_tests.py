@@ -151,6 +151,13 @@ def reads_strikethrough():
     )
 
 @istest
+def reads_all_caps():
+    assert_equal(
+        document_matchers.all_caps,
+        read_document_matcher("all-caps")
+    )
+
+@istest
 def reads_small_caps():
     assert_equal(
         document_matchers.small_caps,
@@ -190,7 +197,7 @@ def reads_column_breaks():
 def unrecognised_break_type_raises_error():
     error = assert_raises(LineParseError, lambda: read_document_matcher("br[type='unknownBreakType']"))
     assert_equal("Unrecognised break type: unknownBreakType", str(error))
-    
+
 
 def read_document_matcher(string):
     return parse_document_matcher(TokenIterator(tokenise(string)))

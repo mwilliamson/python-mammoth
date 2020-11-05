@@ -91,6 +91,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         is_italic = read_boolean_element(properties.find_child("w:i"))
         is_underline = read_underline_element(properties.find_child("w:u"))
         is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
+        is_all_caps = read_boolean_element(properties.find_child("w:caps"))
         is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
 
         def add_complex_field_hyperlink(children):
@@ -111,6 +112,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 is_italic=is_italic,
                 is_underline=is_underline,
                 is_strikethrough=is_strikethrough,
+                is_all_caps=is_all_caps,
                 is_small_caps=is_small_caps,
                 vertical_alignment=vertical_alignment,
                 font=font,
