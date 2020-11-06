@@ -57,7 +57,7 @@ def _add_or_update_element(parent, name, identifying_attribute, attributes):
     
 
 def _find_child(parent, name, identifying_attribute, attributes):
-    for element in parent.getiterator():
+    for element in parent.iter():
         if element.tag == name and element.get(identifying_attribute) == attributes.get(identifying_attribute):
             return element
 
