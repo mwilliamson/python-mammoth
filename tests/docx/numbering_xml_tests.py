@@ -74,6 +74,30 @@ def when_abstract_num_has_num_style_link_then_style_is_used_to_find_num():
     assert_equal(True, numbering.find_level("201", "0").is_ordered)
 
 
+# See: 17.9.23 pStyle (Paragraph Style's Associated Numbering Level) in ECMA-376, 4th Edition
+@istest
+def numbering_level_can_be_found_by_paragraph_style_id():
+    numbering = _read_numbering_xml_element(
+        xml_element("w:numbering", {}, [
+            xml_element("w:abstractNum", {"w:abstractNumId": "42"}, [
+                xml_element("w:lvl", {"w:ilvl": "0"}, [
+                    xml_element("w:numFmt", {"w:val": "bullet"}),
+                ]),
+            ]),
+            xml_element("w:abstractNum", {"w:abstractNumId": "43"}, [
+                xml_element("w:lvl", {"w:ilvl": "0"}, [
+                    xml_element("w:pStyle", {"w:val": "List"}),
+                    xml_element("w:numFmt", {"w:val": "decimal"}),
+                ]),
+            ]),
+        ]),
+        styles=Styles.create(numbering_styles={"List1": NumberingStyle(num_id="200")}),
+    )
+
+    assert_equal(True, numbering.find_level_by_paragraph_style_id("List").is_ordered)
+    assert_equal(None, numbering.find_level_by_paragraph_style_id("Paragraph"))
+
+
 def _read_numbering_xml_element(element, styles=None):
     if styles is None:
         styles = Styles.EMPTY

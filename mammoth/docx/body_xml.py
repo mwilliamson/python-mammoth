@@ -131,7 +131,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
         alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
-        numbering = _read_numbering_properties(properties.find_child_or_null("w:numPr"))
         indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
 
         return _ReadResult.map_results(
@@ -141,7 +140,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 children=children,
                 style_id=style[0],
                 style_name=style[1],
-                numbering=numbering,
+                numbering=_read_numbering_properties(
+                    paragraph_style_id=style[0],
+                    element=properties.find_child_or_null("w:numPr"),
+                ),
                 alignment=alignment,
                 indent=indent,
             )).append_extra()
@@ -209,7 +211,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def _undefined_style_warning(style_type, style_id):
         return results.warning("{0} style with ID {1} was referenced but not defined in the document".format(style_type, style_id))
 
-    def _read_numbering_properties(element):
+    def _read_numbering_properties(paragraph_style_id, element):
+        if paragraph_style_id is not None:
+            level = numbering.find_level_by_paragraph_style_id(paragraph_style_id)
+            if level is not None:
+                return level
+
         num_id = element.find_child_or_null("w:numId").attributes.get("w:val")
         level_index = element.find_child_or_null("w:ilvl").attributes.get("w:val")
         if num_id is None or level_index is None:

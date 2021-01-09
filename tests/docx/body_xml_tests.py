@@ -9,6 +9,7 @@ import funk
 from mammoth import documents, results
 from mammoth.docx.xmlparser import element as xml_element, text as xml_text
 from mammoth.docx import body_xml
+from mammoth.docx.numbering_xml import Numbering
 from mammoth.docx.relationships_xml import Relationships, Relationship
 from mammoth.docx.styles_xml import Styles, Style
 from .document_matchers import (
@@ -111,6 +112,26 @@ class ParagraphTests(object):
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
         assert_equal("1", paragraph.numbering.level_index)
+        assert_equal(True, paragraph.numbering.is_ordered)
+
+    @istest
+    def numbering_on_paragraph_style_takes_precedence_over_numpr(self):
+        numbering_properties_xml = xml_element("w:numPr", {}, [
+            xml_element("w:ilvl", {"w:val": "1"}),
+            xml_element("w:numId", {"w:val": "42"}),
+        ])
+        properties_xml = xml_element("w:pPr", {}, [
+            xml_element("w:pStyle", {"w:val": "List"}),
+            numbering_properties_xml,
+        ])
+        paragraph_xml = xml_element("w:p", {}, [properties_xml])
+
+        numbering = _NumberingMap(
+            nums={"42": {"1": documents.numbering_level("1", False)}},
+            levels_by_paragraph_style_id={"List": documents.numbering_level("1", True)}
+        )
+        paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
+
         assert_equal(True, paragraph.numbering.is_ordered)
 
     @istest
@@ -1200,8 +1221,9 @@ def _read_and_get_document_xml_elements(*args, **kwargs):
 
 
 def _read_and_get_document_xml(func, *args, **kwargs):
+    numbering = kwargs.pop("numbering", Numbering.EMPTY)
     styles = kwargs.pop("styles", FakeStyles())
-    result = _read_document_xml(func, *args, styles=styles, **kwargs)
+    result = _read_document_xml(func, *args, numbering=numbering, styles=styles, **kwargs)
     assert_equal([], result.messages)
     return result.value
 
@@ -1221,7 +1243,8 @@ def _read_document_xml_elements(*args, **kwargs):
 
 
 def _read_document_xml(func, element, *args, **kwargs):
-    reader = body_xml.reader(*args, **kwargs)
+    numbering = kwargs.pop("numbering", Numbering.EMPTY)
+    reader = body_xml.reader(*args, numbering=numbering, **kwargs)
     return func(reader, element)
 
 
@@ -1338,8 +1361,17 @@ def _image_relationship(relationship_id, target):
 
 
 class _NumberingMap(object):
-    def __init__(self, nums):
+    def __init__(self, nums=None, levels_by_paragraph_style_id=None):
+        if nums is None:
+            nums = {}
+        if levels_by_paragraph_style_id is None:
+            levels_by_paragraph_style_id = {}
+
         self._nums = nums
+        self._levels_by_paragraph_style_id = levels_by_paragraph_style_id
 
     def find_level(self, num_id, level):
         return self._nums[num_id][level]
+
+    def find_level_by_paragraph_style_id(self, style_id):
+        return self._levels_by_paragraph_style_id.get(style_id)

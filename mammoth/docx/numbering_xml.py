@@ -28,6 +28,13 @@ class _AbstractNum(object):
     num_style_link = cobble.field()
 
 
+@cobble.data
+class _AbstractNumLevel(object):
+    level_index = cobble.field()
+    is_ordered = cobble.field()
+    paragraph_style_id = cobble.field()
+
+
 def _read_abstract_num_levels(element):
     levels = map(_read_abstract_num_level, element.find_children("w:lvl"))
     return dict(
@@ -40,7 +47,12 @@ def _read_abstract_num_level(element):
     level_index = element.attributes["w:ilvl"]
     num_fmt = element.find_child_or_null("w:numFmt").attributes.get("w:val")
     is_ordered = num_fmt != "bullet"
-    return numbering_level(level_index, is_ordered)
+    paragraph_style_id = element.find_child_or_null("w:pStyle").attributes.get("w:val")
+    return _AbstractNumLevel(
+        level_index=level_index,
+        is_ordered=is_ordered,
+        paragraph_style_id=paragraph_style_id,
+    )
 
 
 def _read_nums(element):
@@ -65,6 +77,12 @@ class _Num(object):
 class Numbering(object):
     def __init__(self, abstract_nums, nums, styles):
         self._abstract_nums = abstract_nums
+        self._levels_by_paragraph_style_id = dict(
+            (level.paragraph_style_id, self._to_numbering_level(level))
+            for abstract_num in abstract_nums.values()
+            for level in abstract_num.levels.values()
+            if level.paragraph_style_id is not None
+        )
         self._nums = nums
         self._styles = styles
 
@@ -75,10 +93,22 @@ class Numbering(object):
         else:
             abstract_num = self._abstract_nums[num.abstract_num_id]
             if abstract_num.num_style_link is None:
-                return abstract_num.levels.get(level)
+                return self._to_numbering_level(abstract_num.levels.get(level))
             else:
                 style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)
                 return self.find_level(style.num_id, level)
+
+    def find_level_by_paragraph_style_id(self, style_id):
+        return self._levels_by_paragraph_style_id.get(style_id)
+
+    def _to_numbering_level(self, abstract_num_level):
+        if abstract_num_level is None:
+            return None
+        else:
+            return numbering_level(
+                level_index=abstract_num_level.level_index,
+                is_ordered=abstract_num_level.is_ordered,
+            )
 
 
 Numbering.EMPTY = Numbering(abstract_nums={}, nums={}, styles=Styles.EMPTY)
