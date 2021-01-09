@@ -91,7 +91,6 @@ def numbering_level_can_be_found_by_paragraph_style_id():
                 ]),
             ]),
         ]),
-        styles=Styles.create(numbering_styles={"List1": NumberingStyle(num_id="200")}),
     )
 
     assert_equal(True, numbering.find_level_by_paragraph_style_id("List").is_ordered)
