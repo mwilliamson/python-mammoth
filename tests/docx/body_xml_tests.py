@@ -1,3 +1,5 @@
+# encoding=utf-8
+
 import io
 import sys
 
@@ -585,6 +587,31 @@ def soft_hyphen_element_is_read_as_soft_hyphen_character():
     element = xml_element("w:softHyphen")
     tab = _read_and_get_document_xml_element(element)
     assert_equal(documents.text(u"\u00ad"), tab)
+
+
+@istest
+def w_sym_with_supported_font_and_supported_code_point_in_ascii_range_is_converted_to_text():
+    element = xml_element("w:sym", {"w:font": "Wingdings", "w:char": "28"})
+    text = _read_and_get_document_xml_element(element)
+    assert_equal(documents.text(u"🕿"), text)
+
+
+@istest
+def w_sym_with_supported_font_and_supported_code_point_in_private_use_area_is_converted_to_text():
+    element = xml_element("w:sym", {"w:font": "Wingdings", "w:char": "F028"})
+    text = _read_and_get_document_xml_element(element)
+    assert_equal(documents.text(u"🕿"), text)
+
+
+@istest
+def w_sym_with_unsupported_font_and_code_point_produces_empty_result_with_warning():
+    element = xml_element("w:sym", {"w:font": "Dingwings", "w:char": "28"})
+
+    result = _read_document_xml_element(element)
+
+    expected_warning = results.warning("A w:sym element with an unsupported character was ignored: char 28 in font Dingwings")
+    assert_equal([expected_warning], result.messages)
+    assert_equal(None, result.value)
 
 
 @istest

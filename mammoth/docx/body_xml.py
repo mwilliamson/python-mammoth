@@ -6,6 +6,7 @@ from .. import documents
 from .. import results
 from .. import lists
 from . import complex_fields
+from .dingbats import dingbats
 from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
@@ -243,6 +244,25 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def soft_hyphen(element):
         return _success(documents.text(u"\u00ad"))
+
+    def symbol(element):
+        # See 17.3.3.30 sym (Symbol Character) of ECMA-376 4th edition Part 1
+        font = element.attributes.get("w:font")
+        char = element.attributes.get("w:char")
+
+        unicode_code_point = dingbats.get((font, int(char, 16)))
+
+        if unicode_code_point is None and re.match("^F0..", char):
+            unicode_code_point = dingbats.get((font, int(char[2:], 16)))
+
+        if unicode_code_point is None:
+            warning = results.warning("A w:sym element with an unsupported character was ignored: char {0} in font {1}".format(
+                char,
+                font,
+            ))
+            return _empty_result_with_message(warning)
+        else:
+            return _success(documents.text(unichr(unicode_code_point)))
 
 
     def table(element):
@@ -491,6 +511,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:tab": tab,
         "w:noBreakHyphen": no_break_hyphen,
         "w:softHyphen": soft_hyphen,
+        "w:sym": symbol,
         "w:tbl": table,
         "w:tr": table_row,
         "w:tc": table_cell,
