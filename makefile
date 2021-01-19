@@ -8,7 +8,7 @@ test-all:
 	tox
 
 upload: setup assert-converted-readme
-	python setup.py sdist bdist_wheel upload
+	_virtualenv/bin/python setup.py sdist bdist_wheel upload
 	make clean
 
 register: setup
@@ -35,5 +35,7 @@ endif
 setup: README
 
 _virtualenv:
-	virtualenv _virtualenv
-	_virtualenv/bin/pip install 'distribute>=0.6.45'
+	python3 -m venv _virtualenv
+	_virtualenv/bin/pip install --upgrade pip
+	_virtualenv/bin/pip install --upgrade setuptools
+	_virtualenv/bin/pip install --upgrade wheel
