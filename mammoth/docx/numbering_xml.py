@@ -91,8 +91,10 @@ class Numbering(object):
         if num is None:
             return None
         else:
-            abstract_num = self._abstract_nums[num.abstract_num_id]
-            if abstract_num.num_style_link is None:
+            abstract_num = self._abstract_nums.get(num.abstract_num_id)
+            if abstract_num is None:
+                return None
+            elif abstract_num.num_style_link is None:
                 return self._to_numbering_level(abstract_num.levels.get(level))
             else:
                 style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)

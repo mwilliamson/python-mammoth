@@ -51,6 +51,19 @@ def find_level_returns_none_if_level_cannot_be_found():
 
 
 @istest
+def num_referencing_non_existent_abstract_num_is_ignored():
+    element = xml_element("w:numbering", {}, [
+        xml_element("w:num", {"w:numId": "47"}, [
+            xml_element("w:abstractNumId", {"w:val": "42"})
+        ])
+    ])
+
+    numbering = _read_numbering_xml_element(element)
+
+    assert_equal(None, numbering.find_level("47", "0"))
+
+
+@istest
 def when_abstract_num_has_num_style_link_then_style_is_used_to_find_num():
     numbering = _read_numbering_xml_element(
         xml_element("w:numbering", {}, [
