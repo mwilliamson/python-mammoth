@@ -16,11 +16,13 @@ class XmlElement(object):
         for child in self.children:
             if isinstance(child, XmlElement) and child.name == name:
                 return child
-        
-    
+
     def find_children(self, name):
         return XmlElementList(filter(
-            lambda child: child.node_type == node_types.element and child.name == name,
+            lambda child: (
+                child.node_type == node_types.element
+                and child.name == name
+            ),
             self.children
         ))
 
@@ -61,6 +63,7 @@ class XmlText(object):
 def element(name, attributes=None, children=None):
     return XmlElement(name, attributes or {}, children or [])
 
+
 text = XmlText
 
 
@@ -73,12 +76,14 @@ XmlElement.node_type = node_types.element
 XmlText.node_type = node_types.text
 
 
-
 def parse_xml(fileobj, namespace_mapping=None):
     if namespace_mapping is None:
         namespace_prefixes = {}
+
     else:
-        namespace_prefixes = dict((uri, prefix) for prefix, uri in namespace_mapping)
+        namespace_prefixes = dict(
+            (uri, prefix) for prefix, uri in namespace_mapping
+        )
     
     handler = Handler(namespace_prefixes)
     parser = xml.sax.make_parser()
@@ -99,7 +104,10 @@ class Handler(xml.sax.handler.ContentHandler):
     
     def startElementNS(self, name, qname, attrs):
         self._flush_character_buffer()
-        attributes = dict((self._read_name(key), value) for key, value in attrs.items())
+        attributes = dict(
+            (self._read_name(key), value) for key, value in attrs.items()
+        )
+
         element = XmlElement(self._read_name(name), attributes, [])
         self._element_stack[-1].children.append(element)
         self._element_stack.append(element)
@@ -119,14 +127,17 @@ class Handler(xml.sax.handler.ContentHandler):
             
     def _read_name(self, name):
         uri, local_name = name
+
         if uri is None:
             return local_name
+
         else:
             prefix = self._namespace_prefixes.get(uri)
             if prefix is None:
                 return "{%s}%s" % (uri, local_name)
             else:
                 return "%s:%s" % (prefix, local_name)
+
 
 class RootElement(object):
     def __init__(self):

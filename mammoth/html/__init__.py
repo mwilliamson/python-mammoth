@@ -11,14 +11,32 @@ def tag(tag_names, attributes=None, collapsible=None, separator=None):
         tag_names = [tag_names]
     if attributes is None:
         attributes = {}
-    return Tag(tag_names=tag_names, attributes=attributes, collapsible=bool(collapsible), separator=separator)
+
+    return Tag(
+        tag_names=tag_names,
+        attributes=attributes,
+        collapsible=bool(collapsible),
+        separator=separator
+    )
 
 
-def element(tag_names, attributes=None, children=None, collapsible=None, separator=None):
+def element(
+    tag_names,
+    attributes=None,
+    children=None,
+    collapsible=None,
+    separator=None
+):
     if children is None:
         children = []
         
-    element_tag = tag(tag_names=tag_names, attributes=attributes, collapsible=collapsible, separator=separator)
+    element_tag = tag(
+        tag_names=tag_names,
+        attributes=attributes,
+        collapsible=collapsible,
+        separator=separator
+    )
+
     return Element(element_tag, children)
 
 
@@ -63,6 +81,7 @@ def collapse(nodes):
     
     return collapsed
 
+
 class _CollapseNode(NodeVisitor):
     def visit_text_node(self, node):
         return node
@@ -72,7 +91,8 @@ class _CollapseNode(NodeVisitor):
     
     def visit_force_write(self, node):
         return node
-    
+
+
 _collapse_node = _CollapseNode().visit
 
 
@@ -80,7 +100,8 @@ def _collapsing_add(collapsed, node):
     collapsed_node = _collapse_node(node)
     if not _try_collapse(collapsed, collapsed_node):
         collapsed.append(collapsed_node)
-    
+
+
 def _try_collapse(collapsed, node):
     if not collapsed:
         return False
@@ -103,8 +124,12 @@ def _try_collapse(collapsed, node):
         
     return True
 
+
 def _is_match(first, second):
-    return first.tag_name in second.tag_names and first.attributes == second.attributes
+    return (
+        first.tag_name in second.tag_names
+        and first.attributes == second.attributes
+    )
 
 
 def write(writer, nodes):

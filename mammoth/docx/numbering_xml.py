@@ -18,8 +18,14 @@ def _read_abstract_nums(element):
 def _read_abstract_num(element):
     abstract_num_id = element.attributes.get("w:abstractNumId")
     levels = _read_abstract_num_levels(element)
-    num_style_link = element.find_child_or_null("w:numStyleLink").attributes.get("w:val")
-    return abstract_num_id, _AbstractNum(levels=levels, num_style_link=num_style_link)
+
+    num_style_link = element.find_child_or_null("w:numStyleLink")\
+        .attributes.get("w:val")
+
+    return (
+        abstract_num_id,
+        _AbstractNum(levels=levels, num_style_link=num_style_link)
+    )
 
 
 @cobble.data
@@ -47,7 +53,10 @@ def _read_abstract_num_level(element):
     level_index = element.attributes["w:ilvl"]
     num_fmt = element.find_child_or_null("w:numFmt").attributes.get("w:val")
     is_ordered = num_fmt != "bullet"
-    paragraph_style_id = element.find_child_or_null("w:pStyle").attributes.get("w:val")
+
+    paragraph_style_id = element.find_child_or_null("w:pStyle")\
+        .attributes.get("w:val")
+
     return _AbstractNumLevel(
         level_index=level_index,
         is_ordered=is_ordered,
@@ -65,7 +74,10 @@ def _read_nums(element):
 
 def _read_num(element):
     num_id = element.attributes.get("w:numId")
-    abstract_num_id = element.find_child_or_null("w:abstractNumId").attributes["w:val"]
+
+    abstract_num_id = element.find_child_or_null("w:abstractNumId")\
+        .attributes["w:val"]
+
     return num_id, _Num(abstract_num_id=abstract_num_id)
 
 
@@ -94,10 +106,14 @@ class Numbering(object):
             abstract_num = self._abstract_nums.get(num.abstract_num_id)
             if abstract_num is None:
                 return None
+
             elif abstract_num.num_style_link is None:
                 return self._to_numbering_level(abstract_num.levels.get(level))
+
             else:
-                style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)
+                style = self._styles.find_numbering_style_by_id(
+                    abstract_num.num_style_link
+                )
                 return self.find_level(style.num_id, level)
 
     def find_level_by_paragraph_style_id(self, style_id):
@@ -113,4 +129,8 @@ class Numbering(object):
             )
 
 
-Numbering.EMPTY = Numbering(abstract_nums={}, nums={}, styles=Styles.EMPTY)
+Numbering.EMPTY = Numbering(
+    abstract_nums={},
+    nums={},
+    styles=Styles.EMPTY
+)

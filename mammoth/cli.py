@@ -22,8 +22,14 @@ def main():
             convert_image = None
             output_path = args.output
         else:
-            convert_image = mammoth.images.img_element(ImageWriter(args.output_dir))
-            output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
+            convert_image = mammoth.images.img_element(
+                ImageWriter(args.output_dir)
+            )
+
+            output_filename = "{0}.html".format(
+                os.path.basename(args.path).rpartition(".")[0]
+            )
+
             output_path = os.path.join(args.output_dir, output_filename)
         
         result = mammoth.convert(
@@ -47,7 +53,9 @@ class ImageWriter(object):
     def __call__(self, element):
         extension = element.content_type.partition("/")[2]
         image_filename = "{0}.{1}".format(self._image_number, extension)
-        with open(os.path.join(self._output_dir, image_filename), "wb") as image_dest:
+        with open(
+                os.path.join(self._output_dir, image_filename), "wb"
+        ) as image_dest:
             with element.open() as image_source:
                 shutil.copyfileobj(image_source, image_dest)
         
@@ -75,27 +83,42 @@ def _parse_args():
     parser.add_argument(
         "path",
         metavar="docx-path",
-        help="Path to the .docx file to convert.")
+        help="Path to the .docx file to convert."
+    )
     
     output_group = parser.add_mutually_exclusive_group()
     output_group.add_argument(
         "output",
         nargs="?",
         metavar="output-path",
-        help="Output path for the generated document. Images will be stored inline in the output document. Output is written to stdout if not set.")
+        help=(
+            "Output path for the generated document. Images will be stored "
+            "inline in the output document. Output is written to stdout if "
+            "not set. "
+        )
+    )
+
     output_group.add_argument(
         "--output-dir",
-        help="Output directory for generated HTML and images. Images will be stored in separate files. Mutually exclusive with output-path.")
+        help=(
+            "Output directory for generated HTML and images. Images will be "
+            "stored in separate files. Mutually exclusive with output-path. "
+        )
+    )
     
     parser.add_argument(
         "--output-format",
         required=False,
         choices=writers.formats(),
-        help="Output format.")
+        help="Output format."
+    )
+
     parser.add_argument(
         "--style-map",
         required=False,
-        help="File containg a style map.")
+        help="File containg a style map."
+    )
+
     return parser.parse_args()
 
 

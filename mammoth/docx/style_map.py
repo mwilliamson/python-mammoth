@@ -11,14 +11,20 @@ _content_types_path = "[Content_Types].xml"
 
 def write_style_map(fileobj, style_map):
     with open_zip(fileobj, "r") as zip_file:
-        relationships_xml = _generate_relationships_xml(zip_file.read_str(_relationships_path))
-        content_types_xml = _generate_content_types_xml(zip_file.read_str(_content_types_path))
+        relationships_xml = _generate_relationships_xml(
+            zip_file.read_str(_relationships_path)
+        )
+
+        content_types_xml = _generate_content_types_xml(
+            zip_file.read_str(_content_types_path)
+        )
     
     update_zip(fileobj, {
         _style_map_path: style_map.encode("utf8"),
         _relationships_path: relationships_xml,
         _content_types_path: content_types_xml,
     })
+
 
 def _generate_relationships_xml(relationships_xml):
     schema = "http://schemas.zwobble.org/mammoth/style-map"
@@ -58,7 +64,11 @@ def _add_or_update_element(parent, name, identifying_attribute, attributes):
 
 def _find_child(parent, name, identifying_attribute, attributes):
     for element in parent.iter():
-        if element.tag == name and element.get(identifying_attribute) == attributes.get(identifying_attribute):
+        if (
+            element.tag == name
+                and element.get(identifying_attribute)
+                == attributes.get(identifying_attribute)
+        ):
             return element
 
 

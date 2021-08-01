@@ -21,7 +21,9 @@ class Relationships(object):
 Relationships.EMPTY = Relationships([])
 
 
-Relationship = collections.namedtuple("Relationship", ["relationship_id", "target", "type"])
+Relationship = collections.namedtuple(
+    "Relationship", ["relationship_id", "target", "type"]
+)
 
 
 def read_relationships_xml_element(element):

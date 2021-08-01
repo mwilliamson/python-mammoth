@@ -52,7 +52,10 @@ _string_prefix = r"'(?:\\.|[^'])*"
 _identifier_character = r"(?:[a-zA-Z\-_]|\\.)"
 
 tokenise = regex_tokeniser([
-    (TokenType.IDENTIFIER, _identifier_character + "(?:" + _identifier_character + "|[0-9])*"),
+    (
+        TokenType.IDENTIFIER,
+        _identifier_character + "(?:" + _identifier_character + "|[0-9])*"
+    ),
     (TokenType.SYMBOL, r":|>|=>|\^=|=|\(|\)|\[|\]|\||!|\."),
     (TokenType.WHITESPACE, r"\s+"),
     (TokenType.STRING, _string_prefix + "'"),

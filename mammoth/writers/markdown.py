@@ -6,7 +6,9 @@ import re
 
 
 class _WriterOutput(object):
-    def __init__(self, start, end=None, generate_end=None, anchor_position=None):
+    def __init__(
+        self, start, end=None, generate_end=None, anchor_position=None
+    ):
         if generate_end is None:
             generate_end = _constant(end)
         
@@ -104,7 +106,11 @@ def _list(ordered):
 def _list_item(attributes, markdown_state):
     markdown_state.list_item_has_closed = False
     
-    list_state = markdown_state.list_state or _MarkdownListState(ordered=False, indentation=0)
+    list_state = (
+        markdown_state.list_state
+        or _MarkdownListState(ordered=False, indentation=0)
+    )
+
     list_state.count += 1
     
     if list_state.ordered:
@@ -147,6 +153,7 @@ def _init_writers():
 _writers = _init_writers()
 _default_output = _WriterOutput("", "")
 
+
 def _default_writer(attributes, markdown_state):
     return _default_output
 
@@ -164,7 +171,11 @@ class MarkdownWriter(Writer):
         if attributes is None:
             attributes = {}
         
-        output = _writers.get(name, _default_writer)(attributes, self._markdown_state)
+        output = _writers.get(name, _default_writer)(
+            attributes,
+            self._markdown_state
+        )
+
         self._element_stack.append(output.generate_end)
         
         anchor_before_start = output.anchor_position == "before"
@@ -175,8 +186,6 @@ class MarkdownWriter(Writer):
         
         if not anchor_before_start:
             self._write_anchor(attributes)
-        
-        
 
     def end(self, name):
         end = self._element_stack.pop()
@@ -200,4 +209,8 @@ class MarkdownWriter(Writer):
 
 
 def _escape_markdown(value):
-    return re.sub(r"([\`\*_\{\}\[\]\(\)\#\+\-\.\!])", r"\\\1", re.sub("\\\\", "\\\\\\\\", value))
+    return re.sub(
+        r"([\`\*_\{\}\[\]\(\)\#\+\-\.\!])",
+        r"\\\1",
+        re.sub("\\\\", "\\\\\\\\", value)
+    )

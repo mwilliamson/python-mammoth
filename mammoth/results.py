@@ -7,10 +7,10 @@ class Result(object):
     def __init__(self, value, messages):
         self.value = value
         self.messages = unique(messages)
-    
+
     def map(self, func):
         return Result(func(self.value), self.messages)
-    
+
     def bind(self, func):
         result = func(self.value)
         return Result(result.value, self.messages + result.messages)
@@ -34,7 +34,7 @@ def combine(results):
         values.append(result.value)
         for message in result.messages:
             messages.append(message)
-        
+
     return Result(values, messages)
 
 

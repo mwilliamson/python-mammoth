@@ -32,7 +32,13 @@ def read(fileobj):
         _read_notes(read_part_with_body, part_paths),
         _read_comments(read_part_with_body, part_paths),
     ]).bind(lambda referents:
-        _read_document(zip_file, read_part_with_body, notes=referents[0], comments=referents[1], part_paths=part_paths)
+        _read_document(
+            zip_file,
+            read_part_with_body,
+            notes=referents[0],
+            comments=referents[1],
+            part_paths=part_paths
+        )
     )
 
 
@@ -59,7 +65,10 @@ def _find_part_paths(zip_file):
         return _find_part_path(
             zip_file=zip_file,
             relationships=document_relationships,
-            relationship_type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/" + name,
+            relationship_type=(
+                "http://schemas.openxmlformats.org/officeDocument/2006"
+                "/relationships/" + name
+            ),
             fallback_path="word/{0}.xml".format(name),
             base_path=zips.split_path(document_filename)[0],
         )
@@ -78,22 +87,35 @@ def _find_document_filename(zip_file, relationships):
     path = _find_part_path(
         zip_file,
         relationships,
-        relationship_type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+        relationship_type=(
+            "http://schemas.openxmlformats.org/officeDocument/2006"
+            "/relationships/officeDocument "
+        ),
         base_path="",
         fallback_path="word/document.xml",
     )
+
     if zip_file.exists(path):
         return path
+
     else:
-        raise IOError("Could not find main document part. Are you sure this is a valid .docx file?")
+        raise IOError(
+            "Could not find main document part."
+            " Are you sure this is a valid .docx file?"
+        )
 
 
-def _find_part_path(zip_file, relationships, relationship_type, base_path, fallback_path):
+def _find_part_path(
+    zip_file, relationships, relationship_type, base_path, fallback_path
+):
     targets = [
         zips.join_path(base_path, target).lstrip("/")
         for target in relationships.find_targets_by_type(relationship_type)
     ]
-    valid_targets = list(filter(lambda target: zip_file.exists(target), targets))
+    valid_targets = list(
+        filter(lambda target: zip_file.exists(target), targets)
+    )
+
     if len(valid_targets) == 0:
         return fallback_path
     else:
@@ -103,12 +125,17 @@ def _find_part_path(zip_file, relationships, relationship_type, base_path, fallb
 def _read_notes(read_part_with_body, part_paths):
     footnotes = read_part_with_body(
         part_paths.footnotes,
-        lambda root, body_reader: read_footnotes_xml_element(root, body_reader=body_reader),
+        lambda root, body_reader: read_footnotes_xml_element(
+            root, body_reader=body_reader
+        ),
         default=_empty_result,
     )
+
     endnotes = read_part_with_body(
         part_paths.endnotes,
-        lambda root, body_reader: read_endnotes_xml_element(root, body_reader=body_reader),
+        lambda root, body_reader: read_endnotes_xml_element(
+            root, body_reader=body_reader
+        ),
         default=_empty_result,
     )
 
@@ -118,7 +145,9 @@ def _read_notes(read_part_with_body, part_paths):
 def _read_comments(read_part_with_body, part_paths):
     return read_part_with_body(
         part_paths.comments,
-        lambda root, body_reader: read_comments_xml_element(root, body_reader=body_reader),
+        lambda root, body_reader: read_comments_xml_element(
+            root, body_reader=body_reader
+        ),
         default=_empty_result,
     )
 
@@ -157,7 +186,10 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
     )
 
     def read_part(name, reader, default=_undefined):
-        relationships = _read_relationships(zip_file, _find_relationships_path_for(name))
+        relationships = _read_relationships(
+            zip_file,
+            _find_relationships_path_for(name)
+        )
 
         body_reader = body_xml.reader(
             numbering=numbering,
@@ -165,16 +197,28 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
             relationships=relationships,
             styles=styles,
             docx_file=zip_file,
-            files=Files(None if document_path is None else os.path.dirname(document_path)),
+            files=Files(
+                None
+                if document_path is None else
+                os.path.dirname(document_path)
+            ),
         )
 
         if default is _undefined:
-            return _read_entry(zip_file, name, partial(reader, body_reader=body_reader))
+            return _read_entry(
+                zip_file,
+                name,
+                partial(reader, body_reader=body_reader)
+            )
+
         else:
-            return _try_read_entry_or_default(zip_file, name, partial(reader, body_reader=body_reader), default=default)
+            return _try_read_entry_or_default(
+                zip_file,
+                name,
+                partial(reader, body_reader=body_reader), default=default
+            )
 
     return read_part
-
 
 
 def _find_relationships_path_for(name):
@@ -189,6 +233,7 @@ def _read_relationships(zip_file, name):
         read_relationships_xml_element,
         default=Relationships.EMPTY,
     )
+
 
 def _try_read_entry_or_default(zip_file, name, reader, default):
     if zip_file.exists(name):

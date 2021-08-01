@@ -59,7 +59,12 @@ def parse_document_matcher(tokens):
         return _parse_break(tokens)
 
     else:
-        raise LineParseError("Unrecognised document element: {0}".format(tokens.next_value(TokenType.IDENTIFIER)))
+        raise LineParseError(
+            "Unrecognised document element: {0}".format(
+                tokens.next_value(TokenType.IDENTIFIER)
+            )
+        )
+
 
 def _parse_style_name(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "["):
@@ -77,7 +82,10 @@ def _parse_string_matcher(tokens):
     elif tokens.try_skip(TokenType.SYMBOL, "^="):
         return document_matchers.starts_with(parse_string(tokens))
     else:
-        raise LineParseError("Unrecognised string matcher: {0}".format(tokens.next_value()))
+        raise LineParseError(
+            "Unrecognised string matcher: {0}".format(tokens.next_value())
+        )
+
 
 def _parse_numbering(tokens):
     if tokens.try_skip(TokenType.SYMBOL, ":"):
@@ -103,7 +111,7 @@ def _parse_break(tokens):
     tokens.skip(TokenType.IDENTIFIER, "type")
     tokens.skip(TokenType.SYMBOL, "=")
     type_name = parse_string(tokens)
-    tokens.skip(TokenType.SYMBOL, "]");
+    tokens.skip(TokenType.SYMBOL, "]")
 
     if type_name == "line":
         return document_matchers.line_break

@@ -15,6 +15,7 @@ class Document(HasChildren):
     notes = cobble.field()
     comments = cobble.field()
 
+
 @cobble.data
 class Paragraph(HasChildren):
     style_id = cobble.field()
@@ -54,9 +55,11 @@ class Run(HasChildren):
     font = cobble.field()
     font_size = cobble.field()
 
+
 @cobble.data
 class Text(Element):
     value = cobble.field()
+
 
 @cobble.data
 class Hyperlink(HasChildren):
@@ -64,23 +67,28 @@ class Hyperlink(HasChildren):
     anchor = cobble.field()
     target_frame = cobble.field()
 
+
 @cobble.data
 class Table(HasChildren):
     style_id = cobble.field()
     style_name = cobble.field()
 
+
 @cobble.data
 class TableRow(HasChildren):
     is_header = cobble.field()
+
 
 @cobble.data
 class TableCell(HasChildren):
     colspan = cobble.field()
     rowspan = cobble.field()
 
+
 @cobble.data
 class Break(Element):
     break_type = cobble.field()
+
 
 line_break = Break("line")
 page_break = Break("page")
@@ -106,14 +114,32 @@ def document(children, notes=None, comments=None):
         comments = []
     return Document(children, notes, comments=comments)
 
-def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None, indent=None):
+
+def paragraph(
+    children, style_id=None, style_name=None, numbering=None,
+    alignment=None, indent=None
+):
     if indent is None:
         indent = paragraph_indent()
 
-    return Paragraph(children, style_id, style_name, numbering, alignment=alignment, indent=indent)
+    return Paragraph(
+        children,
+        style_id,
+        style_name,
+        numbering,
+        alignment=alignment,
+        indent=indent
+    )
+
 
 def paragraph_indent(start=None, end=None, first_line=None, hanging=None):
-    return ParagraphIndent(start=start, end=end, first_line=first_line, hanging=hanging)
+    return ParagraphIndent(
+        start=start,
+        end=end,
+        first_line=first_line,
+        hanging=hanging
+    )
+
 
 def run(
     children,
@@ -131,6 +157,7 @@ def run(
 ):
     if vertical_alignment is None:
         vertical_alignment = VerticalAlignment.baseline
+
     return Run(
         children=children,
         style_id=style_id,
@@ -146,14 +173,17 @@ def run(
         font_size=font_size,
     )
 
+
 class VerticalAlignment(object):
     baseline = "baseline"
     superscript = "superscript"
     subscript = "subscript"
 
+
 text = Text
 
 _tab = Tab()
+
 
 def tab():
     return _tab
@@ -161,13 +191,20 @@ def tab():
 
 image = Image
 
+
 def hyperlink(children, href=None, anchor=None, target_frame=None):
-    return Hyperlink(href=href, anchor=anchor, target_frame=target_frame, children=children)
+    return Hyperlink(
+        href=href,
+        anchor=anchor,
+        target_frame=target_frame,
+        children=children
+    )
 
 
 @cobble.data
 class Bookmark(Element):
     name = cobble.field()
+
 
 bookmark = Bookmark
 
@@ -175,8 +212,10 @@ bookmark = Bookmark
 def table(children, style_id=None, style_name=None):
     return Table(children=children, style_id=style_id, style_name=style_name)
 
+
 def table_row(children, is_header=None):
     return TableRow(children=children, is_header=bool(is_header))
+
 
 def table_cell(children, colspan=None, rowspan=None):
     if colspan is None:
@@ -189,10 +228,12 @@ def table_cell(children, colspan=None, rowspan=None):
 def numbering_level(level_index, is_ordered):
     return _NumberingLevel(str(level_index), bool(is_ordered))
 
+
 @cobble.data
 class _NumberingLevel(object):
     level_index = cobble.field()
     is_ordered = cobble.field()
+
 
 @cobble.data
 class Note(Element):
@@ -220,19 +261,23 @@ class Notes(object):
     def __ne__(self, other):
         return not (self == other)
 
+
 def notes(notes_list):
     return Notes(dict(
         (_note_key(note), note)
         for note in notes_list
     ))
 
+
 def _note_key(note):
     return (note.note_type, note.note_id)
+
 
 @cobble.data
 class NoteReference(Element):
     note_type = cobble.field()
     note_id = cobble.field()
+
 
 note_reference = NoteReference
 
@@ -244,6 +289,7 @@ class Comment(object):
     author_name = cobble.field()
     author_initials = cobble.field()
 
+
 def comment(comment_id, body, author_name=None, author_initials=None):
     return Comment(
         comment_id=comment_id,
@@ -252,11 +298,14 @@ def comment(comment_id, body, author_name=None, author_initials=None):
         author_initials=author_initials,
     )
 
+
 @cobble.data
 class CommentReference(Element):
     comment_id = cobble.field()
 
+
 comment_reference = CommentReference
+
 
 def element_visitor(args):
     return cobble.visitor(Element, args=args)

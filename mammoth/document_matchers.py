@@ -7,7 +7,11 @@ def paragraph(style_id=None, style_name=None, numbering=None):
     return ParagraphMatcher(style_id, style_name, numbering)
 
 
-ParagraphMatcher = collections.namedtuple("ParagraphMatcher", ["style_id", "style_name", "numbering"])
+ParagraphMatcher = collections.namedtuple(
+    "ParagraphMatcher",
+    ["style_id", "style_name", "numbering"]
+)
+
 ParagraphMatcher.element_type = "paragraph"
 
 
@@ -15,7 +19,10 @@ def run(style_id=None, style_name=None):
     return RunMatcher(style_id, style_name)
 
 
-RunMatcher = collections.namedtuple("RunMatcher", ["style_id", "style_name"])
+RunMatcher = collections.namedtuple(
+    "RunMatcher",
+    ["style_id", "style_name"]
+)
 RunMatcher.element_type = "run"
 
 
@@ -23,7 +30,10 @@ def table(style_id=None, style_name=None):
     return TableMatcher(style_id, style_name)
 
 
-TableMatcher = collections.namedtuple("TableMatcher", ["style_id", "style_name"])
+TableMatcher = collections.namedtuple(
+    "TableMatcher",
+    ["style_id", "style_name"]
+)
 TableMatcher.element_type = "table"
 
 
@@ -58,7 +68,6 @@ class comment_reference(object):
 BreakMatcher = collections.namedtuple("BreakMatcher", ["break_type"])
 BreakMatcher.element_type = "break"
 
-
 line_break = BreakMatcher("line")
 page_break = BreakMatcher("page")
 column_break = BreakMatcher("column")
@@ -74,6 +83,7 @@ def _operator_equal_to(first, second):
 
 def starts_with(value):
     return StringMatcher(_operator_starts_with, value)
+
 
 def _operator_starts_with(first, second):
     return second.upper().startswith(first.upper())

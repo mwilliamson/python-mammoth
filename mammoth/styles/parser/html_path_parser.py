@@ -16,7 +16,9 @@ def _parse_html_path_elements(tokens):
     if tokens.peek_token_type() == TokenType.IDENTIFIER:
         elements.append(_parse_element(tokens))
         
-        while tokens.try_skip_many(((TokenType.WHITESPACE, None), (TokenType.SYMBOL, ">"))):
+        while tokens.try_skip_many(
+            ((TokenType.WHITESPACE, None), (TokenType.SYMBOL, ">"))
+        ):
             tokens.skip(TokenType.WHITESPACE)
             elements.append(_parse_element(tokens))
         

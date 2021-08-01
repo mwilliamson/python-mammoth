@@ -3,13 +3,21 @@ import collections
 
 class Styles(object):
     @staticmethod
-    def create(paragraph_styles=None, character_styles=None, table_styles=None, numbering_styles=None):
+    def create(
+        paragraph_styles=None,
+        character_styles=None,
+        table_styles=None,
+        numbering_styles=None
+    ):
         if paragraph_styles is None:
             paragraph_styles = {}
+
         if character_styles is None:
             character_styles = {}
+
         if table_styles is None:
             table_styles = {}
+
         if numbering_styles is None:
             numbering_styles = {}
 
@@ -20,7 +28,13 @@ class Styles(object):
             numbering_styles=numbering_styles,
         )
 
-    def __init__(self, paragraph_styles, character_styles, table_styles, numbering_styles):
+    def __init__(
+        self,
+        paragraph_styles,
+        character_styles,
+        table_styles,
+        numbering_styles
+    ):
         self._paragraph_styles = paragraph_styles
         self._character_styles = character_styles
         self._table_styles = table_styles
@@ -62,7 +76,10 @@ def read_styles_xml_element(element):
         style = _read_style_element(style_element)
         element_type = style_element.attributes["w:type"]
         if element_type == "numbering":
-            numbering_styles[style.style_id] = _read_numbering_style_element(style_element)
+            numbering_styles[style.style_id] = _read_numbering_style_element(
+                style_element
+            )
+
         else:
             style_set = styles.get(element_type)
             if style_set is not None:

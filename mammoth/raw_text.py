@@ -7,7 +7,13 @@ def extract_raw_text_from_element(element):
     elif isinstance(element, documents.Tab):
         return "\t"
     else:
-        text = "".join(map(extract_raw_text_from_element, getattr(element, "children", [])))
+        text = "".join(
+            map(
+                extract_raw_text_from_element,
+                getattr(element, "children", [])
+            )
+        )
+
         if isinstance(element, documents.Paragraph):
             return text + "\n\n"
         else:

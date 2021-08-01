@@ -12,10 +12,10 @@ def open_zip(fileobj, mode):
 class _Zip(object):
     def __init__(self, zip_file):
         self._zip_file = zip_file
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, *args):
         self._zip_file.close()
 
@@ -50,7 +50,7 @@ def update_zip(fileobj, files):
             destination.close()
     finally:
         source.close()
-    
+
     fileobj.seek(0)
     destination_fileobj.seek(0)
     shutil.copyfileobj(destination_fileobj, fileobj)
@@ -59,19 +59,19 @@ def update_zip(fileobj, files):
 def split_path(path):
     parts = path.rsplit("/", 1)
     if len(parts) == 1:
-        return ("", path)
+        return "", path
     else:
         return tuple(parts)
 
 
 def join_path(*args):
     non_empty_paths = list(filter(None, args))
-    
+
     relevant_paths = []
     for path in non_empty_paths:
         if path.startswith("/"):
             relevant_paths = [path]
         else:
             relevant_paths.append(path)
-    
+
     return "/".join(relevant_paths)

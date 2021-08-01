@@ -9,6 +9,10 @@ def read_style_mapping(string):
     try:
         tokens = tokenise(string)
         return results.success(parse_style_mapping(TokenIterator(tokens)))
+
     except LineParseError:
-        warning = "Did not understand this style mapping, so ignored it: " + string
+        warning = (
+            "Did not understand this style mapping, so ignored it: " + string
+        )
+
         return results.Result(None, [results.warning(warning)])

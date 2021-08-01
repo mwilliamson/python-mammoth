@@ -27,13 +27,13 @@ def element(names, class_names=None, fresh=None, separator=None):
 @cobble.data
 class HtmlPath(object):
     elements = cobble.field()
-    
+
     def wrap(self, generate_nodes):
         nodes = generate_nodes()
 
         for element in reversed(self.elements):
             nodes = element.wrap_nodes(nodes)
-        
+
         return nodes
 
 
@@ -47,6 +47,7 @@ class HtmlPathElement(object):
     def wrap_nodes(self, nodes):
         element = html.Element(self.tag, nodes)
         return [element]
+
 
 empty = path([])
 

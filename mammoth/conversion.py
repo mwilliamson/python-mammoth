@@ -11,12 +11,14 @@ from .docx.files import InvalidFileReferenceError
 from .lists import find_index
 
 
-def convert_document_element_to_html(element,
-        style_map=None,
-        convert_image=None,
-        id_prefix=None,
-        output_format=None,
-        ignore_empty_paragraphs=True):
+def convert_document_element_to_html(
+    element,
+    style_map=None,
+    convert_image=None,
+    id_prefix=None,
+    output_format=None,
+    ignore_empty_paragraphs=True
+):
 
     if style_map is None:
         style_map = []
@@ -62,7 +64,16 @@ class _ConversionContext(object):
 
 
 class _DocumentConverter(documents.element_visitor(args=1)):
-    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
+    def __init__(
+        self,
+        messages,
+        style_map,
+        convert_image,
+        id_prefix,
+        ignore_empty_paragraphs,
+        note_references,
+        comments
+    ):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
@@ -93,7 +104,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         ])
         return nodes + [notes_list, comments]
 
-
     def visit_paragraph(self, paragraph, context):
         def children():
             content = self._visit_all(paragraph.children, context)
@@ -105,7 +115,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         html_path = self._find_html_path_for_paragraph(paragraph)
         return html_path.wrap(children)
 
-
     def visit_run(self, run, context):
         nodes = lambda: self._visit_all(run.children, context)
         paths = []
@@ -114,7 +123,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         if run.is_all_caps:
             paths.append(self._find_style_for_run_property("all_caps"))
         if run.is_strikethrough:
-            paths.append(self._find_style_for_run_property("strikethrough", default="s"))
+            paths.append(
+                self._find_style_for_run_property("strikethrough", default="s")
+            )
+
         if run.is_underline:
             paths.append(self._find_style_for_run_property("underline"))
         if run.vertical_alignment == documents.VerticalAlignment.subscript:
@@ -122,16 +134,21 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         if run.vertical_alignment == documents.VerticalAlignment.superscript:
             paths.append(html_paths.element(["sup"], fresh=False))
         if run.is_italic:
-            paths.append(self._find_style_for_run_property("italic", default="em"))
+            paths.append(
+                self._find_style_for_run_property("italic", default="em")
+            )
+
         if run.is_bold:
-            paths.append(self._find_style_for_run_property("bold", default="strong"))
+            paths.append(
+                self._find_style_for_run_property("bold", default="strong")
+            )
+
         paths.append(self._find_html_path_for_run(run))
 
         for path in paths:
             nodes = partial(path.wrap, nodes)
 
         return nodes()
-
 
     def _find_style_for_run_property(self, element_type, default=None):
         style = self._find_style(None, element_type)
@@ -142,10 +159,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         else:
             return html_paths.empty
 
-
     def visit_text(self, text, context):
         return [html.text(text.value)]
-
 
     def visit_hyperlink(self, hyperlink, context):
         if hyperlink.anchor is None:
@@ -160,7 +175,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         nodes = self._visit_all(hyperlink.children, context)
         return [html.collapsible_element("a", attributes, nodes)]
 
-
     def visit_bookmark(self, bookmark, context):
         element = html.collapsible_element(
             "a",
@@ -168,11 +182,12 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             [html.force_write])
         return [element]
 
-
     def visit_tab(self, tab, context):
         return [html.text("\t")]
 
-    _default_table_path = html_paths.path([html_paths.element(["table"], fresh=True)])
+    _default_table_path = html_paths.path(
+        [html_paths.element(["table"], fresh=True)]
+    )
 
     def visit_table(self, table, context):
         return self._find_html_path(table, "table", self._default_table_path) \
@@ -198,10 +213,16 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
         return [html.force_write] + children
 
-
     def visit_table_row(self, table_row, context):
-        return [html.element("tr", {}, [html.force_write] + self._visit_all(table_row.children, context))]
-
+        return [
+            html.element(
+                "tr", {},
+                (
+                    [html.force_write]
+                    + self._visit_all(table_row.children, context)
+                )
+            )
+        ]
 
     def visit_table_cell(self, table_cell, context):
         if context.is_table_header:
@@ -218,10 +239,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element(tag_name, attributes, nodes)
         ]
 
-
     def visit_break(self, break_, context):
         return self._find_html_path_for_break(break_).wrap(lambda: [])
-
 
     def _find_html_path_for_break(self, break_):
         style = self._find_style(break_, "break")
@@ -231,7 +250,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             return html_paths.path([html_paths.element("br", fresh=True)])
         else:
             return html_paths.empty
-
 
     def visit_note_reference(self, note_reference, context):
         self._note_references.append(note_reference)
@@ -245,20 +263,22 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             ])
         ]
 
-
     def visit_note(self, note, context):
         note_body = self._visit_all(note.body, context) + [
-            html.collapsible_element("p", {}, [
-                html.text(" "),
-                html.element("a", {"href": "#" + self._note_ref_html_id(note)}, [
-                    html.text(_up_arrow)
-                ]),
-            ])
+            html.collapsible_element(
+                "p", {}, [
+                    html.text(" "),
+                    html.element(
+                        "a", {"href": "#" + self._note_ref_html_id(note)},
+                        [html.text(_up_arrow)]
+                    ),
+                ]
+            )
         ]
+
         return [
             html.element("li", {"id": self._note_html_id(note)}, note_body)
         ]
-
 
     def visit_comment_reference(self, reference, context):
         def nodes():
@@ -268,10 +288,20 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             self._referenced_comments.append((label, comment))
             return [
                 # TODO: remove duplication with note references
-                html.element("a", {
-                    "href": "#" + self._referent_html_id("comment", reference.comment_id),
-                    "id": self._reference_html_id("comment", reference.comment_id),
-                }, [html.text(label)])
+                html.element(
+                    "a",
+                    {
+                        "href": "#" + self._referent_html_id(
+                            "comment",
+                            reference.comment_id
+                        ),
+                        "id": self._reference_html_id(
+                            "comment",
+                            reference.comment_id
+                        ),
+                    },
+                    [html.text(label)]
+                )
             ]
 
         html_path = self._find_html_path(
@@ -288,11 +318,18 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         body = self._visit_all(comment.body, context) + [
             html.collapsible_element("p", {}, [
                 html.text(" "),
-                html.element("a", {"href": "#" + self._reference_html_id("comment", comment.comment_id)}, [
-                    html.text(_up_arrow)
-                ]),
+                html.element(
+                    "a",
+                    {
+                        "href":  "#" + self._reference_html_id(
+                            "comment",
+                            comment.comment_id
+                        )
+                    }, [html.text(_up_arrow)]
+                ),
             ])
         ]
+
         return [
             html.element(
                 "dt",
@@ -302,7 +339,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("dd", {}, body),
         ]
 
-
     def _visit_all(self, elements, context):
         return [
             html_node
@@ -310,16 +346,20 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             for html_node in self.visit(element, context)
         ]
 
-
     def _find_html_path_for_paragraph(self, paragraph):
         default = html_paths.path([html_paths.element("p", fresh=True)])
-        return self._find_html_path(paragraph, "paragraph", default, warn_unrecognised=True)
+        return self._find_html_path(
+            paragraph, "paragraph", default, warn_unrecognised=True
+        )
 
     def _find_html_path_for_run(self, run):
-        return self._find_html_path(run, "run", default=html_paths.empty, warn_unrecognised=True)
+        return self._find_html_path(
+            run, "run", default=html_paths.empty, warn_unrecognised=True
+        )
 
-
-    def _find_html_path(self, element, element_type, default, warn_unrecognised=False):
+    def _find_html_path(
+            self, element, element_type, default, warn_unrecognised=False
+    ):
         style = self._find_style(element, element_type)
         if style is not None:
             return style.html_path
@@ -327,7 +367,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         if warn_unrecognised and getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(
                 "Unrecognised {0} style: {1} (Style ID: {2})".format(
-                    element_type, element.style_name, element.style_id)
+                    element_type, element.style_name, element.style_id
+                )
             ))
 
         return default
@@ -335,7 +376,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def _find_style(self, element, element_type):
         for style in self._style_map:
             document_matcher = style.document_matcher
-            if _document_matcher_matches(document_matcher, element, element_type):
+            if _document_matcher_matches(
+                document_matcher,
+                element,
+                element_type
+            ):
                 return style
 
     def _note_html_id(self, note):
@@ -355,21 +400,29 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
 
 def _document_matcher_matches(matcher, element, element_type):
-    if matcher.element_type in ["underline", "strikethrough", "all_caps", "small_caps", "bold", "italic", "comment_reference"]:
+    if matcher.element_type in [
+        "underline", "strikethrough", "all_caps",
+        "small_caps", "bold", "italic", "comment_reference"
+    ]:
         return matcher.element_type == element_type
+
     elif matcher.element_type == "break":
         return (
             matcher.element_type == element_type and
             matcher.break_type == element.break_type
         )
-    else: # matcher.element_type in ["paragraph", "run"]:
+
+    else:  # matcher.element_type in ["paragraph", "run"]:
         return (
             matcher.element_type == element_type and (
                 matcher.style_id is None or
                 matcher.style_id == element.style_id
+
             ) and (
                 matcher.style_name is None or
-                element.style_name is not None and (matcher.style_name.matches(element.style_name))
+                element.style_name is not None
+                and (matcher.style_name.matches(element.style_name))
+
             ) and (
                 element_type != "paragraph" or
                 matcher.numbering is None or

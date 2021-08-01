@@ -35,8 +35,8 @@ def reader(
         docx_file=docx_file,
         files=files,
     )
-    return _BodyReader(read_all)
 
+    return _BodyReader(read_all)
 
 
 class _BodyReader(object):
@@ -48,28 +48,32 @@ class _BodyReader(object):
         return results.Result(result.elements, result.messages)
 
 
-def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
-    _ignored_elements = set([
-        "office-word:wrap",
-        "v:shadow",
-        "v:shapetype",
-        "w:annotationRef",
-        "w:bookmarkEnd",
-        "w:sectPr",
-        "w:proofErr",
-        "w:lastRenderedPageBreak",
-        "w:commentRangeStart",
-        "w:commentRangeEnd",
-        "w:del",
-        "w:footnoteRef",
-        "w:endnoteRef",
-        "w:pPr",
-        "w:rPr",
-        "w:tblPr",
-        "w:tblGrid",
-        "w:trPr",
-        "w:tcPr",
-    ])
+def _create_reader(
+    numbering, content_types, relationships, styles, docx_file, files
+):
+    _ignored_elements = set(
+        [
+            "office-word:wrap",
+            "v:shadow",
+            "v:shapetype",
+            "w:annotationRef",
+            "w:bookmarkEnd",
+            "w:sectPr",
+            "w:proofErr",
+            "w:lastRenderedPageBreak",
+            "w:commentRangeStart",
+            "w:commentRangeEnd",
+            "w:del",
+            "w:footnoteRef",
+            "w:endnoteRef",
+            "w:pPr",
+            "w:rPr",
+            "w:tblPr",
+            "w:tblGrid",
+            "w:trPr",
+            "w:tcPr",
+        ]
+    )
 
     def text(element):
         return _success(documents.Text(_inner_text(element)))
@@ -79,11 +83,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         vertical_alignment = properties \
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
-        font = properties.find_child_or_null("w:rFonts").attributes.get("w:ascii")
 
-        font_size_string = properties.find_child_or_null("w:sz").attributes.get("w:val")
+        font = properties.find_child_or_null("w:rFonts")\
+            .attributes.get("w:ascii")
+
+        font_size_string = properties.find_child_or_null("w:sz")\
+            .attributes.get("w:val")
+
         if _is_int(font_size_string):
-            # w:sz gives the font size in half points, so halve the value to get the size in points
+            # w:sz gives the font size in half points,
+            # so halve the value to get the size in points
             font_size = int(font_size_string) / 2
         else:
             font_size = None
@@ -100,11 +109,15 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             if hyperlink_href is None:
                 return children
             else:
-                return [documents.hyperlink(href=hyperlink_href, children=children)]
+                return [
+                    documents.hyperlink(href=hyperlink_href, children=children)
+                ]
 
         return _ReadResult.map_results(
             _read_run_style(properties),
-            _read_xml_elements(element.children).map(add_complex_field_hyperlink),
+            _read_xml_elements(element.children).map(
+                add_complex_field_hyperlink
+            ),
             lambda style, children: documents.run(
                 children=children,
                 style_id=style[0],
@@ -121,17 +134,27 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             ))
 
     def _read_run_style(properties):
-        return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
+        return _read_style(
+            properties,
+            "w:rStyle",
+            "Run",
+            styles.find_character_style_by_id
+        )
 
     def read_boolean_element(element):
         return element and element.attributes.get("w:val") not in ["false", "0"]
 
     def read_underline_element(element):
-        return element and element.attributes.get("w:val") not in ["false", "0", "none"]
+        return (
+            element
+            and element.attributes.get("w:val") not in ["false", "0", "none"]
+        )
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
-        alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
+        alignment = properties.find_child_or_null("w:jc")\
+            .attributes.get("w:val")
+
         indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
 
         return _ReadResult.map_results(
@@ -150,7 +173,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             )).append_extra()
 
     def _read_paragraph_style(properties):
-        return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id)
+        return _read_style(
+            properties,
+            "w:pStyle",
+            "Paragraph",
+            styles.find_paragraph_style_by_id
+        )
 
     current_instr_text = []
     complex_field_stack = []
@@ -210,16 +238,28 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _ReadResult([style_id, style_name], [], messages)
 
     def _undefined_style_warning(style_type, style_id):
-        return results.warning("{0} style with ID {1} was referenced but not defined in the document".format(style_type, style_id))
+        return results.warning(
+            (
+                "{0} style with ID {1} was referenced"
+                " but not defined in the document"
+            ).format(style_type, style_id)
+        )
 
     def _read_numbering_properties(paragraph_style_id, element):
         if paragraph_style_id is not None:
-            level = numbering.find_level_by_paragraph_style_id(paragraph_style_id)
+            level = numbering.find_level_by_paragraph_style_id(
+                paragraph_style_id
+            )
+
             if level is not None:
                 return level
 
-        num_id = element.find_child_or_null("w:numId").attributes.get("w:val")
-        level_index = element.find_child_or_null("w:ilvl").attributes.get("w:val")
+        num_id = element.find_child_or_null("w:numId")\
+            .attributes.get("w:val")
+
+        level_index = element.find_child_or_null("w:ilvl")\
+            .attributes.get("w:val")
+
         if num_id is None or level_index is None:
             return None
         else:
@@ -237,10 +277,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def tab(element):
         return _success(documents.tab())
 
-
     def no_break_hyphen(element):
         return _success(documents.text(unichr(0x2011)))
-
 
     def soft_hyphen(element):
         return _success(documents.text(u"\u00ad"))
@@ -256,14 +294,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             unicode_code_point = dingbats.get((font, int(char[2:], 16)))
 
         if unicode_code_point is None:
-            warning = results.warning("A w:sym element with an unsupported character was ignored: char {0} in font {1}".format(
-                char,
-                font,
-            ))
+            warning = results.warning(
+                (
+                    "A w:sym element with an unsupported character was ignored:"
+                    " char {0} in font {1}"
+                ).format(char, font)
+            )
             return _empty_result_with_message(warning)
+
         else:
             return _success(documents.text(unichr(unicode_code_point)))
-
 
     def table(element):
         properties = element.find_child_or_null("w:tblPr")
@@ -279,10 +319,13 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             ),
         )
 
-
     def read_table_style(properties):
-        return _read_style(properties, "w:tblStyle", "Table", styles.find_table_style_by_id)
-
+        return _read_style(
+            properties,
+            "w:tblStyle",
+            "Table",
+            styles.find_table_style_by_id
+        )
 
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
@@ -292,7 +335,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 children=children,
                 is_header=is_header,
             ))
-
 
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
@@ -322,7 +364,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             val = vmerge_element.attributes.get("w:val")
             return val == "continue" or not val
 
-
     def calculate_row_spans(rows):
         unexpected_non_rows = any(
             not isinstance(row, documents.TableRow)
@@ -330,7 +371,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         )
         if unexpected_non_rows:
             return _elements_result_with_messages(rows, [results.warning(
-                "unexpected non-row element in table, cell merging may be incorrect"
+                "unexpected non-row element in table,"
+                " cell merging may be incorrect"
             )])
 
         unexpected_non_cells = any(
@@ -340,7 +382,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         )
         if unexpected_non_cells:
             return _elements_result_with_messages(rows, [results.warning(
-                "unexpected non-cell element in table row, cell merging may be incorrect"
+                "unexpected non-cell element in table row,"
+                " cell merging may be incorrect"
             )])
 
         columns = {}
@@ -355,7 +398,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 cell_index += cell.colspan
 
         for row in rows:
-            row.children = lists.filter(lambda cell: not cell._vmerge, row.children)
+            row.children = lists.filter(
+                lambda cell: not cell._vmerge, row.children
+            )
+
             for cell in row.children:
                 del cell._vmerge
 
@@ -394,14 +440,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             return children_result
 
-
     def bookmark_start(element):
         name = element.attributes.get("w:name")
         if name == "_GoBack":
             return _empty_result
         else:
             return _success(documents.bookmark(name))
-
 
     def break_(element):
         break_type = element.attributes.get("w:type")
@@ -413,9 +457,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         elif break_type == "column":
             return _success(documents.column_break)
         else:
-            warning = results.warning("Unsupported break type: {0}".format(break_type))
-            return _empty_result_with_message(warning)
+            warning = results.warning(
+                "Unsupported break type: {0}".format(break_type)
+            )
 
+            return _empty_result_with_message(warning)
 
     def inline(element):
         properties = element.find_child_or_null("wp:docPr").attributes
@@ -431,7 +477,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _read_blips(blips, alt_text)
 
     def _read_blips(blips, alt_text):
-        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
+        return _ReadResult.concat(
+            lists.map(lambda blip: _read_blip(blip, alt_text), blips)
+        )
 
     def _read_blip(element, alt_text):
         return _read_image(lambda: _find_blip_image(element), alt_text)
@@ -439,12 +487,24 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def _read_image(find_image, alt_text):
         image_path, open_image = find_image()
         content_type = content_types.find_content_type(image_path)
-        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
+        image = documents.image(
+            alt_text=alt_text, content_type=content_type, open=open_image
+        )
 
-        if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
+        if content_type in [
+            "image/png", "image/gif",
+            "image/jpeg", "image/svg+xml", "image/tiff"
+        ]:
             messages = []
         else:
-            messages = [results.warning("Image of type {0} is unlikely to display in web browsers".format(content_type))]
+            messages = [
+                results.warning(
+                    (
+                        "Image of type {0} is unlikely "
+                        "to display in web browsers"
+                    ).format(content_type)
+                )
+            ]
 
         return _element_result_with_messages(image, messages)
 
@@ -469,9 +529,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         return image_path, open_image
 
-
     def _find_linked_image(relationship_id):
-        image_path = relationships.find_target_by_relationship_id(relationship_id)
+        image_path = relationships.find_target_by_relationship_id(
+            relationship_id
+        )
 
         def open_image():
             return files.open(image_path)
@@ -481,20 +542,30 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def read_imagedata(element):
         relationship_id = element.attributes.get("r:id")
         if relationship_id is None:
-            warning = results.warning("A v:imagedata element without a relationship ID was ignored")
+            warning = results.warning(
+                "A v:imagedata element without a relationship ID was ignored"
+            )
+
             return _empty_result_with_message(warning)
+
         else:
             title = element.attributes.get("o:title")
-            return _read_image(lambda: _find_embedded_image(relationship_id), title)
+            return _read_image(
+                lambda: _find_embedded_image(relationship_id), title
+            )
 
     def note_reference_reader(note_type):
         def note_reference(element):
-            return _success(documents.note_reference(note_type, element.attributes["w:id"]))
+            return _success(
+                documents.note_reference(note_type, element.attributes["w:id"])
+            )
 
         return note_reference
 
     def read_comment_reference(element):
-        return _success(documents.comment_reference(element.attributes["w:id"]))
+        return _success(
+            documents.comment_reference(element.attributes["w:id"])
+        )
 
     def alternate_content(element):
         return read_child_elements(element.find_child("mc:Fallback"))
@@ -543,13 +614,17 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         handler = handlers.get(element.name)
         if handler is None:
             if element.name not in _ignored_elements:
-                warning = results.warning("An unrecognised element was ignored: {0}".format(element.name))
+                warning = results.warning(
+                    "An unrecognised element was ignored: {0}".format(element.name)
+                )
+
                 return _empty_result_with_message(warning)
+
             else:
                 return _empty_result
+
         else:
             return handler(element)
-
 
     def _read_xml_elements(nodes):
         elements = filter(lambda node: isinstance(node, XmlElement), nodes)
@@ -565,7 +640,6 @@ def _inner_text(node):
         return "".join(_inner_text(child) for child in node.children)
 
 
-
 class _ReadResult(object):
     @staticmethod
     def concat(results):
@@ -573,7 +647,6 @@ class _ReadResult(object):
             lists.flat_map(lambda result: result.elements, results),
             lists.flat_map(lambda result: result.extra, results),
             lists.flat_map(lambda result: result.messages, results))
-
 
     @staticmethod
     def map_results(first, second, func):
@@ -603,28 +676,42 @@ class _ReadResult(object):
             self.extra + result.extra,
             self.messages + result.messages)
 
-
     def to_extra(self):
-        return _ReadResult([], _concat(self.extra, self.elements), self.messages)
+        return _ReadResult(
+            [],
+            _concat(self.extra, self.elements),
+            self.messages
+        )
 
     def append_extra(self):
-        return _ReadResult(_concat(self.elements, self.extra), [], self.messages)
+        return _ReadResult(
+            _concat(self.elements, self.extra),
+            [],
+            self.messages
+        )
+
 
 def _success(elements):
     if not isinstance(elements, list):
         elements = [elements]
+
     return _ReadResult(elements, [], [])
+
 
 def _element_result_with_messages(element, messages):
     return _elements_result_with_messages([element], messages)
 
+
 def _elements_result_with_messages(elements, messages):
     return _ReadResult(elements, [], messages)
 
+
 _empty_result = _ReadResult([], [], [])
+
 
 def _empty_result_with_message(message):
     return _ReadResult([], [], [message])
+
 
 def _concat(*values):
     result = []
