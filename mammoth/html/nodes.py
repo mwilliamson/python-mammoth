@@ -47,7 +47,7 @@ class Element(Node):
     def separator(self):
         return self.tag.separator
 
-    _VOID_TAG_NAMES = set(["br", "hr", "img"])
+    _VOID_TAG_NAMES = {"br", "hr", "img"}
 
     def is_void(self):
         return not self.children and self.tag_name in self._VOID_TAG_NAMES

@@ -4,6 +4,7 @@ from . import documents
 def extract_raw_text_from_element(element):
     if isinstance(element, documents.Text):
         return element.value
+
     if isinstance(element, documents.Tab):
         return "\t"
 

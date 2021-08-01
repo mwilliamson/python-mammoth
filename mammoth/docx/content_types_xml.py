@@ -3,10 +3,12 @@ def read_content_types_xml_element(element):
         _read_default,
         element.find_children("content-types:Default")
     ))
+
     overrides = dict(map(
         _read_override,
         element.find_children("content-types:Override")
     ))
+
     return _ContentTypes(extension_defaults, overrides)
 
 

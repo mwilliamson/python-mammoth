@@ -3,10 +3,11 @@ import collections
 
 class Relationships(object):
     def __init__(self, relationships):
-        self._targets_by_id = dict(
-            (relationship.relationship_id, relationship.target)
+        self._targets_by_id = {
+            relationship.relationship_id: relationship.target
             for relationship in relationships
-        )
+        }
+
         self._targets_by_type = collections.defaultdict(list)
         for relationship in relationships:
             self._targets_by_type[relationship.type].append(relationship.target)

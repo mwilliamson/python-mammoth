@@ -81,4 +81,3 @@ def _parse_separator(tokens):
         value = parse_string(tokens)
         tokens.skip(TokenType.SYMBOL, ")")
         return value
-

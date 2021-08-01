@@ -11,19 +11,18 @@ from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
 
-if sys.version_info >= (3, ):
+if sys.version_info >= (3,):
     unichr = chr
 
 
 def reader(
-    numbering=None,
-    content_types=None,
-    relationships=None,
-    styles=None,
-    docx_file=None,
-    files=None
+        numbering=None,
+        content_types=None,
+        relationships=None,
+        styles=None,
+        docx_file=None,
+        files=None
 ):
-
     if styles is None:
         styles = Styles.EMPTY
 
@@ -49,31 +48,28 @@ class _BodyReader(object):
 
 
 def _create_reader(
-    numbering, content_types, relationships, styles, docx_file, files
+        numbering, content_types, relationships, styles, docx_file, files
 ):
-    _ignored_elements = set(
-        [
-            "office-word:wrap",
-            "v:shadow",
-            "v:shapetype",
-            "w:annotationRef",
-            "w:bookmarkEnd",
-            "w:sectPr",
-            "w:proofErr",
-            "w:lastRenderedPageBreak",
-            "w:commentRangeStart",
-            "w:commentRangeEnd",
-            "w:del",
-            "w:footnoteRef",
-            "w:endnoteRef",
-            "w:pPr",
-            "w:rPr",
-            "w:tblPr",
-            "w:tblGrid",
-            "w:trPr",
-            "w:tcPr",
-        ]
-    )
+    _ignored_elements = {
+        "office-word:wrap",
+        "v:shadow", "v:shapetype",
+        "w:annotationRef",
+        "w:bookmarkEnd",
+        "w:sectPr",
+        "w:proofErr",
+        "w:lastRenderedPageBreak",
+        "w:commentRangeStart",
+        "w:commentRangeEnd",
+        "w:del",
+        "w:footnoteRef",
+        "w:endnoteRef",
+        "w:pPr",
+        "w:rPr",
+        "w:tblPr",
+        "w:tblGrid",
+        "w:trPr",
+        "w:tcPr"
+    }
 
     def text(element):
         return _success(documents.Text(_inner_text(element)))
@@ -84,10 +80,10 @@ def _create_reader(
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
 
-        font = properties.find_child_or_null("w:rFonts")\
+        font = properties.find_child_or_null("w:rFonts") \
             .attributes.get("w:ascii")
 
-        font_size_string = properties.find_child_or_null("w:sz")\
+        font_size_string = properties.find_child_or_null("w:sz") \
             .attributes.get("w:val")
 
         if _is_int(font_size_string):
@@ -100,9 +96,15 @@ def _create_reader(
         is_bold = read_boolean_element(properties.find_child("w:b"))
         is_italic = read_boolean_element(properties.find_child("w:i"))
         is_underline = read_underline_element(properties.find_child("w:u"))
-        is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
+        is_strikethrough = read_boolean_element(
+            properties.find_child("w:strike")
+        )
+
         is_all_caps = read_boolean_element(properties.find_child("w:caps"))
-        is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
+
+        is_small_caps = read_boolean_element(
+            properties.find_child("w:smallCaps")
+        )
 
         def add_complex_field_hyperlink(children):
             hyperlink_href = current_hyperlink_href()
@@ -152,7 +154,7 @@ def _create_reader(
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
-        alignment = properties.find_child_or_null("w:jc")\
+        alignment = properties.find_child_or_null("w:jc") \
             .attributes.get("w:val")
 
         indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
@@ -170,7 +172,8 @@ def _create_reader(
                 ),
                 alignment=alignment,
                 indent=indent,
-            )).append_extra()
+            )
+        ).append_extra()
 
     def _read_paragraph_style(properties):
         return _read_style(
@@ -195,15 +198,19 @@ def _create_reader(
         if fld_char_type == "begin":
             complex_field_stack.append(complex_fields.unknown)
             del current_instr_text[:]
+
         elif fld_char_type == "end":
             complex_field_stack.pop()
+
         elif fld_char_type == "separate":
             instr_text = "".join(current_instr_text)
             hyperlink_href = parse_hyperlink_field_code(instr_text)
+
             if hyperlink_href is None:
                 complex_field = complex_fields.unknown
             else:
                 complex_field = complex_fields.hyperlink(hyperlink_href)
+
             complex_field_stack.pop()
             complex_field_stack.append(complex_field)
         return _empty_result
@@ -254,10 +261,10 @@ def _create_reader(
             if level is not None:
                 return level
 
-        num_id = element.find_child_or_null("w:numId")\
+        num_id = element.find_child_or_null("w:numId") \
             .attributes.get("w:val")
 
-        level_index = element.find_child_or_null("w:ilvl")\
+        level_index = element.find_child_or_null("w:ilvl") \
             .attributes.get("w:val")
 
         if num_id is None or level_index is None:
@@ -330,11 +337,12 @@ def _create_reader(
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
         is_header = bool(properties.find_child("w:tblHeader"))
-        return _read_xml_elements(element.children) \
-            .map(lambda children: documents.table_row(
+        return _read_xml_elements(element.children).map(
+            lambda children: documents.table_row(
                 children=children,
                 is_header=is_header,
-            ))
+            )
+        )
 
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
@@ -347,14 +355,15 @@ def _create_reader(
         else:
             colspan = int(gridspan)
 
-        return _read_xml_elements(element.children) \
-            .map(lambda children: _add_attrs(
+        return _read_xml_elements(element.children).map(
+            lambda children: _add_attrs(
                 documents.table_cell(
                     children=children,
                     colspan=colspan
                 ),
                 _vmerge=read_vmerge(properties),
-            ))
+            )
+        )
 
     def read_vmerge(properties):
         vmerge_element = properties.find_child("w:vMerge")
@@ -407,14 +416,11 @@ def _create_reader(
 
         return _success(rows)
 
-
     def read_child_elements(element):
         return _read_xml_elements(element.children)
 
-
     def pict(element):
         return read_child_elements(element).to_extra()
-
 
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
@@ -615,7 +621,8 @@ def _create_reader(
         if handler is None:
             if element.name not in _ignored_elements:
                 warning = results.warning(
-                    "An unrecognised element was ignored: {0}".format(element.name)
+                    "An unrecognised element was ignored: {0}".format(
+                        element.name)
                 )
 
                 return _empty_result_with_message(warning)

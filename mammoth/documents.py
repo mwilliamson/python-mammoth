@@ -220,8 +220,10 @@ def table_row(children, is_header=None):
 def table_cell(children, colspan=None, rowspan=None):
     if colspan is None:
         colspan = 1
+
     if rowspan is None:
         rowspan = 1
+
     return TableCell(children=children, colspan=colspan, rowspan=rowspan)
 
 
@@ -263,10 +265,7 @@ class Notes(object):
 
 
 def notes(notes_list):
-    return Notes(dict(
-        (_note_key(note), note)
-        for note in notes_list
-    ))
+    return Notes({_note_key(note): note for note in notes_list})
 
 
 def _note_key(note):

@@ -66,11 +66,7 @@ class ImageWriter(object):
 
 def _write_output(path, contents):
     if path is None:
-        if sys.version_info[0] <= 2:
-            stdout = sys.stdout
-        else:
-            stdout = sys.stdout.buffer
-
+        stdout = sys.stdout if sys.version_info[0] <= 2 else sys.stdout.buffer
         stdout.write(contents.encode("utf-8"))
         stdout.flush()
     else:

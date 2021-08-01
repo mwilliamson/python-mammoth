@@ -43,10 +43,7 @@ class _AbstractNumLevel(object):
 
 def _read_abstract_num_levels(element):
     levels = map(_read_abstract_num_level, element.find_children("w:lvl"))
-    return dict(
-        (level.level_index, level)
-        for level in levels
-    )
+    return {level.level_index: level for level in levels}
 
 
 def _read_abstract_num_level(element):
@@ -89,12 +86,13 @@ class _Num(object):
 class Numbering(object):
     def __init__(self, abstract_nums, nums, styles):
         self._abstract_nums = abstract_nums
-        self._levels_by_paragraph_style_id = dict(
-            (level.paragraph_style_id, self._to_numbering_level(level))
+        self._levels_by_paragraph_style_id = {
+            level.paragraph_style_id: self._to_numbering_level(level)
             for abstract_num in abstract_nums.values()
             for level in abstract_num.levels.values()
             if level.paragraph_style_id is not None
-        )
+        }
+
         self._nums = nums
         self._styles = styles
 

@@ -81,10 +81,8 @@ def parse_xml(fileobj, namespace_mapping=None):
         namespace_prefixes = {}
 
     else:
-        namespace_prefixes = dict(
-            (uri, prefix) for prefix, uri in namespace_mapping
-        )
-    
+        namespace_prefixes = {uri: prefix for prefix, uri in namespace_mapping}
+
     handler = Handler(namespace_prefixes)
     parser = xml.sax.make_parser()
     parser.setFeature(xml.sax.handler.feature_namespaces, True)
@@ -94,6 +92,7 @@ def parse_xml(fileobj, namespace_mapping=None):
 
 
 class Handler(xml.sax.handler.ContentHandler):
+
     def __init__(self, namespace_prefixes):
         self._namespace_prefixes = namespace_prefixes
         self._element_stack = [RootElement()]
@@ -104,9 +103,9 @@ class Handler(xml.sax.handler.ContentHandler):
     
     def startElementNS(self, name, qname, attrs):
         self._flush_character_buffer()
-        attributes = dict(
-            (self._read_name(key), value) for key, value in attrs.items()
-        )
+        attributes = {
+            self._read_name(key): value for key, value in attrs.items()
+        }
 
         element = XmlElement(self._read_name(name), attributes, [])
         self._element_stack[-1].children.append(element)

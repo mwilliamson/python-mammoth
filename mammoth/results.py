@@ -30,6 +30,7 @@ def success(value):
 def combine(results):
     values = []
     messages = []
+
     for result in results:
         values.append(result.value)
         for message in result.messages:

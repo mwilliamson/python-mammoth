@@ -30,10 +30,7 @@ def convert_document_element_to_html(
         convert_image = images.data_uri
 
     if isinstance(element, documents.Document):
-        comments = dict(
-            (comment.comment_id, comment)
-            for comment in element.comments
-        )
+        comments = {comment.comment_id: comment for comment in element.comments}
     else:
         comments = {}
 
@@ -252,10 +249,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         ]
 
     def visit_table_cell(self, table_cell, context):
-        if context.is_table_header:
-            tag_name = "th"
-        else:
-            tag_name = "td"
+        tag_name = "th" if context.is_table_header else "td"
 
         attributes = {}
         if table_cell.colspan != 1:
@@ -264,7 +258,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         if table_cell.rowspan != 1:
             attributes["rowspan"] = str(table_cell.rowspan)
 
-        nodes = [html.force_write] + self._visit_all(table_cell.children, context)
+        nodes = (
+            [html.force_write]
+            + self._visit_all(table_cell.children, context)
+        )
+
         return [
             html.element(tag_name, attributes, nodes)
         ]

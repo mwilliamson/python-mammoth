@@ -26,6 +26,7 @@ class _Zip(object):
         try:
             self._zip_file.getinfo(name)
             return True
+
         except KeyError:
             return False
 
@@ -38,14 +39,13 @@ def update_zip(fileobj, files):
     try:
         destination_fileobj = io.BytesIO()
         destination = ZipFile(destination_fileobj, "w")
+
         try:
             names = set(source.namelist()) | set(files.keys())
             for name in names:
-                if name in files:
-                    contents = files[name]
-                else:
-                    contents = source.read(name)
+                contents = files[name] if name in files else source.read(name)
                 destination.writestr(name, contents)
+
         finally:
             destination.close()
     finally:
