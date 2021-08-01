@@ -5,18 +5,50 @@ from mammoth import documents
 
 
 @istest
-def raw_text_of_text_element_is_value():
-    assert_equal("Hello", extract_raw_text_from_element(documents.Text("Hello")))
+def text_element_is_converted_to_text_content():
+    element = documents.Text("Hello.")
+
+    result = extract_raw_text_from_element(element)
+
+    assert_equal("Hello.", result)
 
 
 @istest
-def raw_text_of_paragraph_is_terminated_with_newlines():
-    paragraph = documents.paragraph(children=[documents.Text("Hello")])
-    assert_equal("Hello\n\n", extract_raw_text_from_element(paragraph))
+def paragraphs_are_terminated_with_newlines():
+    element = documents.paragraph(
+        children=[
+            documents.Text("Hello "),
+            documents.Text("world."),
+        ],
+    )
+
+    result = extract_raw_text_from_element(element)
+
+    assert_equal("Hello world.\n\n", result)
 
 
 @istest
-def non_text_element_without_children_has_no_raw_text():
-    tab = documents.Tab()
-    assert not hasattr(tab, "children")
-    assert_equal("", extract_raw_text_from_element(documents.Tab()))
+def children_are_recursively_converted_to_text():
+    element = documents.document([
+        documents.paragraph(
+            [
+                documents.text("Hello "),
+                documents.text("world.")
+            ],
+            {}
+        )
+    ])
+
+    result = extract_raw_text_from_element(element)
+
+    assert_equal("Hello world.\n\n", result)
+
+
+@istest
+def non_text_element_without_children_is_converted_to_empty_string():
+    element = documents.line_break
+    assert not hasattr(element, "children")
+
+    result = extract_raw_text_from_element(element)
+
+    assert_equal("", result)
