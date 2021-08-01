@@ -102,19 +102,19 @@ class Numbering(object):
         num = self._nums.get(num_id)
         if num is None:
             return None
-        else:
-            abstract_num = self._abstract_nums.get(num.abstract_num_id)
-            if abstract_num is None:
-                return None
 
-            elif abstract_num.num_style_link is None:
-                return self._to_numbering_level(abstract_num.levels.get(level))
+        abstract_num = self._abstract_nums.get(num.abstract_num_id)
+        if abstract_num is None:
+            return None
 
-            else:
-                style = self._styles.find_numbering_style_by_id(
-                    abstract_num.num_style_link
-                )
-                return self.find_level(style.num_id, level)
+        if abstract_num.num_style_link is None:
+            return self._to_numbering_level(abstract_num.levels.get(level))
+
+        style = self._styles.find_numbering_style_by_id(
+            abstract_num.num_style_link
+        )
+
+        return self.find_level(style.num_id, level)
 
     def find_level_by_paragraph_style_id(self, style_id):
         return self._levels_by_paragraph_style_id.get(style_id)
@@ -122,11 +122,11 @@ class Numbering(object):
     def _to_numbering_level(self, abstract_num_level):
         if abstract_num_level is None:
             return None
-        else:
-            return numbering_level(
-                level_index=abstract_num_level.level_index,
-                is_ordered=abstract_num_level.is_ordered,
-            )
+
+        return numbering_level(
+            level_index=abstract_num_level.level_index,
+            is_ordered=abstract_num_level.is_ordered,
+        )
 
 
 Numbering.EMPTY = Numbering(

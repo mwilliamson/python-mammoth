@@ -36,8 +36,8 @@ def _escape_html(text):
 def _generate_attribute_string(attributes):
     if attributes is None:
         return ""
-    else:
-        return "".join(
-            ' {0}="{1}"'.format(key, _escape_html(attributes[key]))
-            for key in sorted(attributes)
-        )
+
+    return "".join(
+        ' {0}="{1}"'.format(key, _escape_html(attributes[key]))
+        for key in sorted(attributes)
+    )

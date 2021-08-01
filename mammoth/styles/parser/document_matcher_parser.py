@@ -16,7 +16,7 @@ def parse_document_matcher(tokens):
             numbering=numbering,
         )
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "r"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "r"):
         style_id = try_parse_class_name(tokens)
         style_name = _parse_style_name(tokens)
 
@@ -25,7 +25,7 @@ def parse_document_matcher(tokens):
             style_name=style_name,
         )
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "table"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "table"):
         style_id = try_parse_class_name(tokens)
         style_name = _parse_style_name(tokens)
 
@@ -34,36 +34,35 @@ def parse_document_matcher(tokens):
             style_name=style_name,
         )
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "b"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "b"):
         return document_matchers.bold
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "i"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "i"):
         return document_matchers.italic
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "u"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "u"):
         return document_matchers.underline
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "strike"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "strike"):
         return document_matchers.strikethrough
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "all-caps"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "all-caps"):
         return document_matchers.all_caps
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "small-caps"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "small-caps"):
         return document_matchers.small_caps
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "comment-reference"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "comment-reference"):
         return document_matchers.comment_reference
 
-    elif tokens.try_skip(TokenType.IDENTIFIER, "br"):
+    if tokens.try_skip(TokenType.IDENTIFIER, "br"):
         return _parse_break(tokens)
 
-    else:
-        raise LineParseError(
-            "Unrecognised document element: {0}".format(
-                tokens.next_value(TokenType.IDENTIFIER)
-            )
+    raise LineParseError(
+        "Unrecognised document element: {0}".format(
+            tokens.next_value(TokenType.IDENTIFIER)
         )
+    )
 
 
 def _parse_style_name(tokens):
@@ -72,19 +71,20 @@ def _parse_style_name(tokens):
         string_matcher = _parse_string_matcher(tokens)
         tokens.skip(TokenType.SYMBOL, "]")
         return string_matcher
-    else:
-        return None
+
+    return None
 
 
 def _parse_string_matcher(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "="):
         return document_matchers.equal_to(parse_string(tokens))
-    elif tokens.try_skip(TokenType.SYMBOL, "^="):
+
+    if tokens.try_skip(TokenType.SYMBOL, "^="):
         return document_matchers.starts_with(parse_string(tokens))
-    else:
-        raise LineParseError(
-            "Unrecognised string matcher: {0}".format(tokens.next_value())
-        )
+
+    raise LineParseError(
+        "Unrecognised string matcher: {0}".format(tokens.next_value())
+    )
 
 
 def _parse_numbering(tokens):
@@ -100,10 +100,11 @@ def _parse_list_type(tokens):
     list_type = tokens.next_value(TokenType.IDENTIFIER)
     if list_type == "ordered-list":
         return True
-    elif list_type == "unordered-list":
+
+    if list_type == "unordered-list":
         return False
-    else:
-        raise LineParseError("Unrecognised list type: {0}".format(list_type))
+
+    raise LineParseError("Unrecognised list type: {0}".format(list_type))
 
 
 def _parse_break(tokens):
@@ -115,9 +116,11 @@ def _parse_break(tokens):
 
     if type_name == "line":
         return document_matchers.line_break
-    elif type_name == "page":
+
+    if type_name == "page":
         return document_matchers.page_break
-    elif type_name == "column":
+
+    if type_name == "column":
         return document_matchers.column_break
-    else:
-        raise LineParseError("Unrecognised break type: {0}".format(type_name))
+
+    raise LineParseError("Unrecognised break type: {0}".format(type_name))

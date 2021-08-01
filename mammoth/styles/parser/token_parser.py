@@ -6,8 +6,6 @@ from .tokeniser import TokenType
 def try_parse_class_name(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "."):
         return parse_identifier(tokens)
-    else:
-        return None
 
 
 def parse_identifier(tokens):
@@ -29,9 +27,11 @@ def _decode_escape_sequence(match):
     code = match.group(1)
     if code == "n":
         return "\n"
-    elif code == "r":
+
+    if code == "r":
         return "\r"
-    elif code == "t":
+
+    if code == "t":
         return "\t"
-    else:
-        return code
+
+    return code

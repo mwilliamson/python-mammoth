@@ -65,8 +65,8 @@ def _hyperlink(attributes, markdown_state):
             "[", "]({0})".format(href),
             anchor_position="before",
         )
-    else:
-        return _default_output
+
+    return _default_output
 
 
 def _image(attributes, markdown_state):
@@ -74,8 +74,7 @@ def _image(attributes, markdown_state):
     alt_text = attributes.get("alt", "")
     if src or alt_text:
         return _WriterOutput("![{0}]({1})".format(alt_text, src), "")
-    else:
-        return _default_output
+    return _default_output
 
 
 def _list(ordered):
@@ -121,9 +120,9 @@ def _list_item(attributes, markdown_state):
     def generate_end():
         if markdown_state.list_item_has_closed:
             return ""
-        else:
-            markdown_state.list_item_has_closed = True
-            return "\n"
+
+        markdown_state.list_item_has_closed = True
+        return "\n"
     
     return _WriterOutput(
         start=("\t" * list_state.indentation) + bullet + " ",

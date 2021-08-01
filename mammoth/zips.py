@@ -60,8 +60,8 @@ def split_path(path):
     parts = path.rsplit("/", 1)
     if len(parts) == 1:
         return "", path
-    else:
-        return tuple(parts)
+
+    return tuple(parts)
 
 
 def join_path(*args):

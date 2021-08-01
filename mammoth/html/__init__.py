@@ -59,15 +59,15 @@ class StripEmpty(NodeVisitor):
     def visit_text_node(self, node):
         if node.value:
             return [node]
-        else:
-            return []
+
+        return []
     
     def visit_element(self, element):
         children = strip_empty(element.children)
         if len(children) == 0 and not element.is_void():
             return []
-        else:
-            return [Element(element.tag, children)]
+
+        return [Element(element.tag, children)]
     
     def visit_force_write(self, node):
         return [node]
@@ -147,10 +147,11 @@ class _NodeWriter(NodeVisitor):
     def visit_element(self, element):
         if element.is_void():
             self._writer.self_closing(element.tag_name, element.attributes)
-        else:
-            self._writer.start(element.tag_name, element.attributes)
-            self.visit_all(element.children)
-            self._writer.end(element.tag_name)
+            return
+
+        self._writer.start(element.tag_name, element.attributes)
+        self.visit_all(element.children)
+        self._writer.end(element.tag_name)
     
     def visit_force_write(self, element):
         pass

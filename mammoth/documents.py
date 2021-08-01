@@ -270,7 +270,7 @@ def notes(notes_list):
 
 
 def _note_key(note):
-    return (note.note_type, note.note_id)
+    return note.note_type, note.note_id
 
 
 @cobble.data

@@ -12,10 +12,12 @@ def element(names, class_names=None, fresh=None, separator=None):
         class_names = []
     if fresh is None:
         fresh = False
+
     if class_names:
         attributes = {"class": " ".join(class_names)}
     else:
         attributes = {}
+
     return HtmlPathElement(html.tag(
         tag_names=names,
         attributes=attributes,

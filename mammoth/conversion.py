@@ -86,6 +86,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def visit_image(self, image, context):
         try:
             return self._convert_image(image)
+
         except InvalidFileReferenceError as error:
             self._messages.append(results.warning(str(error)))
             return []
@@ -96,12 +97,16 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             document.notes.resolve(reference)
             for reference in self._note_references
         ]
+
         notes_list = html.element("ol", {}, self._visit_all(notes, context))
-        comments = html.element("dl", {}, [
-            html_node
-            for referenced_comment in self._referenced_comments
-            for html_node in self.visit_comment(referenced_comment, context)
-        ])
+        comments = html.element(
+            "dl", {}, [
+                html_node
+                for referenced_comment in self._referenced_comments
+                for html_node in self.visit_comment(referenced_comment, context)
+            ]
+        )
+
         return nodes + [notes_list, comments]
 
     def visit_paragraph(self, paragraph, context):
@@ -109,8 +114,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             content = self._visit_all(paragraph.children, context)
             if self._ignore_empty_paragraphs:
                 return content
-            else:
-                return [html.force_write] + content
+
+            return [html.force_write] + content
 
         html_path = self._find_html_path_for_paragraph(paragraph)
         return html_path.wrap(children)
@@ -120,8 +125,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         paths = []
         if run.is_small_caps:
             paths.append(self._find_style_for_run_property("small_caps"))
+
         if run.is_all_caps:
             paths.append(self._find_style_for_run_property("all_caps"))
+
         if run.is_strikethrough:
             paths.append(
                 self._find_style_for_run_property("strikethrough", default="s")
@@ -129,10 +136,13 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
         if run.is_underline:
             paths.append(self._find_style_for_run_property("underline"))
+
         if run.vertical_alignment == documents.VerticalAlignment.subscript:
             paths.append(html_paths.element(["sub"], fresh=False))
+
         if run.vertical_alignment == documents.VerticalAlignment.superscript:
             paths.append(html_paths.element(["sup"], fresh=False))
+
         if run.is_italic:
             paths.append(
                 self._find_style_for_run_property("italic", default="em")
@@ -154,10 +164,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         style = self._find_style(None, element_type)
         if style is not None:
             return style.html_path
-        elif default is not None:
+
+        if default is not None:
             return html_paths.element(default, fresh=False)
-        else:
-            return html_paths.empty
+
+        return html_paths.empty
 
     def visit_text(self, text, context):
         return [html.text(text.value)]
@@ -195,17 +206,33 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
     def _convert_table_children(self, table, context):
         body_index = find_index(
-            lambda child: not isinstance(child, documents.TableRow) or not child.is_header,
+            lambda child: (
+                not isinstance(child, documents.TableRow)
+                or not child.is_header
+            ),
             table.children,
         )
+
         if body_index is None:
             body_index = len(table.children)
 
         if body_index == 0:
-            children = self._visit_all(table.children, context.copy(is_table_header=False))
+            children = self._visit_all(
+                table.children,
+                context.copy(is_table_header=False)
+            )
+
         else:
-            head_rows = self._visit_all(table.children[:body_index], context.copy(is_table_header=True))
-            body_rows = self._visit_all(table.children[body_index:], context.copy(is_table_header=False))
+            head_rows = self._visit_all(
+                table.children[:body_index],
+                context.copy(is_table_header=True)
+            )
+
+            body_rows = self._visit_all(
+                table.children[body_index:],
+                context.copy(is_table_header=False)
+            )
+
             children = [
                 html.element("thead", {}, head_rows),
                 html.element("tbody", {}, body_rows),
@@ -229,11 +256,14 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             tag_name = "th"
         else:
             tag_name = "td"
+
         attributes = {}
         if table_cell.colspan != 1:
             attributes["colspan"] = str(table_cell.colspan)
+
         if table_cell.rowspan != 1:
             attributes["rowspan"] = str(table_cell.rowspan)
+
         nodes = [html.force_write] + self._visit_all(table_cell.children, context)
         return [
             html.element(tag_name, attributes, nodes)
@@ -246,10 +276,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         style = self._find_style(break_, "break")
         if style is not None:
             return style.html_path
-        elif break_.break_type == "line":
+
+        if break_.break_type == "line":
             return html_paths.path([html_paths.element("br", fresh=True)])
-        else:
-            return html_paths.empty
+
+        return html_paths.empty
 
     def visit_note_reference(self, note_reference, context):
         self._note_references.append(note_reference)

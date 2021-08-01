@@ -43,10 +43,12 @@ class _ContentTypes(object):
 
         extension = _get_extension(path)
         default_type = self._extension_defaults.get(extension)
+
         if default_type is not None:
             return default_type
 
         image_type = self._image_content_types.get(extension.lower())
+
         if image_type is not None:
             return "image/" + image_type
         

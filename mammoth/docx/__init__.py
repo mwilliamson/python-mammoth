@@ -98,11 +98,10 @@ def _find_document_filename(zip_file, relationships):
     if zip_file.exists(path):
         return path
 
-    else:
-        raise IOError(
-            "Could not find main document part."
-            " Are you sure this is a valid .docx file?"
-        )
+    raise IOError(
+        "Could not find main document part."
+        " Are you sure this is a valid .docx file?"
+    )
 
 
 def _find_part_path(
@@ -116,10 +115,10 @@ def _find_part_path(
         filter(lambda target: zip_file.exists(target), targets)
     )
 
-    if len(valid_targets) == 0:
+    if not valid_targets:
         return fallback_path
-    else:
-        return valid_targets[0]
+
+    return valid_targets[0]
 
 
 def _read_notes(read_part_with_body, part_paths):
@@ -211,12 +210,11 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
                 partial(reader, body_reader=body_reader)
             )
 
-        else:
-            return _try_read_entry_or_default(
-                zip_file,
-                name,
-                partial(reader, body_reader=body_reader), default=default
-            )
+        return _try_read_entry_or_default(
+            zip_file,
+            name,
+            partial(reader, body_reader=body_reader), default=default
+        )
 
     return read_part
 
@@ -238,8 +236,8 @@ def _read_relationships(zip_file, name):
 def _try_read_entry_or_default(zip_file, name, reader, default):
     if zip_file.exists(name):
         return _read_entry(zip_file, name, reader)
-    else:
-        return default
+
+    return default
 
 
 def _read_entry(zip_file, name, reader):

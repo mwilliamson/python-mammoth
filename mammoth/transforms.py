@@ -13,8 +13,7 @@ def element_of_type(element_type, transform):
     def transform_element(element):
         if isinstance(element, element_type):
             return transform(element)
-        else:
-            return element
+        return element
 
     return _each_element(transform_element)
 

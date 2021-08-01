@@ -6,8 +6,8 @@ from .token_parser import parse_identifier, parse_string, try_parse_class_name
 def parse_html_path(tokens):
     if tokens.try_skip(TokenType.SYMBOL, "!"):
         return html_paths.ignore
-    else:
-        return html_paths.path(_parse_html_path_elements(tokens))
+
+    return html_paths.path(_parse_html_path_elements(tokens))
 
 
 def _parse_html_path_elements(tokens):
@@ -55,8 +55,8 @@ def _parse_class_names(tokens):
         class_name = try_parse_class_name(tokens)
         if class_name is None:
             break
-        else:
-            class_names.append(class_name)
+
+        class_names.append(class_name)
     
     return class_names
 
@@ -69,14 +69,16 @@ def _parse_is_fresh(tokens):
 
 
 def _parse_separator(tokens):
-    is_separator = tokens.try_skip_many((
-        (TokenType.SYMBOL, ":"),
-        (TokenType.IDENTIFIER, "separator"),
-    ))
+    is_separator = tokens.try_skip_many(
+        (
+            (TokenType.SYMBOL, ":"),
+            (TokenType.IDENTIFIER, "separator"),
+        )
+    )
+
     if is_separator:
         tokens.skip(TokenType.SYMBOL, "(")
         value = parse_string(tokens)
         tokens.skip(TokenType.SYMBOL, ")")
         return value
-    else:
-        return None
+

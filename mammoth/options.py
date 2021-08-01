@@ -28,16 +28,17 @@ def read_options(options):
 
 def _read_style_map(style_text):
     lines = filter(None, map(_get_line, style_text.split("\n")))
-    return results.combine(lists.map(read_style_mapping, lines)) \
-        .map(lambda style_mappings: lists.filter(None, style_mappings))
+    return results.combine(lists.map(read_style_mapping, lines)).map(
+        lambda style_mappings: lists.filter(None, style_mappings)
+    )
 
 
 def _get_line(line):
     line = line.strip()
     if line.startswith("#"):
         return None
-    else:
-        return line
+
+    return line
 
 
 _default_style_map_result = _read_style_map("""

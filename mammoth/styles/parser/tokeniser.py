@@ -15,7 +15,6 @@ class TokenType(object):
     END = "end"
     
 
-
 def regex_tokeniser(rules):
     rules = [(token_type, _to_regex(regex)) for token_type, regex in rules]
     rules.append(("unknown", re.compile(".")))
@@ -44,8 +43,8 @@ def regex_tokeniser(rules):
 def _to_regex(value):
     if hasattr(value, "match"):
         return value
-    else:
-        return re.compile(value)
+
+    return re.compile(value)
 
 
 _string_prefix = r"'(?:\\.|[^'])*"

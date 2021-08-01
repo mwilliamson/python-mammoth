@@ -131,12 +131,11 @@ class Handler(xml.sax.handler.ContentHandler):
         if uri is None:
             return local_name
 
-        else:
-            prefix = self._namespace_prefixes.get(uri)
-            if prefix is None:
-                return "{%s}%s" % (uri, local_name)
-            else:
-                return "%s:%s" % (prefix, local_name)
+        prefix = self._namespace_prefixes.get(uri)
+        if prefix is None:
+            return "{%s}%s" % (uri, local_name)
+
+        return "%s:%s" % (prefix, local_name)
 
 
 class RootElement(object):

@@ -24,8 +24,6 @@ def _collapse_alternate_content(node):
     if isinstance(node, XmlElement):
         if node.name == "mc:AlternateContent":
             return node.find_child("mc:Fallback").children
-        else:
-            node.children = flat_map(_collapse_alternate_content, node.children)
-            return [node]
-    else:
-        return [node]
+
+        node.children = flat_map(_collapse_alternate_content, node.children)
+    return [node]
