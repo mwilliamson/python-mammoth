@@ -96,11 +96,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
 
         def add_complex_field_hyperlink(children):
-            hyperlink_href = current_hyperlink_href()
-            if hyperlink_href is None:
+            hyperlink_kwargs = current_hyperlink_kwargs()
+            if hyperlink_kwargs is None:
                 return children
             else:
-                return [documents.hyperlink(href=hyperlink_href, children=children)]
+                return [documents.hyperlink(children=children, **hyperlink_kwargs)]
 
         return _ReadResult.map_results(
             _read_run_style(properties),
@@ -155,10 +155,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     current_instr_text = []
     complex_field_stack = []
 
-    def current_hyperlink_href():
+    def current_hyperlink_kwargs():
         for complex_field in reversed(complex_field_stack):
             if isinstance(complex_field, complex_fields.Hyperlink):
-                return complex_field.href
+                return complex_field.kwargs
 
         return None
 
@@ -171,21 +171,25 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             complex_field_stack.pop()
         elif fld_char_type == "separate":
             instr_text = "".join(current_instr_text)
-            hyperlink_href = parse_hyperlink_field_code(instr_text)
-            if hyperlink_href is None:
+            hyperlink_kwargs = parse_hyperlink_field_code(instr_text)
+            if hyperlink_kwargs is None:
                 complex_field = complex_fields.unknown
             else:
-                complex_field = complex_fields.hyperlink(hyperlink_href)
+                complex_field = complex_fields.hyperlink(hyperlink_kwargs)
             complex_field_stack.pop()
             complex_field_stack.append(complex_field)
         return _empty_result
 
     def parse_hyperlink_field_code(instr_text):
-        result = re.match(r'\s*HYPERLINK "(.*)"', instr_text)
-        if result is None:
-            return None
-        else:
-            return result.group(1)
+        external_link_result = re.match(r'\s*HYPERLINK "(.*)"', instr_text)
+        if external_link_result is not None:
+            return dict(href=external_link_result.group(1))
+
+        internal_link_result = re.match(r'\s*HYPERLINK\s+\\l\s+"(.*)"', instr_text)
+        if internal_link_result is not None:
+            return dict(anchor=internal_link_result.group(1))
+
+        return None
 
     def read_instr_text(element):
         current_instr_text.append(_inner_text(element))

@@ -3,9 +3,9 @@ class unknown(object):
 
 
 class Hyperlink(object):
-    def __init__(self, href):
-        self.href = href
+    def __init__(self, kwargs):
+        self.kwargs = kwargs
 
 
-def hyperlink(href):
-    return Hyperlink(href)
+def hyperlink(kwargs):
+    return Hyperlink(kwargs=kwargs)
