@@ -410,10 +410,7 @@ class ComplexFieldTests(object):
 
     def _is_hyperlinked_run(self, **kwargs):
         return is_run(children=is_sequence(
-            is_hyperlink(
-                href=self._URI,
-                **kwargs
-            ),
+            is_hyperlink(**kwargs),
         ))
 
     @property
@@ -434,9 +431,12 @@ class ComplexFieldTests(object):
         assert_that(paragraph, is_paragraph(children=is_sequence(
             is_empty_run,
             self._is_empty_hyperlinked_run,
-            self._is_hyperlinked_run(children=is_sequence(
-                is_text("this is a hyperlink"),
-            )),
+            self._is_hyperlinked_run(
+                href=self._URI,
+                children=is_sequence(
+                    is_text("this is a hyperlink"),
+                ),
+            ),
             is_empty_run,
         )))
 
@@ -479,9 +479,12 @@ class ComplexFieldTests(object):
         assert_that(paragraph, is_paragraph(children=is_sequence(
             is_empty_run,
             self._is_empty_hyperlinked_run,
-            self._is_hyperlinked_run(children=is_sequence(
-                is_text("this is a hyperlink"),
-            )),
+            self._is_hyperlinked_run(
+                href=self._URI,
+                children=is_sequence(
+                    is_text("this is a hyperlink"),
+                ),
+            ),
             is_empty_run,
         )))
 
@@ -508,9 +511,12 @@ class ComplexFieldTests(object):
             self._is_empty_hyperlinked_run,
             self._is_empty_hyperlinked_run,
             self._is_empty_hyperlinked_run,
-            self._is_hyperlinked_run(children=is_sequence(
-                is_text("this is a hyperlink"),
-            )),
+            self._is_hyperlinked_run(
+                href=self._URI,
+                children=is_sequence(
+                    is_text("this is a hyperlink"),
+                ),
+            ),
             is_empty_run,
         )))
 
@@ -536,9 +542,12 @@ class ComplexFieldTests(object):
             self._is_empty_hyperlinked_run,
             self._is_empty_hyperlinked_run,
             self._is_empty_hyperlinked_run,
-            self._is_hyperlinked_run(children=is_sequence(
-                is_text("John Doe"),
-            )),
+            self._is_hyperlinked_run(
+                href=self._URI,
+                children=is_sequence(
+                    is_text("John Doe"),
+                ),
+            ),
             self._is_empty_hyperlinked_run,
             is_empty_run,
         )))
@@ -561,9 +570,12 @@ class ComplexFieldTests(object):
             self._is_empty_hyperlinked_run,
             self._is_empty_hyperlinked_run,
             self._is_empty_hyperlinked_run,
-            self._is_hyperlinked_run(children=is_sequence(
-                is_text("this is a hyperlink"),
-            )),
+            self._is_hyperlinked_run(
+                href=self._URI,
+                children=is_sequence(
+                    is_text("this is a hyperlink"),
+                ),
+            ),
             is_empty_run,
         )))
 
