@@ -1,3 +1,7 @@
+# 1.4.17
+
+* When extracting raw text, convert tab elements to tab characters.
+
 # 1.4.16
 
 * Handle w:num with invalid w:abstractNumId.

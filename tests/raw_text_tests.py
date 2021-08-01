@@ -14,6 +14,15 @@ def text_element_is_converted_to_text_content():
 
 
 @istest
+def tab_element_is_converted_to_tab_character():
+    element = documents.tab()
+
+    result = extract_raw_text_from_element(element)
+
+    assert_equal("\t", result)
+
+
+@istest
 def paragraphs_are_terminated_with_newlines():
     element = documents.paragraph(
         children=[
