@@ -23,7 +23,7 @@ The following features are currently supported:
   For instance, you could convert `WarningHeading` to `h1.warning` by providing an appropriate style mapping.
 
 * Tables.
-  The formatting of the table itself, such as borders, is currently ignored,
+  The formatting of the table itself, such as border of the table, is currently ignored,
   but the formatting of the text is treated the same as in the rest of the document.
 
 * Footnotes and endnotes.
