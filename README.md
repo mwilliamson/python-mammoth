@@ -419,7 +419,7 @@ Or if you want paragraphs that have been explicitly set to use monospace fonts t
 import mammoth.documents
 import mammoth.transforms
 
-_monospace_fonts = set(["courier new"])
+_monospace_fonts = set(["consolas", "courier", "courier new"])
 
 def transform_paragraph(paragraph):
     runs = mammoth.transforms.get_descendants_of_type(paragraph, mammoth.documents.Run)
