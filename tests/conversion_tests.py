@@ -529,6 +529,19 @@ def images_have_alt_tags_if_available():
     image_html = parse_xml(io.StringIO(result.value))
     assert_equal('It\'s a hat', image_html.attributes["alt"])
 
+@istest
+def images_have_width_and_height_tags_if_available():
+    image = documents.image(
+        alt_text=None,
+        content_type="image/png",
+        size=documents.Size(width="42", height="51"),
+        open=lambda: io.BytesIO(b"abc")
+    )
+    result = convert_document_element_to_html(image)
+    image_html = parse_xml(io.StringIO(result.value))
+    assert_equal('42', image_html.attributes["width"])
+    assert_equal('51', image_html.attributes["height"])
+
 
 @istest
 def can_define_custom_conversion_for_images():

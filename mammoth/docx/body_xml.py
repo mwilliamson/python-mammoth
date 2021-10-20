@@ -11,6 +11,8 @@ from .xmlparser import node_types, XmlElement
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
 
+EMU_PER_PIXEL = 9525
+
 if sys.version_info >= (3, ):
     unichr = chr
 
@@ -427,23 +429,32 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             alt_text = properties.get("descr")
         else:
             alt_text = properties.get("title")
+        dimensions = element.find_child_or_null("wp:extent").attributes
+        size = documents.Size(
+            width=str(_emu_to_pixel(dimensions.get("cx"))),
+            height=str(_emu_to_pixel(dimensions.get("cy")))
+        )
+
         blips = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
             .find_children("pic:pic") \
             .find_children("pic:blipFill") \
             .find_children("a:blip")
-        return _read_blips(blips, alt_text)
+        return _read_blips(blips, alt_text, size)
 
-    def _read_blips(blips, alt_text):
-        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
+    def _emu_to_pixel(emu):
+        return int(round(float(emu) / EMU_PER_PIXEL))
 
-    def _read_blip(element, alt_text):
-        return _read_image(lambda: _find_blip_image(element), alt_text)
+    def _read_blips(blips, alt_text, size):
+        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text, size), blips))
 
-    def _read_image(find_image, alt_text):
+    def _read_blip(element, alt_text, size):
+        return _read_image(lambda: _find_blip_image(element), alt_text, size)
+
+    def _read_image(find_image, alt_text, size=None):
         image_path, open_image = find_image()
         content_type = content_types.find_content_type(image_path)
-        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
+        image = documents.image(alt_text=alt_text, content_type=content_type, size=size, open=open_image)
 
         if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
             messages = []
@@ -482,14 +493,37 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         return image_path, open_image
 
-    def read_imagedata(element):
+    def shape(element):
+        if len(element.children) == 1:
+            imagedata = element.find_child("v:imagedata")
+            if imagedata:
+                size = _read_shape_size(element)
+                return read_imagedata(imagedata, size)
+        return read_child_elements(element)
+
+    def _read_shape_size(element):
+        style_attribute = element.attributes.get("style")
+        if not style_attribute:
+            return None
+        style = style_attribute.split(";")
+        width = _extract_size_from_style("width", style)
+        height = _extract_size_from_style("height", style)
+        size = documents.Size(width=width, height=height)
+        return size
+
+    def _extract_size_from_style(style_name, style):
+        with_column = "{}:".format(style_name)
+        raw_size = next(iter(filter(lambda s: s.startswith(with_column), style)))
+        return raw_size.replace(with_column, "")
+
+    def read_imagedata(element, style=None):
         relationship_id = element.attributes.get("r:id")
         if relationship_id is None:
             warning = results.warning("A v:imagedata element without a relationship ID was ignored")
             return _empty_result_with_message(warning)
         else:
             title = element.attributes.get("o:title")
-            return _read_image(lambda: _find_embedded_image(relationship_id), title)
+            return _read_image(lambda: _find_embedded_image(relationship_id), title, style)
 
     def note_reference_reader(note_type):
         def note_reference(element):
@@ -526,7 +560,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "v:group": read_child_elements,
         "v:rect": read_child_elements,
         "v:roundrect": read_child_elements,
-        "v:shape": read_child_elements,
+        "v:shape": shape,
         "v:textbox": read_child_elements,
         "w:txbxContent": read_child_elements,
         "w:pict": pict,

@@ -4,7 +4,7 @@ import io
 import sys
 
 from precisely import assert_that, is_sequence
-from nose.tools import istest, assert_equal
+from nose.tools import istest, assert_equal, assert_is_none
 from nose_parameterized import parameterized, param
 import funk
 
@@ -998,18 +998,18 @@ class ImageTests(object):
     IMAGE_RELATIONSHIP_ID = "rId5"
 
     def _read_embedded_image(self, element):
+        return self._read_embedded_images(element)[0]
+
+    def _read_embedded_images(self, element):
         relationships = Relationships([
             _image_relationship(self.IMAGE_RELATIONSHIP_ID, "media/hat.png"),
         ])
-
         mocks = funk.Mocks()
         docx_file = mocks.mock()
         funk.allows(docx_file).open("word/media/hat.png").returns(io.BytesIO(self.IMAGE_BYTES))
-
         content_types = mocks.mock()
         funk.allows(content_types).find_content_type("word/media/hat.png").returns("image/png")
-
-        return _read_and_get_document_xml_element(
+        return _read_and_get_document_xml_elements(
             element,
             content_types=content_types,
             relationships=relationships,
@@ -1017,19 +1017,72 @@ class ImageTests(object):
         )
 
     @istest
-    def can_read_imagedata_elements_with_rid_attribute(self):
-        imagedata_element = xml_element("v:imagedata", {
-            "r:id": self.IMAGE_RELATIONSHIP_ID,
-            "o:title": "It's a hat"
-        })
+    def can_read_shape_elements_with_rid_and_size_attributes(self):
+        shape_element = xml_element("v:shape", {"style": "width:31.5pt;height:38.25pt"}, [
+            xml_element("v:imagedata", {
+                "r:id": self.IMAGE_RELATIONSHIP_ID,
+                "o:title": "It's a hat"
+            })
+        ])
 
-        image = self._read_embedded_image(imagedata_element)
+        image = self._read_embedded_image(shape_element)
 
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
+        assert_equal(documents.Size(width="31.5pt", height="38.25pt"), image.size)
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
+
+    @istest
+    def cannot_resize_shape_with_multiple_nodes(self):
+        shape_element = xml_element("v:shape", {"style": "width:31.5pt;height:38.25pt"}, [
+            xml_element("v:imagedata", {
+                "r:id": self.IMAGE_RELATIONSHIP_ID,
+                "o:title": "It's a hat"
+            }),
+            xml_element("v:textbox", {}, [
+                xml_element("w:txbxContent", {}, [
+                    _paragraph_with_style_id("textbox-content")
+                ])
+            ])
+        ])
+
+        nodes = self._read_embedded_images(shape_element)
+
+        assert_equal(2, len(nodes))
+        image_node = nodes[0]
+        assert_equal(documents.Image, type(image_node))
+        assert_equal("It's a hat", image_node.alt_text)
+        assert_is_none(image_node.size)
+
+    @istest
+    def can_read_shape_elements_with_unused_style_elements(self):
+        shape_element = xml_element("v:shape", {"style": "width:31.5pt;position:absolute;height:38.25pt"}, [
+            xml_element("v:imagedata", {
+                "r:id": self.IMAGE_RELATIONSHIP_ID,
+                "o:title": "It's a hat"
+            })
+        ])
+
+        image = self._read_embedded_image(shape_element)
+
+        assert_equal(documents.Image, type(image))
+        assert_equal(documents.Size(width="31.5pt", height="38.25pt"), image.size)
+
+    @istest
+    def can_read_shape_elements_with_inch_size_attributes(self):
+        shape_element = xml_element("v:shape", {"style": "width:0.58in;height:0.708in"}, [
+            xml_element("v:imagedata", {
+                "r:id": self.IMAGE_RELATIONSHIP_ID,
+                "o:title": "It's a hat"
+            })
+        ])
+
+        image = self._read_embedded_image(shape_element)
+
+        assert_equal(documents.Image, type(image))
+        assert_equal(documents.Size(width="0.58in", height="0.708in"), image.size)
 
     @istest
     def when_imagedata_element_has_no_relationship_id_then_it_is_ignored_with_warning(self):
@@ -1046,6 +1099,7 @@ class ImageTests(object):
         drawing_element = _create_inline_image(
             blip=_embedded_blip(self.IMAGE_RELATIONSHIP_ID),
             description="It's a hat",
+            extent=(9525, 19000)
         )
 
         image = self._read_embedded_image(drawing_element)
@@ -1053,6 +1107,7 @@ class ImageTests(object):
         assert_equal(documents.Image, type(image))
         assert_equal("It's a hat", image.alt_text)
         assert_equal("image/png", image.content_type)
+        assert_equal(documents.Size(width="1", height="2"), image.size)
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
 
@@ -1344,9 +1399,9 @@ def _text_element(value):
     return xml_element("w:t", {}, [xml_text(value)])
 
 
-def _create_inline_image(blip, description=None, title=None):
+def _create_inline_image(blip, description=None, title=None, extent=None):
     return xml_element("w:drawing", {}, [
-        xml_element("wp:inline", {}, _create_image_elements(blip, description=description, title=title))
+        xml_element("wp:inline", {}, _create_image_elements(blip, description=description, title=title, extent=extent))
     ])
 
 
@@ -1356,15 +1411,19 @@ def _create_anchored_image(description, blip):
     ])
 
 
-def _create_image_elements(blip, description=None, title=None):
+def _create_image_elements(blip, description=None, title=None, extent=None):
     properties = {}
     if description is not None:
         properties["descr"] = description
     if title is not None:
         properties["title"] = title
-
+    extent = {
+        "cx": extent[0] if extent else "0",
+        "cy": extent[1] if extent else "0"
+    }
     return [
         xml_element("wp:docPr", properties),
+        xml_element("wp:extent", extent),
         xml_element("a:graphic", {}, [
             xml_element("a:graphicData", {}, [
                 xml_element("pic:pic", {}, [
