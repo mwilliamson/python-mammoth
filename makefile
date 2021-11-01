@@ -12,7 +12,7 @@ test-all:
 .PHONY: upload
 
 upload: setup assert-converted-readme build-dist
-	_virtualenv/bin/twine dist/*
+	_virtualenv/bin/twine upload dist/*
 	make clean
 
 .PHONY: build-dist
