@@ -1182,6 +1182,24 @@ class ImageTests(object):
         expected_warning = results.warning("Image of type image/x-emf is unlikely to display in web browsers")
         assert_equal([expected_warning], result.messages)
 
+    @istest
+    def no_elements_created_if_image_cannot_be_found_in_w_drawing(self):
+        drawing = xml_element("w:drawing")
+
+        result = _read_document_xml_element(drawing)
+
+        assert_equal([], result.messages)
+        assert_equal(None, result.value)
+
+    @istest
+    def no_elements_created_if_image_cannot_be_found_in_wp_inline(self):
+        drawing = xml_element("wp:inline")
+
+        result = _read_document_xml_element(drawing)
+
+        assert_equal([], result.messages)
+        assert_equal(None, result.value)
+
 
 @istest
 def footnote_reference_has_id_read():
