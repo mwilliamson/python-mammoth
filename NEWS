@@ -1,3 +1,8 @@
+# 1.4.18
+
+* Emit warning instead of throwing exception when image file cannot be found for
+  a:blip elements.
+
 # 1.4.17
 
 * When extracting raw text, convert tab elements to tab characters.

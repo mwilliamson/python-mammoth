@@ -1153,6 +1153,17 @@ class ImageTests(object):
         with image.open() as image_file:
             assert_equal(self.IMAGE_BYTES, image_file.read())
 
+    @istest
+    def warning_if_blip_has_no_image_file(self):
+        drawing = _create_inline_image(
+            blip=xml_element("a:blip"),
+            description="It's a hat",
+        )
+
+        result = _read_document_xml_element(drawing)
+
+        assert_equal([results.warning("Could not find image file for a:blip element")], result.messages)
+        assert_equal(None, result.value)
 
     @istest
     @funk.with_mocks

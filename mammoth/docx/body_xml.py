@@ -438,10 +438,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
 
     def _read_blip(element, alt_text):
-        return _read_image(lambda: _find_blip_image(element), alt_text)
+        blip_image = _find_blip_image(element)
 
-    def _read_image(find_image, alt_text):
-        image_path, open_image = find_image()
+        if blip_image is None:
+            warning = results.warning("Could not find image file for a:blip element")
+            return _empty_result_with_message(warning)
+        else:
+            return _read_image(blip_image, alt_text)
+
+    def _read_image(image_file, alt_text):
+        image_path, open_image = image_file
         content_type = content_types.find_content_type(image_path)
         image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
 
@@ -459,6 +465,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _find_embedded_image(embed_relationship_id)
         elif link_relationship_id is not None:
             return _find_linked_image(link_relationship_id)
+        else:
+            return None
 
     def _find_embedded_image(relationship_id):
         target = relationships.find_target_by_relationship_id(relationship_id)
@@ -489,7 +497,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _empty_result_with_message(warning)
         else:
             title = element.attributes.get("o:title")
-            return _read_image(lambda: _find_embedded_image(relationship_id), title)
+            return _read_image(_find_embedded_image(relationship_id), title)
 
     def note_reference_reader(note_type):
         def note_reference(element):
