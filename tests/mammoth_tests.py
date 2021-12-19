@@ -112,7 +112,7 @@ p => h1"""
 def inline_images_referenced_by_path_relative_to_part_are_included_in_output():
     with open(test_path("tiny-picture.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)
-        assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
+        assert_equal("""<p><img height="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" width="10" /></p>""", result.value)
         assert_equal([], result.messages)
 
 
@@ -120,7 +120,7 @@ def inline_images_referenced_by_path_relative_to_part_are_included_in_output():
 def inline_images_referenced_by_path_relative_to_base_are_included_in_output():
     with open(test_path("tiny-picture-target-base-relative.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)
-        assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
+        assert_equal("""<p><img height="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" width="10" /></p>""", result.value)
         assert_equal([], result.messages)
 
 
@@ -128,7 +128,7 @@ def inline_images_referenced_by_path_relative_to_base_are_included_in_output():
 def images_stored_outside_of_document_are_included_in_output():
     with open(test_path("external-picture.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj)
-        assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
+        assert_equal("""<p><img height="10" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" width="10" /></p>""", result.value)
         assert_equal([], result.messages)
 
 
@@ -173,7 +173,7 @@ def image_conversion_can_be_customised():
     
     with open(test_path("tiny-picture.docx"), "rb") as fileobj:
         result = mammoth.convert_to_html(fileobj=fileobj, convert_image=convert_image)
-        assert_equal("""<p><img src="iV,image/png" /></p>""", result.value)
+        assert_equal("""<p><img height="10" src="iV,image/png" width="10" /></p>""", result.value)
         assert_equal([], result.messages)
         
 

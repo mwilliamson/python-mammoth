@@ -8,6 +8,9 @@ def img_element(func):
         attributes = func(image).copy()
         if image.alt_text:
             attributes["alt"] = image.alt_text
+        if image.size:
+            attributes["width"] = image.size.width
+            attributes["height"] = image.size.height
             
         return [html.element("img", attributes)]
     
