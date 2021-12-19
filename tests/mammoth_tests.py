@@ -330,7 +330,13 @@ def can_extract_raw_text():
         result = mammoth.extract_raw_text(fileobj=fileobj)
         assert_equal([], result.messages)
         assert_equal("Apple\n\nBanana\n\n", result.value)
-        
+
+@istest
+def ordered_lists_respect_the_start_number():
+    with open(test_path("ordered-list-numbering.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal("<ol start=\"7\"><li>Seven</li><li>Eight</li><li>Nine</li><li>Ten</li><li>Eleven</li></ol><ol><li>One<ol start=\"5\"><li>EE</li><li>FF</li></ol></li><li>Two</li></ol>", result.value)
+      
 
 def _copy_of_test_data(path):
     destination = io.BytesIO()
