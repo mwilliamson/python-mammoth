@@ -21,6 +21,9 @@ class Tag(object):
     def tag_name(self):
         return self.tag_names[0]
 
+    def update_attributes( self, new_attrs ):
+        self.attributes.update( new_attrs )
+
 
 @cobble.data
 class Element(Node):

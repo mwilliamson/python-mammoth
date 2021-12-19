@@ -3,8 +3,10 @@
 from __future__ import unicode_literals
 
 from functools import partial
-
+import copy
 import cobble
+
+from .docx.numbering_xml import to_numbering_level
 
 from . import documents, results, html_paths, images, writers, html
 from .docx.files import InvalidFileReferenceError
@@ -102,8 +104,15 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             else:
                 return [html.force_write] + content
 
+        attrs = {}
+        if (paragraph.numbering is not None and 
+            paragraph.numbering.start_num is not None and 
+            paragraph.numbering.start_num != '1'):
+            
+            attrs = {"start": paragraph.numbering.start_num}
+
         html_path = self._find_html_path_for_paragraph(paragraph)
-        return html_path.wrap(children)
+        return html_path.wrap(children, attrs)
 
 
     def visit_run(self, run, context):
@@ -322,7 +331,9 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def _find_html_path(self, element, element_type, default, warn_unrecognised=False):
         style = self._find_style(element, element_type)
         if style is not None:
-            return style.html_path
+            # deepcopy the path from the style, since we may modify the attributes of the 
+            # Tags in the html_path and we don't want to update the style's copy
+            return copy.deepcopy( style.html_path )
 
         if warn_unrecognised and getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(
@@ -373,7 +384,7 @@ def _document_matcher_matches(matcher, element, element_type):
             ) and (
                 element_type != "paragraph" or
                 matcher.numbering is None or
-                matcher.numbering == element.numbering
+                matcher.numbering == to_numbering_level(element.numbering)
             )
         )
 

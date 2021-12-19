@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import io
+from mammoth.docx.numbering_xml import _AbstractNumLevel
 
 from nose.tools import istest, assert_equal
 
@@ -126,7 +127,7 @@ def bulleted_paragraphs_are_converted_using_matching_styles():
     result = convert_document_element_to_html(
         documents.paragraph(children=[
             _run_with_text("Hello")
-        ], numbering=documents.numbering_level(level_index=0, is_ordered=False)),
+        ], numbering=_AbstractNumLevel(level_index=0, is_ordered=False, paragraph_style_id=None, start_num=None)),
         style_map=[
             _style_mapping("p:unordered-list(1) => ul > li:fresh")
         ]
