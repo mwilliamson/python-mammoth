@@ -28,15 +28,11 @@ def element(names, class_names=None, fresh=None, separator=None):
 class HtmlPath(object):
     elements = cobble.field()
     
-    def wrap(self, generate_nodes, ol_element_attrs=None):
+    def wrap(self, generate_nodes, extra_attributes={}):
         nodes = generate_nodes()
    
         for element in reversed(self.elements):
-            if element.tag.tag_name == "ol" and ol_element_attrs is not None:         
-                nodes = element.wrap_nodes(nodes, ol_element_attrs)
-                ol_element_attrs = None  # apply 'start' attr to deepest <ol>
-            else:
-                nodes = element.wrap_nodes(nodes)
+            nodes = element.wrap_nodes(nodes, extra_attributes)
         
         return nodes
 
@@ -45,12 +41,17 @@ class HtmlPath(object):
 class HtmlPathElement(object):
     tag = cobble.field()
 
-    def wrap(self, generate_nodes):
-        return self.wrap_nodes(generate_nodes())
+    def wrap(self, generate_nodes, extra_attributes={}):
+        return self.wrap_nodes(generate_nodes(), extra_attributes)
 
-    def wrap_nodes(self, nodes, attrs={}):
-        element = html.Element(self.tag, nodes)
-        element.tag.update_attributes( attrs )
+    def wrap_nodes(self, nodes, extra_attributes={}):
+        element_tag = self.tag.clone() ## don't re-use tag from path, so we can set atttributes
+        attrs = extra_attributes.get(id(self))
+        if attrs is not None:
+            element_tag.attributes.update(attrs)
+
+        element = html.Element(element_tag, nodes)
+      
         return [element]
 
 empty = path([])

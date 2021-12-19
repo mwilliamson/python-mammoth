@@ -104,15 +104,24 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             else:
                 return [html.force_write] + content
 
-        attrs = {}
+        html_path = self._find_html_path_for_paragraph(paragraph)
+        
+        extra_attrs = {}
+        self._numbered_ol( paragraph, html_path, extra_attrs)
+
+        elements = html_path.wrap(children, extra_attrs)
+        return elements
+
+    def _numbered_ol(self, paragraph, html_path, extra_attrs):
+        ## Add a start attr to OL
         if (paragraph.numbering is not None and 
             paragraph.numbering.start_num is not None and 
             paragraph.numbering.start_num != '1'):
-            
-            attrs = {"start": paragraph.numbering.start_num}
 
-        html_path = self._find_html_path_for_paragraph(paragraph)
-        return html_path.wrap(children, attrs)
+            for path_elem in reversed(html_path.elements):
+                if path_elem.tag.tag_name == 'ol':
+                    extra_attrs[id(path_elem)] = {"start": paragraph.numbering.start_num}
+                    return    
 
 
     def visit_run(self, run, context):
@@ -331,9 +340,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def _find_html_path(self, element, element_type, default, warn_unrecognised=False):
         style = self._find_style(element, element_type)
         if style is not None:
-            # deepcopy the path from the style, since we may modify the attributes of the 
-            # Tags in the html_path and we don't want to update the style's copy
-            return copy.deepcopy( style.html_path )
+            return style.html_path
 
         if warn_unrecognised and getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(

@@ -24,6 +24,11 @@ class Tag(object):
     def update_attributes( self, new_attrs ):
         self.attributes.update( new_attrs )
 
+    def clone(self):
+        cloned_attrs = {}
+        cloned_attrs.update( self.attributes )
+        return Tag(tag_names=self.tag_names, attributes=cloned_attrs, collapsible=self.collapsible, separator=self.separator)
+
 
 @cobble.data
 class Element(Node):
