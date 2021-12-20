@@ -430,7 +430,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             alt_text = properties.get("title")
         dimensions = element.find_child_or_null("wp:extent").attributes
-        print("ddd", dimensions)
+
         if dimensions.get("cx") is not None:
             size = documents.Size(
                 width=str(_emu_to_pixel(dimensions.get("cx"))),
