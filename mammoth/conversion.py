@@ -114,14 +114,31 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
     def _numbered_ol(self, paragraph, html_path, extra_attrs):
         ## Add a start attr to OL
-        if (paragraph.numbering is not None and 
-            paragraph.numbering.start_num is not None and 
-            paragraph.numbering.start_num != '1'):
+        attrs ={}
+        if paragraph.numbering is not None: 
+            
+            if paragraph.numbering.start_num is not None and paragraph.numbering.start_num != '1':
 
-            for path_elem in reversed(html_path.elements):
-                if path_elem.tag.tag_name == 'ol':
-                    extra_attrs[id(path_elem)] = {"start": paragraph.numbering.start_num}
-                    return    
+                attrs["start"] = paragraph.numbering.start_num
+        
+            type = None
+            if paragraph.numbering.numbering_format == "lowerLetter":
+                type = "a"
+            elif paragraph.numbering.numbering_format == "upperLetter":
+                type = "A" 
+            elif paragraph.numbering.numbering_format == "lowerRoman":
+                type = "i"
+            elif paragraph.numbering.numbering_format == "upperRoman":
+                type = "I"
+
+            if type is not None:
+                attrs["type"] = type
+                
+            if len(attrs) > 0:
+                for path_elem in reversed(html_path.elements):
+                    if path_elem.tag.tag_name == 'ol':
+                        extra_attrs[id(path_elem)] = attrs
+                        return    
 
 
     def visit_run(self, run, context):
