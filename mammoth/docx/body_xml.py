@@ -318,7 +318,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 documents.table_cell(
                     children=children,
                     colspan=colspan,
-                    background=fill_color,
+                    fill_color=fill_color,
                 ),
                 _vmerge=read_vmerge(properties),
             ))
