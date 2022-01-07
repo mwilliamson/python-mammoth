@@ -77,6 +77,7 @@ class TableRow(HasChildren):
 class TableCell(HasChildren):
     colspan = cobble.field()
     rowspan = cobble.field()
+    fill_color = cobble.field()
 
 @cobble.data
 class Break(Element):
@@ -178,12 +179,12 @@ def table(children, style_id=None, style_name=None):
 def table_row(children, is_header=None):
     return TableRow(children=children, is_header=bool(is_header))
 
-def table_cell(children, colspan=None, rowspan=None):
+def table_cell(children, colspan=None, rowspan=None, fill_color=None):
     if colspan is None:
         colspan = 1
     if rowspan is None:
         rowspan = 1
-    return TableCell(children=children, colspan=colspan, rowspan=rowspan)
+    return TableCell(children=children, colspan=colspan, rowspan=rowspan, fill_color=fill_color)
 
 
 def numbering_level(level_index, is_ordered):

@@ -213,6 +213,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             attributes["colspan"] = str(table_cell.colspan)
         if table_cell.rowspan != 1:
             attributes["rowspan"] = str(table_cell.rowspan)
+        if table_cell.fill_color:
+            attributes["style"] = f"background-color:#{table_cell.fill_color};"
         nodes = [html.force_write] + self._visit_all(table_cell.children, context)
         return [
             html.element(tag_name, attributes, nodes)

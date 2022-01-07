@@ -309,11 +309,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             colspan = int(gridspan)
 
+        fill_color = properties \
+            .find_child_or_null("w:shd") \
+            .attributes.get("w:fill")
+
         return _read_xml_elements(element.children) \
             .map(lambda children: _add_attrs(
                 documents.table_cell(
                     children=children,
-                    colspan=colspan
+                    colspan=colspan,
+                    background=fill_color,
                 ),
                 _vmerge=read_vmerge(properties),
             ))
