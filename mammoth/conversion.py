@@ -103,6 +103,9 @@ class _DocumentConverter(documents.element_visitor(args=1)):
                 return [html.force_write] + content
 
         html_path = self._find_html_path_for_paragraph(paragraph)
+        if paragraph.html_attributes:
+            for el in html_path.elements:
+                el.tag.attributes = paragraph.html_attributes
         return html_path.wrap(children)
 
 
@@ -126,7 +129,11 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         if run.is_bold:
             paths.append(self._find_style_for_run_property("bold", default="strong"))
         paths.append(self._find_html_path_for_run(run))
-
+        if run.html_attributes:
+            if isinstance(paths[0], html_paths.HtmlPath):
+                paths.insert(0, html_paths.element(["span"], fresh=False))
+            paths[0].tag.attributes.update(run.html_attributes)
+        
         for path in paths:
             nodes = partial(path.wrap, nodes)
 
