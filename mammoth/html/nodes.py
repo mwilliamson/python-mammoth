@@ -34,6 +34,7 @@ class Tag(object):
 class Element(Node):
     tag = cobble.field()
     children = cobble.field()
+    extra_attributes = cobble.field(default=None)
     
     @property
     def tag_name(self):

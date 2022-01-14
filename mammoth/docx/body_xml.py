@@ -135,6 +135,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         properties = element.find_child_or_null("w:pPr")
         alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
         indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
+        pr_element = properties.find_child_or_null("w:numPr")
 
         return _ReadResult.map_results(
             _read_paragraph_style(properties),
@@ -145,8 +146,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 style_name=style[1],
                 numbering=_read_numbering_properties(
                     paragraph_style_id=style[0],
-                    element=properties.find_child_or_null("w:numPr"),
+                    element=pr_element,
                 ),
+                list_id=_read_order_list_id( pr_element ),
                 alignment=alignment,
                 indent=indent,
             )).append_extra()
@@ -230,6 +232,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return None
         else:
             return numbering.find_level(num_id, level_index)
+
+    def _read_order_list_id( element):
+        return element.find_child_or_null("w:numId").attributes.get("w:val")
 
     def _read_paragraph_indent(element):
         attributes = element.attributes
@@ -430,7 +435,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             alt_text = properties.get("title")
         dimensions = element.find_child_or_null("wp:extent").attributes
-
+   
         if dimensions.get("cx") is not None:
             size = documents.Size(
                 width=str(_emu_to_pixel(dimensions.get("cx"))),

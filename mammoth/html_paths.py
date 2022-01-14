@@ -45,13 +45,9 @@ class HtmlPathElement(object):
         return self.wrap_nodes(generate_nodes(), extra_attributes)
 
     def wrap_nodes(self, nodes, extra_attributes={}):
-        element_tag = self.tag.clone() ## don't re-use tag from path, so we can set atttributes
+       
         attrs = extra_attributes.get(id(self))
-        if attrs is not None:
-            element_tag.attributes.update(attrs)
-
-        element = html.Element(element_tag, nodes)
-      
+        element = html.Element(self.tag, nodes, attrs)   
         return [element]
 
 empty = path([])

@@ -73,6 +73,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         self._referenced_comments = []
         self._convert_image = convert_image
         self._comments = comments
+        self._li_counters = {}
 
     def visit_image(self, image, context):
         try:
@@ -108,18 +109,35 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         
         extra_attrs = {}
         self._numbered_ol( paragraph, html_path, extra_attrs)
-
+                       
         elements = html_path.wrap(children, extra_attrs)
         return elements
 
     def _numbered_ol(self, paragraph, html_path, extra_attrs):
         ## Add a start attr to OL
-        attrs ={}
-        if paragraph.numbering is not None: 
-            
-            if paragraph.numbering.start_num is not None and paragraph.numbering.start_num != '1':
+        
+       
+        if paragraph.numbering is not None:                    
+     
+            if paragraph.list_id is not None: 
+                # Keep track of the order for lists that continue from annothe lists
+                list_key = ( paragraph.list_id, paragraph.numbering.level_index)
+ 
+                if self._li_counters.get( list_key ) is None:                 
+                    if paragraph.numbering.start_num is not None and paragraph.numbering.start_num != '1':
+                        self._li_counters[list_key] = int(paragraph.numbering.start_num)
+                    else:
+                        self._li_counters[list_key] = 1
+                else:
+                    self._li_counters[list_key] += 1
+                
+                li_count = self._li_counters[list_key]
 
-                attrs["start"] = paragraph.numbering.start_num
+
+                for path_elem in reversed(html_path.elements):
+                    if path_elem.tag.tag_name == 'li':
+                        extra_attrs[id(path_elem)] = {"data-li-order": str(li_count)}
+                        break
         
             type = None
             if paragraph.numbering.numbering_format == "lowerLetter":
@@ -132,13 +150,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
                 type = "I"
 
             if type is not None:
-                attrs["type"] = type
-                
-            if len(attrs) > 0:
                 for path_elem in reversed(html_path.elements):
                     if path_elem.tag.tag_name == 'ol':
-                        extra_attrs[id(path_elem)] = attrs
-                        return    
+                        extra_attrs[id(path_elem)] = {"type":type}
+                        break    
 
 
     def visit_run(self, run, context):

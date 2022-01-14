@@ -49,7 +49,7 @@ class StripEmpty(NodeVisitor):
         if len(children) == 0 and not element.is_void():
             return []
         else:
-            return [Element(element.tag, children)]
+            return [Element(element.tag, children, element.extra_attributes)]
     
     def visit_force_write(self, node):
         return [node]
@@ -68,7 +68,7 @@ class _CollapseNode(NodeVisitor):
         return node
     
     def visit_element(self, element):
-        return Element(element.tag, collapse(element.children))
+        return Element(element.tag, collapse(element.children), element.extra_attributes)
     
     def visit_force_write(self, node):
         return node
@@ -120,10 +120,17 @@ class _NodeWriter(NodeVisitor):
         self._writer.text(node.value)
     
     def visit_element(self, element):
-        if element.is_void():
-            self._writer.self_closing(element.tag_name, element.attributes)
+      
+        if element.extra_attributes is not None:
+            attrs = element.attributes.copy()
+            attrs.update( element.extra_attributes )
         else:
-            self._writer.start(element.tag_name, element.attributes)
+            attrs = element.attributes
+
+        if element.is_void():
+            self._writer.self_closing(element.tag_name, attrs)
+        else:
+            self._writer.start(element.tag_name, attrs)
             self.visit_all(element.children)
             self._writer.end(element.tag_name)
     
