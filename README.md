@@ -618,6 +618,15 @@ small-caps
 Note that this matches text that has had small caps explicitly applied to it.
 It will not match any text that is small caps because of its paragraph or run style.
 
+#### Ignoring document elements
+
+Use `!` to ignore a document element.
+For instance, to ignore any paragraph with the style `Comment`:
+
+```
+p[style-name='Comment'] => !
+```
+
 ### HTML paths
 
 #### Single elements
@@ -679,15 +688,6 @@ div.aside > h2
 ```
 
 You can nest elements to any depth.
-
-#### Ignoring document elements
-
-Use `!` to ignore a document element.
-For instance, to ignore any paragraph with the style `Comment`:
-
-```
-p[style-name='Comment'] => !
-```
 
 ## Donations
 
