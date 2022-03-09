@@ -127,7 +127,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return element and element.attributes.get("w:val") not in ["false", "0"]
 
     def read_underline_element(element):
-        return element and element.attributes.get("w:val") not in ["false", "0", "none"]
+        return element and element.attributes.get("w:val") not in [None, "false", "0", "none"]
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")

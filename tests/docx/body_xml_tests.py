@@ -275,9 +275,9 @@ class RunTests(object):
         assert_equal(False, run.is_underline)
 
     @istest
-    def run_is_underlined_if_underline_element_is_present_without_val_attribute(self):
+    def run_is_not_underlined_if_underline_element_is_present_without_val_attribute(self):
         run = self._read_run_with_properties([xml_element("w:u")])
-        assert_equal(True, run.is_underline)
+        assert_equal(False, run.is_underline)
 
     @istest
     def run_is_not_underlined_if_underline_element_is_present_and_val_is_false(self):
