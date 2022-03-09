@@ -2,7 +2,7 @@ nose>=1.2.1,<2.0
 funk>=0.4,<0.5
 spur.local>=0.3.7,<0.4
 tempman>=0.1.2,<0.2
-pyflakes>=0.8.1,<0.9
+pyflakes==2.4.0
 nose-parameterized==0.5.0
 PyHamcrest==1.9.0
 precisely==0.1.3
