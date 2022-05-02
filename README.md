@@ -306,6 +306,10 @@ Converts the source document to HTML.
 
 #### `mammoth.convert_to_markdown(fileobj, **kwargs)`
 
+Markdown support is deprecated.
+Generating HTML and using a separate library to convert the HTML to Markdown is recommended,
+and is likely to produce better results.
+
 Converts the source document to Markdown.
 This behaves the same as `convert_to_html`,
 except that the `value` property of the result contains Markdown rather than HTML.
