@@ -36,6 +36,7 @@ def modifying_alt_text_during_conversion():
             alt_text = "alt text output test"
         
         return {
+            "alt": alt_text,
             "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
         }
 
