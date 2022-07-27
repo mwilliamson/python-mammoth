@@ -25,3 +25,36 @@ def data_uri_encodes_images_in_base64():
     assert_that(result, contains(
         has_properties(attributes={"src": "data:image/jpeg;base64,YWJj"}),
     ))
+
+
+@istest
+def modifying_alt_text_during_conversion():
+    def convert_image(image):
+        with image.open() as image_bytes:
+            encoded_src = base64.b64encode(image_bytes.read()).decode("ascii")
+            alt_text = "alt text output test"
+        
+        return {
+            "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
+        }
+
+    image_bytes = b"abc"
+    image = mammoth.documents.Image(
+        alt_text=None,
+        content_type="image/jpeg",
+        open=lambda: io.BytesIO(image_bytes),
+    )
+    
+    result = mammoth.images.img_element(convert_image(image))
+    
+    assert_that(
+        result, 
+        contains(
+            has_properties(
+                attributes={
+                    "alt": "alt text output test",
+                    "src": "data:image/jpeg;base64,YWJj"
+                    }
+                ),
+        )
+    )
