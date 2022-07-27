@@ -1,4 +1,5 @@
 import io
+import base64
 
 from hamcrest import assert_that, contains, has_properties
 from nose.tools import istest
