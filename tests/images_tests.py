@@ -47,7 +47,7 @@ def modifying_alt_text_during_conversion():
         open=lambda: io.BytesIO(image_bytes),
     )
     
-    result = mammoth.images.img_element(convert_image(image))
+    result = mammoth.images.img_element(convert_image)(image)
     
     assert_that(
         result, 
@@ -60,3 +60,5 @@ def modifying_alt_text_during_conversion():
                 ),
         )
     )
+
+modifying_alt_text_during_conversion()
