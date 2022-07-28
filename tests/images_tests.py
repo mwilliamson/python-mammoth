@@ -61,4 +61,3 @@ def modifying_alt_text_during_conversion():
         )
     )
 
-modifying_alt_text_during_conversion()
