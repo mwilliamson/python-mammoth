@@ -61,3 +61,27 @@ def modifying_alt_text_during_conversion():
         )
     )
 
+
+@istest
+def stripping_newlines_during_conversion():
+    image_bytes = b"abc"
+    image = mammoth.documents.Image(
+        alt_text="""A picture containing text
+
+Description automatically generated""",
+        content_type="image/jpeg",
+        open=lambda: io.BytesIO(image_bytes),
+    )
+    result = mammoth.images.data_uri(image)
+
+    assert_that(
+        result,
+        contains(
+            has_properties(
+                attributes={
+                    "alt": "A picture containing text  Description automatically generated",
+                    "src": "data:image/jpeg;base64,YWJj"
+                }
+            ),
+        )
+    )
