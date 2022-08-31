@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name='mammoth',
-    version='1.4.19',
+    version='1.5.0',
     description='Convert Word documents from docx to simple and clean HTML and Markdown',
     long_description=read("README"),
     author='Michael Williamson',
