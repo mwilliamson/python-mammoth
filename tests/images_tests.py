@@ -25,3 +25,44 @@ def data_uri_encodes_images_in_base64():
     assert_that(result, is_sequence(
         has_attrs(attributes={"src": "data:image/jpeg;base64,YWJj"}),
     ))
+
+
+@istest
+class ImgElementTests:
+    @istest
+    def test_when_element_does_not_have_alt_text_then_alt_attribute_is_not_set(self):
+        image_bytes = b"abc"
+        image = mammoth.documents.Image(
+            alt_text=None,
+            content_type="image/jpeg",
+            open=lambda: io.BytesIO(image_bytes),
+        )
+
+        @mammoth.images.img_element
+        def convert_image(image):
+            return {"src": "<src>"}
+
+        result = convert_image(image)
+
+        assert_that(result, is_sequence(
+            has_attrs(attributes={"src": "<src>"}),
+        ))
+
+    @istest
+    def test_when_element_se_alt_text_then_alt_attribute_is_set(self):
+        image_bytes = b"abc"
+        image = mammoth.documents.Image(
+            alt_text="<alt>",
+            content_type="image/jpeg",
+            open=lambda: io.BytesIO(image_bytes),
+        )
+
+        @mammoth.images.img_element
+        def convert_image(image):
+            return {"src": "<src>"}
+
+        result = convert_image(image)
+
+        assert_that(result, is_sequence(
+            has_attrs(attributes={"alt": "<alt>", "src": "<src>"}),
+        ))
