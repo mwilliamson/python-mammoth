@@ -66,3 +66,22 @@ class ImgElementTests:
         assert_that(result, is_sequence(
             has_attrs(attributes={"alt": "<alt>", "src": "<src>"}),
         ))
+
+    @istest
+    def test_image_alt_text_can_be_overridden_by_alt_attribute_returned_from_function(self):
+        image_bytes = b"abc"
+        image = mammoth.documents.Image(
+            alt_text="<alt>",
+            content_type="image/jpeg",
+            open=lambda: io.BytesIO(image_bytes),
+        )
+
+        @mammoth.images.img_element
+        def convert_image(image):
+            return {"alt": "<alt override>", "src": "<src>"}
+
+        result = convert_image(image)
+
+        assert_that(result, is_sequence(
+            has_attrs(attributes={"alt": "<alt override>", "src": "<src>"}),
+        ))
