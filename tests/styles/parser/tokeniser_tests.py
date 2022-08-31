@@ -1,4 +1,4 @@
-from hamcrest import assert_that, contains, has_properties
+from precisely import assert_that, has_attrs, is_sequence
 
 from mammoth.styles.parser.tokeniser import tokenise
 
@@ -98,12 +98,12 @@ def assert_tokens(string, *expected):
     expected.append(is_token("end", ""))
     assert_that(
         tokenise(string),
-        contains(*expected),
+        is_sequence(*expected),
     )
 
 
 def is_token(token_type, value):
-    return has_properties(
+    return has_attrs(
         type=token_type,
         value=value,
     )

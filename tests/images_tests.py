@@ -1,7 +1,7 @@
 import io
 
-from hamcrest import assert_that, contains, has_properties
 from nose.tools import istest
+from precisely import assert_that, has_attrs, is_sequence
 
 import mammoth
 
@@ -19,9 +19,9 @@ def data_uri_encodes_images_in_base64():
         content_type="image/jpeg",
         open=lambda: io.BytesIO(image_bytes),
     )
-    
+
     result = mammoth.images.data_uri(image)
-    
-    assert_that(result, contains(
-        has_properties(attributes={"src": "data:image/jpeg;base64,YWJj"}),
+
+    assert_that(result, is_sequence(
+        has_attrs(attributes={"src": "data:image/jpeg;base64,YWJj"}),
     ))
