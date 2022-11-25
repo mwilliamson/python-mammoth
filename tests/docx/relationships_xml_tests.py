@@ -1,11 +1,9 @@
-from nose.tools import istest, assert_equal
-
 from mammoth.docx.xmlparser import element as xml_element
 from mammoth.docx.relationships_xml import read_relationships_xml_element
+from ..testing import assert_equal
 
 
-@istest
-def relationship_targets_can_be_found_by_id():
+def test_relationship_targets_can_be_found_by_id():
     element = xml_element("relationships:Relationships", {}, [
         xml_element("relationships:Relationship", {
             "Id": "rId8",
@@ -25,8 +23,7 @@ def relationship_targets_can_be_found_by_id():
     )
 
 
-@istest
-def relationship_targets_can_be_found_by_type():
+def test_relationship_targets_can_be_found_by_type():
     element = xml_element("relationships:Relationships", {}, [
         xml_element("relationships:Relationship", {
             "Id": "rId2",
@@ -51,8 +48,7 @@ def relationship_targets_can_be_found_by_type():
     )
 
 
-@istest
-def when_there_are_no_relationships_of_requested_type_then_empty_list_is_returned():
+def test_when_there_are_no_relationships_of_requested_type_then_empty_list_is_returned():
     element = xml_element("relationships:Relationships", {}, [])
     relationships = read_relationships_xml_element(element)
     assert_equal(

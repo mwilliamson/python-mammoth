@@ -2,7 +2,7 @@
 
 test:
 	_virtualenv/bin/pyflakes mammoth tests
-	sh -c '. _virtualenv/bin/activate; nosetests tests'
+	sh -c '. _virtualenv/bin/activate; py.test tests'
 
 .PHONY: test-all
 

@@ -1,18 +1,15 @@
 import io
 
-from nose.tools import istest
 from precisely import assert_that, has_attrs, is_sequence
 
 import mammoth
 
 
-@istest
-def inline_is_available_as_alias_of_img_element():
+def test_inline_is_available_as_alias_of_img_element():
     assert mammoth.images.inline is mammoth.images.img_element
 
 
-@istest
-def data_uri_encodes_images_in_base64():
+def test_data_uri_encodes_images_in_base64():
     image_bytes = b"abc"
     image = mammoth.documents.Image(
         alt_text=None,
@@ -27,9 +24,7 @@ def data_uri_encodes_images_in_base64():
     ))
 
 
-@istest
 class ImgElementTests:
-    @istest
     def test_when_element_does_not_have_alt_text_then_alt_attribute_is_not_set(self):
         image_bytes = b"abc"
         image = mammoth.documents.Image(
@@ -48,7 +43,6 @@ class ImgElementTests:
             has_attrs(attributes={"src": "<src>"}),
         ))
 
-    @istest
     def test_when_element_se_alt_text_then_alt_attribute_is_set(self):
         image_bytes = b"abc"
         image = mammoth.documents.Image(
@@ -67,7 +61,6 @@ class ImgElementTests:
             has_attrs(attributes={"alt": "<alt>", "src": "<src>"}),
         ))
 
-    @istest
     def test_image_alt_text_can_be_overridden_by_alt_attribute_returned_from_function(self):
         image_bytes = b"abc"
         image = mammoth.documents.Image(

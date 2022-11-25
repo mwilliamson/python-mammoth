@@ -1,11 +1,9 @@
-from nose.tools import istest, assert_equal
-
 from mammoth.raw_text import extract_raw_text_from_element
 from mammoth import documents
+from .testing import assert_equal
 
 
-@istest
-def text_element_is_converted_to_text_content():
+def test_text_element_is_converted_to_text_content():
     element = documents.Text("Hello.")
 
     result = extract_raw_text_from_element(element)
@@ -13,8 +11,7 @@ def text_element_is_converted_to_text_content():
     assert_equal("Hello.", result)
 
 
-@istest
-def tab_element_is_converted_to_tab_character():
+def test_tab_element_is_converted_to_tab_character():
     element = documents.tab()
 
     result = extract_raw_text_from_element(element)
@@ -22,8 +19,7 @@ def tab_element_is_converted_to_tab_character():
     assert_equal("\t", result)
 
 
-@istest
-def paragraphs_are_terminated_with_newlines():
+def test_paragraphs_are_terminated_with_newlines():
     element = documents.paragraph(
         children=[
             documents.Text("Hello "),
@@ -36,8 +32,7 @@ def paragraphs_are_terminated_with_newlines():
     assert_equal("Hello world.\n\n", result)
 
 
-@istest
-def children_are_recursively_converted_to_text():
+def test_children_are_recursively_converted_to_text():
     element = documents.document([
         documents.paragraph(
             [
@@ -53,8 +48,7 @@ def children_are_recursively_converted_to_text():
     assert_equal("Hello world.\n\n", result)
 
 
-@istest
-def non_text_element_without_children_is_converted_to_empty_string():
+def test_non_text_element_without_children_is_converted_to_empty_string():
     element = documents.line_break
     assert not hasattr(element, "children")
 

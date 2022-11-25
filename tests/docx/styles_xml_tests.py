@@ -1,18 +1,15 @@
-from nose.tools import istest, assert_equal
-
 from mammoth.docx.xmlparser import element as xml_element
 from mammoth.docx.styles_xml import read_styles_xml_element
+from ..testing import assert_equal
 
 
-@istest
-def paragraph_style_is_null_if_no_style_with_that_id_exists():
+def test_paragraph_style_is_null_if_no_style_with_that_id_exists():
     element = xml_element("w:styles")
     styles = read_styles_xml_element(element)
     assert_equal(None, styles.find_paragraph_style_by_id("Heading1"))
 
 
-@istest
-def paragraph_style_can_be_found_by_id():
+def test_paragraph_style_can_be_found_by_id():
     element = xml_element("w:styles", {}, [
         _paragraph_style_element("Heading1", "Heading 1"),
     ])
@@ -23,8 +20,7 @@ def paragraph_style_can_be_found_by_id():
     )
 
 
-@istest
-def character_style_can_be_found_by_id():
+def test_character_style_can_be_found_by_id():
     element = xml_element("w:styles", {}, [
         _character_style_element("Heading1Char", "Heading 1 Char"),
     ])
@@ -35,8 +31,7 @@ def character_style_can_be_found_by_id():
     )
 
 
-@istest
-def table_style_can_be_found_by_id():
+def test_table_style_can_be_found_by_id():
     element = xml_element("w:styles", {}, [
         _table_style_element("TableNormal", "Normal Table"),
     ])
@@ -47,8 +42,7 @@ def table_style_can_be_found_by_id():
     )
 
 
-@istest
-def paragraph_and_character_styles_are_distinct():
+def test_paragraph_and_character_styles_are_distinct():
     element = xml_element("w:styles", {}, [
         _paragraph_style_element("Heading1", "Heading 1"),
         _character_style_element("Heading1Char", "Heading 1 Char"),
@@ -58,8 +52,7 @@ def paragraph_and_character_styles_are_distinct():
     assert_equal(None, styles.find_paragraph_style_by_id("Heading1Char"))
 
 
-@istest
-def styles_include_names():
+def test_styles_include_names():
     element = xml_element("w:styles", {}, [
         _paragraph_style_element("Heading1", "Heading 1"),
     ])
@@ -70,8 +63,7 @@ def styles_include_names():
     )
 
 
-@istest
-def style_name_is_none_if_name_element_does_not_exist():
+def test_style_name_is_none_if_name_element_does_not_exist():
     element = xml_element("w:styles", {}, [
         _style_without_name_element("paragraph", "Heading1"),
         _style_without_name_element("character", "Heading1Char")
@@ -81,15 +73,13 @@ def style_name_is_none_if_name_element_does_not_exist():
     assert_equal(None, styles.find_character_style_by_id("Heading1Char").name)
 
 
-@istest
-def numbering_style_is_none_if_no_style_with_that_id_exists():
+def test_numbering_style_is_none_if_no_style_with_that_id_exists():
     element = xml_element("w:styles", {}, [])
     styles = read_styles_xml_element(element)
     assert_equal(None, styles.find_numbering_style_by_id("List1"))
 
 
-@istest
-def numbering_style_has_none_num_id_if_style_has_no_paragraph_properties():
+def test_numbering_style_has_none_num_id_if_style_has_no_paragraph_properties():
     element = xml_element("w:styles", {}, [
         xml_element("w:style", {"w:type": "numbering", "w:styleId": "List1"}),
     ])
@@ -97,8 +87,7 @@ def numbering_style_has_none_num_id_if_style_has_no_paragraph_properties():
     assert_equal(None, styles.find_numbering_style_by_id("List1").num_id)
 
 
-@istest
-def numbering_style_has_num_id_read_from_paragraph_properties():
+def test_numbering_style_has_num_id_read_from_paragraph_properties():
     element = xml_element("w:styles", {}, [
         xml_element("w:style", {"w:type": "numbering", "w:styleId": "List1"}, [
             xml_element("w:pPr", {}, [

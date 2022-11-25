@@ -1,11 +1,9 @@
-from nose.tools import istest, assert_equal
-
 from mammoth.docx.xmlparser import element as xml_element
 from mammoth.docx.content_types_xml import read_content_types_xml_element
+from ..testing import assert_equal
 
 
-@istest
-def content_type_is_based_on_default_for_extension_if_there_is_no_override():
+def test_content_type_is_based_on_default_for_extension_if_there_is_no_override():
     element = xml_element("content-types:Types", {}, [
         xml_element("content-types:Default", {
             "Extension": "png",
@@ -19,8 +17,7 @@ def content_type_is_based_on_default_for_extension_if_there_is_no_override():
     )
 
 
-@istest
-def content_type_is_based_on_override_if_present():
+def test_content_type_is_based_on_override_if_present():
     element = xml_element("content-types:Types", {}, [
         xml_element("content-types:Default", {
             "Extension": "png",
@@ -38,8 +35,7 @@ def content_type_is_based_on_override_if_present():
     )
 
 
-@istest
-def fallback_content_types_have_common_image_types():
+def test_fallback_content_types_have_common_image_types():
     element = xml_element("content-types:Types", {}, [])
     content_types = read_content_types_xml_element(element)
     assert_equal(
@@ -72,8 +68,7 @@ def fallback_content_types_have_common_image_types():
     )
 
 
-@istest
-def fallback_content_types_are_case_insensitive():
+def test_fallback_content_types_are_case_insensitive():
     element = xml_element("content-types:Types", {}, [])
     content_types = read_content_types_xml_element(element)
     assert_equal(

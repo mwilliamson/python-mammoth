@@ -4,24 +4,21 @@ from __future__ import unicode_literals
 
 import io
 
-from nose.tools import istest, assert_equal
-
 from mammoth import documents, results, html
 from mammoth.conversion import convert_document_element_to_html, _comment_author_label
 from mammoth.docx.xmlparser import parse_xml
 from mammoth.styles.parser import read_style_mapping
+from .testing import assert_equal
 
 
-@istest
-def plain_paragraph_is_converted_to_plain_paragraph():
+def test_plain_paragraph_is_converted_to_plain_paragraph():
     result = convert_document_element_to_html(
         documents.paragraph(children=[_run_with_text("Hello")])
     )
     assert_equal('<p>Hello</p>', result.value)
 
 
-@istest
-def multiple_paragraphs_are_converted_to_multiple_paragraphs():
+def test_multiple_paragraphs_are_converted_to_multiple_paragraphs():
     result = convert_document_element_to_html(
         documents.document([
             documents.paragraph(children=[_run_with_text("Hello")]),
@@ -31,16 +28,14 @@ def multiple_paragraphs_are_converted_to_multiple_paragraphs():
     assert_equal('<p>Hello</p><p>there</p>', result.value)
 
 
-@istest
-def empty_paragraphs_are_ignored():
+def test_empty_paragraphs_are_ignored():
     result = convert_document_element_to_html(
         documents.paragraph(children=[_run_with_text("")])
     )
     assert_equal('', result.value)
 
 
-@istest
-def style_mappings_using_style_ids_can_be_used_to_map_paragraphs():
+def test_style_mappings_using_style_ids_can_be_used_to_map_paragraphs():
     result = convert_document_element_to_html(
         documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
@@ -52,8 +47,7 @@ def style_mappings_using_style_ids_can_be_used_to_map_paragraphs():
     assert_equal('<p class="tip">Tip</p>', result.value)
 
 
-@istest
-def style_mappings_using_style_names_can_be_used_to_map_paragraphs():
+def test_style_mappings_using_style_names_can_be_used_to_map_paragraphs():
     result = convert_document_element_to_html(
         documents.paragraph(style_id="TipsParagraph", style_name="Tips Paragraph", children=[
             _run_with_text("Tip")
@@ -65,8 +59,7 @@ def style_mappings_using_style_names_can_be_used_to_map_paragraphs():
     assert_equal('<p class="tip">Tip</p>', result.value)
 
 
-@istest
-def style_names_in_style_mappings_are_case_insensitive():
+def test_style_names_in_style_mappings_are_case_insensitive():
     result = convert_document_element_to_html(
         documents.paragraph(style_id="TipsParagraph", style_name="Tips Paragraph", children=[
             _run_with_text("Tip")
@@ -78,8 +71,7 @@ def style_names_in_style_mappings_are_case_insensitive():
     assert_equal('<p class="tip">Tip</p>', result.value)
 
 
-@istest
-def default_paragraph_style_is_used_if_no_matching_style_is_found():
+def test_default_paragraph_style_is_used_if_no_matching_style_is_found():
     result = convert_document_element_to_html(
         documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
@@ -88,8 +80,7 @@ def default_paragraph_style_is_used_if_no_matching_style_is_found():
     assert_equal('<p>Tip</p>', result.value)
 
 
-@istest
-def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
+def test_default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
     result = convert_document_element_to_html(
         documents.paragraph(style_id="TipsParagraph", children=[
             _run_with_text("Tip")
@@ -101,8 +92,7 @@ def default_paragraph_style_is_specified_by_mapping_plain_paragraphs():
     assert_equal('<p class="tip">Tip</p>', result.value)
 
 
-@istest
-def warning_is_emitted_if_paragraph_style_is_unrecognised():
+def test_warning_is_emitted_if_paragraph_style_is_unrecognised():
     result = convert_document_element_to_html(
         documents.paragraph(
             style_id="Heading1",
@@ -113,16 +103,14 @@ def warning_is_emitted_if_paragraph_style_is_unrecognised():
     assert_equal([results.warning("Unrecognised paragraph style: Heading 1 (Style ID: Heading1)")], result.messages)
 
 
-@istest
-def no_warning_if_there_is_no_style_for_plain_paragraphs():
+def test_no_warning_if_there_is_no_style_for_plain_paragraphs():
     result = convert_document_element_to_html(
         documents.paragraph(children=[_run_with_text("Tip")]),
     )
     assert_equal([], result.messages)
 
 
-@istest
-def bulleted_paragraphs_are_converted_using_matching_styles():
+def test_bulleted_paragraphs_are_converted_using_matching_styles():
     result = convert_document_element_to_html(
         documents.paragraph(children=[
             _run_with_text("Hello")
@@ -134,8 +122,7 @@ def bulleted_paragraphs_are_converted_using_matching_styles():
     assert_equal('<ul><li>Hello</li></ul>', result.value)
 
 
-@istest
-def bulleted_styles_dont_match_plain_paragraph():
+def test_bulleted_styles_dont_match_plain_paragraph():
     result = convert_document_element_to_html(
         documents.paragraph(children=[
             _run_with_text("Hello")
@@ -147,16 +134,14 @@ def bulleted_styles_dont_match_plain_paragraph():
     assert_equal('<p>Hello</p>', result.value)
 
 
-@istest
-def bold_runs_are_wrapped_in_strong_tags_by_default():
+def test_bold_runs_are_wrapped_in_strong_tags_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_bold=True),
     )
     assert_equal("<strong>Hello</strong>", result.value)
 
 
-@istest
-def bold_runs_can_be_configured_with_style_mapping():
+def test_bold_runs_can_be_configured_with_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_bold=True),
         style_map=[_style_mapping("b => em")]
@@ -164,16 +149,14 @@ def bold_runs_can_be_configured_with_style_mapping():
     assert_equal("<em>Hello</em>", result.value)
 
 
-@istest
-def italic_runs_are_wrapped_in_emphasis_tags_by_default():
+def test_italic_runs_are_wrapped_in_emphasis_tags_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_italic=True),
     )
     assert_equal("<em>Hello</em>", result.value)
 
 
-@istest
-def italic_runs_can_be_configured_with_style_mapping():
+def test_italic_runs_can_be_configured_with_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_italic=True),
         style_map=[_style_mapping("i => strong")]
@@ -181,16 +164,14 @@ def italic_runs_can_be_configured_with_style_mapping():
     assert_equal("<strong>Hello</strong>", result.value)
 
 
-@istest
-def underline_runs_are_ignored_by_default():
+def test_underline_runs_are_ignored_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_underline=True),
     )
     assert_equal("Hello", result.value)
 
 
-@istest
-def underline_runs_can_be_mapped_using_style_mapping():
+def test_underline_runs_can_be_mapped_using_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_underline=True),
         style_map=[
@@ -200,8 +181,7 @@ def underline_runs_can_be_mapped_using_style_mapping():
     assert_equal("<em>Hello</em>", result.value)
 
 
-@istest
-def style_mapping_for_underline_runs_does_not_close_parent_elements():
+def test_style_mapping_for_underline_runs_does_not_close_parent_elements():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_underline=True, is_bold=True),
         style_map=[
@@ -211,16 +191,14 @@ def style_mapping_for_underline_runs_does_not_close_parent_elements():
     assert_equal("<strong><em>Hello</em></strong>", result.value)
 
 
-@istest
-def strikethrough_runs_are_wrapped_in_s_elements_by_default():
+def test_strikethrough_runs_are_wrapped_in_s_elements_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_strikethrough=True),
     )
     assert_equal("<s>Hello</s>", result.value)
 
 
-@istest
-def strikethrough_runs_can_be_configured_with_style_mapping():
+def test_strikethrough_runs_can_be_configured_with_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_strikethrough=True),
         style_map=[
@@ -230,16 +208,14 @@ def strikethrough_runs_can_be_configured_with_style_mapping():
     assert_equal("<del>Hello</del>", result.value)
 
 
-@istest
-def sml_caps_runs_are_ignored_by_default():
+def test_sml_caps_runs_are_ignored_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_all_caps=True),
     )
     assert_equal("Hello", result.value)
 
 
-@istest
-def all_caps_runs_can_be_mapped_using_style_mapping():
+def test_all_caps_runs_can_be_mapped_using_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_all_caps=True),
         style_map=[
@@ -249,16 +225,14 @@ def all_caps_runs_can_be_mapped_using_style_mapping():
     assert_equal("<span>Hello</span>", result.value)
 
 
-@istest
-def small_caps_runs_are_ignored_by_default():
+def test_small_caps_runs_are_ignored_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_small_caps=True),
     )
     assert_equal("Hello", result.value)
 
 
-@istest
-def small_caps_runs_can_be_mapped_using_style_mapping():
+def test_small_caps_runs_can_be_mapped_using_style_mapping():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_small_caps=True),
         style_map=[
@@ -268,8 +242,7 @@ def small_caps_runs_can_be_mapped_using_style_mapping():
     assert_equal("<span>Hello</span>", result.value)
 
 
-@istest
-def superscript_runs_are_wrapped_in_sup_tags():
+def test_superscript_runs_are_wrapped_in_sup_tags():
     result = convert_document_element_to_html(
         documents.run(
             children=[documents.text("Hello")],
@@ -279,8 +252,7 @@ def superscript_runs_are_wrapped_in_sup_tags():
     assert_equal("<sup>Hello</sup>", result.value)
 
 
-@istest
-def subscript_runs_are_wrapped_in_sub_tags():
+def test_subscript_runs_are_wrapped_in_sub_tags():
     result = convert_document_element_to_html(
         documents.run(
             children=[documents.text("Hello")],
@@ -290,8 +262,7 @@ def subscript_runs_are_wrapped_in_sub_tags():
     assert_equal("<sub>Hello</sub>", result.value)
 
 
-@istest
-def runs_are_converted_by_satisfying_matching_paths():
+def test_runs_are_converted_by_satisfying_matching_paths():
     result = convert_document_element_to_html(
         documents.run(style_id="TipsRun", children=[documents.Text("Tip")]),
         style_map=[
@@ -301,16 +272,14 @@ def runs_are_converted_by_satisfying_matching_paths():
     assert_equal('<span class="tip">Tip</span>', result.value)
 
 
-@istest
-def docx_hyperlink_with_href_is_converted_to_anchor_tag():
+def test_docx_hyperlink_with_href_is_converted_to_anchor_tag():
     result = convert_document_element_to_html(
         documents.hyperlink(href="http://example.com", children=[documents.Text("Hello")]),
     )
     assert_equal('<a href="http://example.com">Hello</a>', result.value)
 
 
-@istest
-def docx_hyperlinks_can_be_collapsed():
+def test_docx_hyperlinks_can_be_collapsed():
     result = convert_document_element_to_html(
         documents.document(children=[
             documents.hyperlink(href="http://example.com", children=[documents.Text("Hello ")]),
@@ -320,8 +289,7 @@ def docx_hyperlinks_can_be_collapsed():
     assert_equal('<a href="http://example.com">Hello world</a>', result.value)
 
 
-@istest
-def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
+def test_docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
     result = convert_document_element_to_html(
         documents.hyperlink(anchor="start", children=[documents.Text("Hello")]),
         id_prefix="doc-42-",
@@ -329,8 +297,7 @@ def docx_hyperlink_with_internal_anchor_reference_is_converted_to_anchor_tag():
     assert_equal('<a href="#doc-42-start">Hello</a>', result.value)
 
 
-@istest
-def hyperlink_target_frame_is_used_as_anchor_target():
+def test_hyperlink_target_frame_is_used_as_anchor_target():
     result = convert_document_element_to_html(
         documents.hyperlink(
             anchor="start",
@@ -341,8 +308,7 @@ def hyperlink_target_frame_is_used_as_anchor_target():
     assert_equal('<a href="#start" target="_blank">Hello</a>', result.value)
 
 
-@istest
-def bookmarks_are_converted_to_anchors_with_ids():
+def test_bookmarks_are_converted_to_anchors_with_ids():
     result = convert_document_element_to_html(
         documents.bookmark(name="start"),
         id_prefix="doc-42-",
@@ -350,14 +316,12 @@ def bookmarks_are_converted_to_anchors_with_ids():
     assert_equal('<a id="doc-42-start"></a>', result.value)
 
 
-@istest
-def docx_tab_is_converted_to_tab_in_html():
+def test_docx_tab_is_converted_to_tab_in_html():
     result = convert_document_element_to_html(documents.tab())
     assert_equal('\t', result.value)
 
 
-@istest
-def docx_table_is_converted_to_table_in_html():
+def test_docx_table_is_converted_to_table_in_html():
     table = documents.table([
         documents.table_row([
             documents.table_cell([_paragraph_with_text("Top left")]),
@@ -377,8 +341,7 @@ def docx_table_is_converted_to_table_in_html():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def table_style_mappings_can_be_used_to_map_tables():
+def test_table_style_mappings_can_be_used_to_map_tables():
     table = documents.table([], style_name="Normal Table")
     result = convert_document_element_to_html(
         table,
@@ -390,8 +353,7 @@ def table_style_mappings_can_be_used_to_map_tables():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def header_rows_are_wrapped_in_thead():
+def test_header_rows_are_wrapped_in_thead():
     table = documents.table([
         documents.table_row([documents.table_cell([])], is_header=True),
         documents.table_row([documents.table_cell([])], is_header=True),
@@ -406,8 +368,7 @@ def header_rows_are_wrapped_in_thead():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def tbody_is_omitted_if_all_rows_are_headers():
+def test_tbody_is_omitted_if_all_rows_are_headers():
     table = documents.table([
         documents.table_row([documents.table_cell([])], is_header=True),
     ])
@@ -419,8 +380,7 @@ def tbody_is_omitted_if_all_rows_are_headers():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def unexpected_table_children_do_not_cause_error():
+def test_unexpected_table_children_do_not_cause_error():
     table = documents.table([
         documents.tab(),
     ])
@@ -429,8 +389,7 @@ def unexpected_table_children_do_not_cause_error():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def empty_cells_are_preserved_in_table():
+def test_empty_cells_are_preserved_in_table():
     table = documents.table([
         documents.table_row([
             documents.table_cell([_paragraph_with_text("")]),
@@ -445,8 +404,7 @@ def empty_cells_are_preserved_in_table():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def empty_rows_are_preserved_in_table():
+def test_empty_rows_are_preserved_in_table():
     table = documents.table([
         documents.table_row([
             documents.table_cell([_paragraph_with_text("Row 1")]),
@@ -461,8 +419,7 @@ def empty_rows_are_preserved_in_table():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def table_cells_are_written_with_colspan_if_not_equal_to_one():
+def test_table_cells_are_written_with_colspan_if_not_equal_to_one():
     table = documents.table([
         documents.table_row([
             documents.table_cell([_paragraph_with_text("Top left")], colspan=2),
@@ -477,8 +434,7 @@ def table_cells_are_written_with_colspan_if_not_equal_to_one():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def table_cells_are_written_with_rowspan_if_not_equal_to_one():
+def test_table_cells_are_written_with_rowspan_if_not_equal_to_one():
     table = documents.table([
         documents.table_row([
             documents.table_cell([], rowspan=2),
@@ -492,20 +448,17 @@ def table_cells_are_written_with_rowspan_if_not_equal_to_one():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def line_break_is_converted_to_br():
+def test_line_break_is_converted_to_br():
     result = convert_document_element_to_html(documents.line_break)
     assert_equal("<br />", result.value)
 
 
-@istest
-def breaks_that_are_not_line_breaks_are_ignored():
+def test_breaks_that_are_not_line_breaks_are_ignored():
     result = convert_document_element_to_html(documents.page_break)
     assert_equal("", result.value)
 
 
-@istest
-def breaks_can_be_mapped_using_style_mappings():
+def test_breaks_can_be_mapped_using_style_mappings():
     result = convert_document_element_to_html(
         documents.page_break,
         style_map=[
@@ -515,23 +468,20 @@ def breaks_can_be_mapped_using_style_mappings():
     assert_equal("<hr />", result.value)
 
 
-@istest
-def images_are_converted_to_img_tags_with_data_uri():
+def test_images_are_converted_to_img_tags_with_data_uri():
     image = documents.image(alt_text=None, content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
     assert_equal('<img src="data:image/png;base64,YWJj" />', result.value)
 
 
-@istest
-def images_have_alt_tags_if_available():
+def test_images_have_alt_tags_if_available():
     image = documents.image(alt_text="It's a hat", content_type="image/png", open=lambda: io.BytesIO(b"abc"))
     result = convert_document_element_to_html(image)
     image_html = parse_xml(io.StringIO(result.value))
     assert_equal('It\'s a hat', image_html.attributes["alt"])
 
 
-@istest
-def can_define_custom_conversion_for_images():
+def test_can_define_custom_conversion_for_images():
     def convert_image(image):
         with image.open() as image_file:
             return [html.element("img", {"alt": image_file.read().decode("ascii")})]
@@ -541,8 +491,7 @@ def can_define_custom_conversion_for_images():
     assert_equal('<img alt="abc" />', result.value)
 
 
-@istest
-def footnote_reference_is_converted_to_superscript_intra_page_link():
+def test_footnote_reference_is_converted_to_superscript_intra_page_link():
     footnote_reference = documents.note_reference("footnote", "4")
     result = convert_document_element_to_html(
         footnote_reference,
@@ -551,8 +500,7 @@ def footnote_reference_is_converted_to_superscript_intra_page_link():
     assert_equal('<sup><a href="#doc-42-footnote-4" id="doc-42-footnote-ref-4">[1]</a></sup>', result.value)
 
 
-@istest
-def footnotes_are_included_after_the_main_body():
+def test_footnotes_are_included_after_the_main_body():
     footnote_reference = documents.note_reference("footnote", "4")
     document = documents.document(
         [documents.paragraph([
@@ -572,8 +520,7 @@ def footnotes_are_included_after_the_main_body():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def comments_are_ignored_by_default():
+def test_comments_are_ignored_by_default():
     reference = documents.comment_reference("4")
     comment = documents.comment(
         comment_id="4",
@@ -591,8 +538,7 @@ def comments_are_ignored_by_default():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def comment_references_are_linked_to_comment_after_main_body():
+def test_comment_references_are_linked_to_comment_after_main_body():
     reference = documents.comment_reference("4")
     comment = documents.comment(
         comment_id="4",
@@ -621,8 +567,7 @@ def comment_references_are_linked_to_comment_after_main_body():
     assert_equal(expected_html, result.value)
 
 
-@istest
-def when_initials_are_not_blank_then_comment_author_label_is_initials():
+def test_when_initials_are_not_blank_then_comment_author_label_is_initials():
     assert_equal("TP", _comment_author_label(documents.comment(
         comment_id="0",
         body=[],
@@ -630,8 +575,7 @@ def when_initials_are_not_blank_then_comment_author_label_is_initials():
     )))
 
 
-@istest
-def when_initials_are_blank_then_comment_author_label_is_blank():
+def test_when_initials_are_blank_then_comment_author_label_is_blank():
     assert_equal("", _comment_author_label(documents.comment(
         comment_id="0",
         body=[],

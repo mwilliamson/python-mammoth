@@ -1,13 +1,11 @@
-from nose.tools import istest, assert_equal
-
 from mammoth import documents
 from mammoth.docx.xmlparser import element as xml_element
 from mammoth.docx.comments_xml import read_comments_xml_element
 from mammoth.docx import body_xml
+from ..testing import assert_equal
 
 
-@istest
-def id_and_body_of_comment_is_read():
+def test_id_and_body_of_comment_is_read():
     body = [xml_element("w:p")]
     comments = read_comments_xml_element(xml_element("w:comments", {}, [
         xml_element("w:comment", {"w:id": "1"}, body),
@@ -17,8 +15,7 @@ def id_and_body_of_comment_is_read():
     assert_equal("1", comments.value[0].comment_id)
 
 
-@istest
-def when_optional_attributes_of_comment_are_missing_then_they_are_read_as_none():
+def test_when_optional_attributes_of_comment_are_missing_then_they_are_read_as_none():
     comments = read_comments_xml_element(xml_element("w:comments", {}, [
         xml_element("w:comment", {"w:id": "1"}, []),
     ]), body_reader=body_xml.reader())
@@ -27,8 +24,7 @@ def when_optional_attributes_of_comment_are_missing_then_they_are_read_as_none()
     assert_equal(None, comment.author_initials)
 
 
-@istest
-def when_optional_attributes_of_comment_are_blank_then_they_are_read_as_none():
+def test_when_optional_attributes_of_comment_are_blank_then_they_are_read_as_none():
     comments = read_comments_xml_element(xml_element("w:comments", {}, [
         xml_element("w:comment", {"w:id": "1", "w:author": " ", "w:initials": " "}, []),
     ]), body_reader=body_xml.reader())
@@ -37,8 +33,7 @@ def when_optional_attributes_of_comment_are_blank_then_they_are_read_as_none():
     assert_equal(None, comment.author_initials)
 
 
-@istest
-def when_optional_attributes_of_comment_are_not_blank_then_they_are_read():
+def test_when_optional_attributes_of_comment_are_not_blank_then_they_are_read():
     comments = read_comments_xml_element(xml_element("w:comments", {}, [
         xml_element("w:comment", {"w:id": "1", "w:author": "The Piemaker", "w:initials": "TP"}, []),
     ]), body_reader=body_xml.reader())

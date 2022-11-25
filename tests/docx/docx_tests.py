@@ -2,17 +2,13 @@ import io
 import textwrap
 import zipfile
 
-from nose.tools import istest, assert_equal
-
 from mammoth import docx, documents, zips
-from ..testing import assert_raises, test_path
+from ..testing import assert_equal, assert_raises, generate_test_path
 
 
-@istest
 class ReadTests(object):
-    @istest
-    def can_read_document_with_single_paragraph_with_single_run_of_text(self):
-        with open(test_path("single-paragraph.docx"), "rb") as fileobj:
+    def test_can_read_document_with_single_paragraph_with_single_run_of_text(self):
+        with open(generate_test_path("single-paragraph.docx"), "rb") as fileobj:
             result = docx.read(fileobj=fileobj)
             expected_document = documents.document([
                 documents.paragraph([
@@ -29,8 +25,7 @@ _relationship_namespaces = {
 }
 
 
-@istest
-def main_document_is_found_using_package_relationships():
+def test_main_document_is_found_using_package_relationships():
     fileobj = _create_zip({
         "word/document2.xml": textwrap.dedent("""\
             <?xml version="1.0" encoding="utf-8" ?>
@@ -62,8 +57,7 @@ def main_document_is_found_using_package_relationships():
     assert_equal(expected_document, result.value)
 
 
-@istest
-def error_is_raised_when_main_document_part_does_not_exist():
+def test_error_is_raised_when_main_document_part_does_not_exist():
     fileobj = _create_zip({
         "_rels/.rels": textwrap.dedent("""\
             <?xml version="1.0" encoding="utf-8"?>
@@ -78,9 +72,8 @@ def error_is_raised_when_main_document_part_does_not_exist():
         str(error),
     )
 
-class TestPartPaths(object):
-    @istest
-    def main_document_part_is_found_using_package_relationships(self):
+class PartPathsTests(object):
+    def test_main_document_part_is_found_using_package_relationships(self):
         fileobj = _create_zip({
             "word/document2.xml": " ",
             "_rels/.rels": textwrap.dedent("""\
@@ -92,55 +85,44 @@ class TestPartPaths(object):
         })
         part_paths = self._find_part_paths(fileobj)
         assert_equal("word/document2.xml", part_paths.main_document)
-        
-    @istest
-    def when_relationship_for_main_document_cannot_be_found_then_fallback_is_used(self):
+
+    def test_when_relationship_for_main_document_cannot_be_found_then_fallback_is_used(self):
         fileobj = _create_zip({
             "word/document.xml": " ",
         })
         part_paths = self._find_part_paths(fileobj)
         assert_equal("word/document.xml", part_paths.main_document)
-    
-    @istest
-    def comments_part_is_found_using_main_document_relationships(self):
+
+    def test_comments_part_is_found_using_main_document_relationships(self):
         self._assert_path_is_found_using_main_document_relationships("comments")
-    
-    @istest
-    def when_relationship_for_comments_cannot_be_found_then_fallback_is_used(self):
+
+    def test_when_relationship_for_comments_cannot_be_found_then_fallback_is_used(self):
         self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("comments")
-    
-    @istest
-    def endnotes_part_is_found_using_main_document_relationships(self):
+
+    def test_endnotes_part_is_found_using_main_document_relationships(self):
         self._assert_path_is_found_using_main_document_relationships("endnotes")
-    
-    @istest
-    def when_relationship_for_endnotes_cannot_be_found_then_fallback_is_used(self):
+
+    def test_when_relationship_for_endnotes_cannot_be_found_then_fallback_is_used(self):
         self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("endnotes")
-    
-    @istest
-    def footnotes_part_is_found_using_main_document_relationships(self):
+
+    def test_footnotes_part_is_found_using_main_document_relationships(self):
         self._assert_path_is_found_using_main_document_relationships("footnotes")
-    
-    @istest
-    def when_relationship_for_footnotes_cannot_be_found_then_fallback_is_used(self):
+
+    def test_when_relationship_for_footnotes_cannot_be_found_then_fallback_is_used(self):
         self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("footnotes")
-    
-    @istest
-    def numbering_part_is_found_using_main_document_relationships(self):
+
+    def test_numbering_part_is_found_using_main_document_relationships(self):
         self._assert_path_is_found_using_main_document_relationships("numbering")
-    
-    @istest
-    def when_relationship_for_numbering_cannot_be_found_then_fallback_is_used(self):
+
+    def test_when_relationship_for_numbering_cannot_be_found_then_fallback_is_used(self):
         self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("numbering")
-    
-    @istest
-    def styles_part_is_found_using_main_document_relationships(self):
+
+    def test_styles_part_is_found_using_main_document_relationships(self):
         self._assert_path_is_found_using_main_document_relationships("styles")
-    
-    @istest
-    def when_relationship_for_styles_cannot_be_found_then_fallback_is_used(self):
+
+    def test_when_relationship_for_styles_cannot_be_found_then_fallback_is_used(self):
         self._assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used("styles")
-    
+
     def _assert_path_is_found_using_main_document_relationships(self, name):
         fileobj = _create_zip({
             "_rels/.rels": textwrap.dedent("""\
@@ -160,7 +142,7 @@ class TestPartPaths(object):
         })
         part_paths = self._find_part_paths(fileobj)
         assert_equal("word/target-path.xml", getattr(part_paths, name))
-    
+
     def _assert_when_relationship_for_part_cannot_be_found_then_fallback_is_used(self, name):
         fileobj = _create_zip({
             "_rels/.rels": textwrap.dedent("""\
@@ -173,21 +155,21 @@ class TestPartPaths(object):
         })
         part_paths = self._find_part_paths(fileobj)
         assert_equal("word/{0}.xml".format(name), getattr(part_paths, name))
-        
-    
+
+
     def _find_part_paths(self, fileobj):
         return docx._find_part_paths(zips.open_zip(fileobj, "r"))
 
 
 def _create_zip(files):
     fileobj = io.BytesIO()
-    
+
     zip_file = zipfile.ZipFile(fileobj, "w")
     try:
         for name, contents in files.items():
             zip_file.writestr(name, contents)
     finally:
         zip_file.close()
-    
+
     fileobj.seek(0)
     return fileobj

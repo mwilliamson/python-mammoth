@@ -1,17 +1,14 @@
-from nose.tools import istest, assert_equal
-
 from mammoth import document_matchers
+from ..testing import assert_equal
 
 
-@istest
-def equal_to_matcher_is_case_insensitive():
+def test_equal_to_matcher_is_case_insensitive():
     matcher = document_matchers.equal_to("Heading 1")
     assert_equal(True, matcher.matches("heaDING 1"))
     assert_equal(False, matcher.matches("heaDING 2"))
 
 
-@istest
-def starts_with_matcher_matches_string_with_prefix():
+def test_starts_with_matcher_matches_string_with_prefix():
     matcher = document_matchers.starts_with("Heading")
     assert_equal(True, matcher.matches("Heading"))
     assert_equal(True, matcher.matches("Heading 1"))
@@ -20,7 +17,6 @@ def starts_with_matcher_matches_string_with_prefix():
     assert_equal(False, matcher.matches("Header 2"))
 
 
-@istest
-def starts_with_matcher_is_case_insensitive():
+def test_starts_with_matcher_is_case_insensitive():
     matcher = document_matchers.starts_with("Heading")
     assert_equal(True, matcher.matches("heaDING"))

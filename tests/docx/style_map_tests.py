@@ -1,56 +1,48 @@
 import io
 from zipfile import ZipFile
 
-from nose.tools import istest, assert_equal
-
 from mammoth.docx.style_map import write_style_map, read_style_map
 from mammoth.zips import open_zip
 from mammoth.docx import xmlparser as xml
+from ..testing import assert_equal
 
 
-@istest
-def reading_embedded_style_map_on_document_without_embedded_style_map_returns_none():
+def test_reading_embedded_style_map_on_document_without_embedded_style_map_returns_none():
     fileobj = _normal_docx()
     assert_equal(None, read_style_map(fileobj))
 
 
-@istest
-def writing_style_map_preserves_unrelated_files():
+def test_writing_style_map_preserves_unrelated_files():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     with open_zip(fileobj, "r") as zip_file:
         assert_equal("placeholder", zip_file.read_str("placeholder"))
 
-@istest
-def embedded_style_map_can_be_read_after_being_written():
+def test_embedded_style_map_can_be_read_after_being_written():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     assert_equal("p => h1", read_style_map(fileobj))
 
 
-@istest
-def embedded_style_map_is_written_to_separate_file():
+def test_embedded_style_map_is_written_to_separate_file():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     with open_zip(fileobj, "r") as zip_file:
         assert_equal("p => h1", zip_file.read_str("mammoth/style-map"))
 
 
-@istest
-def embedded_style_map_is_referenced_in_relationships():
+def test_embedded_style_map_is_referenced_in_relationships():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     assert_equal(expected_relationships_xml, _read_relationships_xml(fileobj))
-    
-@istest
-def embedded_style_map_has_override_content_type_in_content_types_xml():
+
+def test_embedded_style_map_has_override_content_type_in_content_types_xml():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     assert_equal(expected_content_types_xml, _read_content_types_xml(fileobj))
 
 
-@istest
-def can_overwrite_existing_style_map():
+def test_can_overwrite_existing_style_map():
     fileobj = _normal_docx()
     write_style_map(fileobj, "p => h1")
     write_style_map(fileobj, "p => h2")
