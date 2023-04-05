@@ -1,3 +1,7 @@
+# 1.5.1
+
+* Add a pyproject.toml to add an explicit build dependency on setuptools.
+
 # 1.5.0
 
 * Only use the alt text of image elements as a fallback. If an alt attribute is
