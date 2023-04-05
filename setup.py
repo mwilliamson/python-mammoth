@@ -15,7 +15,7 @@ setup(
     long_description=read("README"),
     author='Michael Williamson',
     author_email='mike@zwobble.org',
-    url='http://github.com/mwilliamson/python-mammoth',
+    url='https://github.com/mwilliamson/python-mammoth',
     packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.styles', 'mammoth.styles.parser', 'mammoth.writers'],
     entry_points={
         "console_scripts": [
