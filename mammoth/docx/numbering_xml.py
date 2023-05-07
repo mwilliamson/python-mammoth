@@ -44,7 +44,7 @@ def _read_abstract_num_levels(element):
 
 
 def _read_abstract_num_level(element):
-    level_index = element.attributes["w:ilvl"]
+    level_index = element.attributes.get("w:ilvl")
     num_fmt = element.find_child_or_null("w:numFmt").attributes.get("w:val")
     is_ordered = num_fmt != "bullet"
     paragraph_style_id = element.find_child_or_null("w:pStyle").attributes.get("w:val")
