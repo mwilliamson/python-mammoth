@@ -1177,24 +1177,14 @@ def test_text_nodes_are_ignored_when_reading_children():
         _read_and_get_document_xml_element(element)
     )
 
-def _read_and_get_document_xml_element(*args, **kwargs):
-    return _read_and_get_document_xml(
-        lambda reader, element: reader.read_all([element]).map(single),
-        *args,
-        **kwargs)
+def _read_and_get_document_xml_element(element, **kwargs):
+    elements = _read_and_get_document_xml_elements(element, **kwargs)
+    return single(elements)
 
 
-def _read_and_get_document_xml_elements(*args, **kwargs):
-    return _read_and_get_document_xml(
-        lambda reader, element: reader.read_all([element]),
-        *args,
-        **kwargs)
-
-
-def _read_and_get_document_xml(func, *args, **kwargs):
-    numbering = kwargs.pop("numbering", Numbering.EMPTY)
-    styles = kwargs.pop("styles", FakeStyles())
-    result = _read_document_xml(func, *args, numbering=numbering, styles=styles, **kwargs)
+def _read_and_get_document_xml_elements(element, **kwargs):
+    reader = _create_body_reader(**kwargs)
+    result = reader.read_all([element])
     assert_equal([], result.messages)
     return result.value
 
@@ -1211,7 +1201,8 @@ def _read_document_xml(func, element, **kwargs):
 
 def _create_body_reader(**kwargs):
     numbering = kwargs.pop("numbering", Numbering.EMPTY)
-    return body_xml.reader(numbering=numbering, **kwargs)
+    styles = kwargs.pop("styles", FakeStyles())
+    return body_xml.reader(numbering=numbering, styles=styles, **kwargs)
 
 
 
