@@ -1206,10 +1206,15 @@ def _read_document_xml_element(*args, **kwargs):
         **kwargs)
 
 
-def _read_document_xml(func, element, *args, **kwargs):
-    numbering = kwargs.pop("numbering", Numbering.EMPTY)
-    reader = body_xml.reader(*args, numbering=numbering, **kwargs)
+def _read_document_xml(func, element, **kwargs):
+    reader = _create_body_reader(**kwargs);
     return func(reader, element)
+
+
+def _create_body_reader(**kwargs):
+    numbering = kwargs.pop("numbering", Numbering.EMPTY)
+    return body_xml.reader(numbering=numbering, **kwargs)
+
 
 
 class FakeStyles(object):
