@@ -1183,8 +1183,11 @@ def _read_and_get_document_xml_element(element, **kwargs):
 
 
 def _read_and_get_document_xml_elements(element, **kwargs):
+    if not isinstance(element, list):
+        element = [element]
+
     reader = _create_body_reader(**kwargs)
-    result = reader.read_all([element])
+    result = reader.read_all(element)
     assert_equal([], result.messages)
     return result.value
 
