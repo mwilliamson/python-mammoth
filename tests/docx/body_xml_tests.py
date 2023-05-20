@@ -1199,11 +1199,9 @@ def _read_and_get_document_xml(func, *args, **kwargs):
     return result.value
 
 
-def _read_document_xml_element(*args, **kwargs):
-    return _read_document_xml(
-        lambda reader, element: reader.read_all([element]).map(single),
-        *args,
-        **kwargs)
+def _read_document_xml_element(element, **kwargs):
+    reader = _create_body_reader(**kwargs)
+    return reader.read_all([element]).map(single)
 
 
 def _read_document_xml(func, element, **kwargs):
