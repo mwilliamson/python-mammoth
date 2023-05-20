@@ -49,6 +49,14 @@ class _BodyReader(object):
 
 
 def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
+    current_instr_text = []
+    complex_field_stack = []
+
+    # When a paragraph is marked as deleted, its contents should be combined
+    # with the following paragraph. See 17.13.5.15 del (Deleted Paragraph) of
+    # ECMA-376 4th edition Part 1.
+    deleted_paragraph_contents = []
+
     _ignored_elements = set([
         "office-word:wrap",
         "v:shadow",
@@ -131,29 +139,40 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
-        alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
-        indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
 
-        return _ReadResult.map_results(
-            _read_paragraph_style(properties),
-            _read_xml_elements(element.children),
-            lambda style, children: documents.paragraph(
-                children=children,
-                style_id=style[0],
-                style_name=style[1],
-                numbering=_read_numbering_properties(
-                    paragraph_style_id=style[0],
-                    element=properties.find_child_or_null("w:numPr"),
-                ),
-                alignment=alignment,
-                indent=indent,
-            )).append_extra()
+        is_deleted = properties.find_child_or_null("w:rPr").find_child("w:del")
+
+        if is_deleted is not None:
+            for child in element.children:
+                deleted_paragraph_contents.append(child)
+            return _empty_result
+
+        else:
+            alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
+            indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
+
+            children_xml = element.children
+            if deleted_paragraph_contents:
+                children_xml = deleted_paragraph_contents + children_xml
+                deleted_paragraph_contents.clear()
+
+            return _ReadResult.map_results(
+                _read_paragraph_style(properties),
+                _read_xml_elements(children_xml),
+                lambda style, children: documents.paragraph(
+                    children=children,
+                    style_id=style[0],
+                    style_name=style[1],
+                    numbering=_read_numbering_properties(
+                        paragraph_style_id=style[0],
+                        element=properties.find_child_or_null("w:numPr"),
+                    ),
+                    alignment=alignment,
+                    indent=indent,
+                )).append_extra()
 
     def _read_paragraph_style(properties):
         return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id)
-
-    current_instr_text = []
-    complex_field_stack = []
 
     def current_hyperlink_kwargs():
         for complex_field in reversed(complex_field_stack):

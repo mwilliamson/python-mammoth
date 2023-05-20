@@ -4,7 +4,7 @@ import io
 import sys
 
 import funk
-from precisely import assert_that, is_sequence
+from precisely import all_of, assert_that, has_attrs, instance_of, is_sequence
 import pytest
 
 from mammoth import documents, results
@@ -143,6 +143,59 @@ class ParagraphTests(object):
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
         assert_equal(None, paragraph.numbering)
+
+    def test_content_of_deleted_paragraph_is_prepended_to_next_paragraph(self):
+        styles = Styles.create(
+            paragraph_styles={
+                "Heading1": Style(style_id="Heading1", name="Heading 1"),
+                "Heading2": Style(style_id="Heading2", name="Heading 2"),
+            },
+        )
+        body_xml = [
+            xml_element("w:p", {}, [
+                xml_element("w:pPr", {}, [
+                    xml_element("w:pStyle", {"w:val": "Heading1"}, []),
+                    xml_element("w:rPr", {}, [
+                        xml_element("w:del"),
+                    ]),
+                ]),
+                _run_element_with_text("One"),
+            ]),
+            xml_element("w:p", {}, [
+                xml_element("w:pPr", {}, [
+                    xml_element("w:pStyle", {"w:val": "Heading2"}, []),
+                ]),
+                _run_element_with_text("Two"),
+            ]),
+            # Include a second paragraph that isn't deleted to ensure we only add
+            # the deleted paragraph contents once.
+            xml_element("w:p", {}, [
+                _run_element_with_text("Three"),
+            ])
+        ]
+
+        result = _read_and_get_document_xml_elements(body_xml, styles=styles);
+
+        assert_that(result, is_sequence(
+            all_of(
+                instance_of(documents.Paragraph),
+                has_attrs(
+                    style_id="Heading2",
+                    children=is_sequence(
+                        documents.run([documents.text("One")]),
+                        documents.run([documents.text("Two")])
+                    ),
+                ),
+            ),
+            all_of(
+                instance_of(documents.Paragraph),
+                has_attrs(
+                    children=is_sequence(
+                        documents.run([documents.text("Three")]),
+                    )
+                ),
+            ),
+        ))
 
     def _paragraph_with_numbering_properties(self, children):
         numbering_properties_xml = xml_element("w:numPr", {}, children)
