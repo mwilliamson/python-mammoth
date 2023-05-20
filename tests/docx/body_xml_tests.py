@@ -1206,13 +1206,6 @@ def _read_document_xml_element(*args, **kwargs):
         **kwargs)
 
 
-def _read_document_xml_elements(*args, **kwargs):
-    return _read_document_xml(
-        lambda reader, element: reader.read_all([element]),
-        *args,
-        **kwargs)
-
-
 def _read_document_xml(func, element, *args, **kwargs):
     numbering = kwargs.pop("numbering", Numbering.EMPTY)
     reader = body_xml.reader(*args, numbering=numbering, **kwargs)
