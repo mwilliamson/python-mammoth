@@ -154,7 +154,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             children_xml = element.children
             if deleted_paragraph_contents:
                 children_xml = deleted_paragraph_contents + children_xml
-                deleted_paragraph_contents.clear()
+                del deleted_paragraph_contents[:]
 
             return _ReadResult.map_results(
                 _read_paragraph_style(properties),
