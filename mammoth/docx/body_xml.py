@@ -2,18 +2,29 @@ import contextlib
 import re
 import sys
 
+import xml
+
 from .. import documents
 from .. import results
 from .. import lists
 from . import complex_fields
 from .dingbats import dingbats
-from .xmlparser import node_types, XmlElement
+from .xmlparser import XmlText, node_types, XmlElement
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
+from lxml import etree
+import pkg_resources
 
 if sys.version_info >= (3, ):
     unichr = chr
 
+resource_package = __name__
+omml2mml_path = "/OMML2MML.xsl"
+
+# Load the XSLT file from the package
+omml2mml_content = pkg_resources.resource_string(resource_package, omml2mml_path)
+omml2mml_root = etree.XML(omml2mml_content)
+omml2mml_transform = etree.XSLT(omml2mml_root)
 
 def reader(
     numbering=None,
@@ -532,6 +543,92 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def read_sdt(element):
         return read_child_elements(element.find_child_or_null("w:sdtContent"))
+        
+    def xml_element_to_string(element, namespace_map=None, root=True):
+        if isinstance(element, XmlText):
+            return element.value  # Directly return the text value
+
+        if namespace_map is None:
+            namespace_map = {}
+
+        # Split the element name into namespace and local name
+        if "}" in element.name:
+            namespace, local_name = element.name[1:].split("}")
+            namespace_prefix = namespace_map.get(namespace, '')
+            tag_name = f'{namespace_prefix}:{local_name}' if namespace_prefix else local_name
+        else:
+            tag_name = element.name
+
+        # Start tag with element name
+        xml_string = f'<{tag_name}'
+
+        # If this is the root element, add namespace definitions
+        if root:
+            for uri, prefix in namespace_map.items():
+                xml_string += f' xmlns:{prefix}="{uri}"'
+
+        # Add attributes
+        for attr_name, attr_value in element.attributes.items():
+            attr_name = convert_attribute_name(attr_name, namespace_map)
+            xml_string += f' {attr_name}="{attr_value}"'
+
+        # Close start tag
+        xml_string += '>'
+
+        # Add children
+        for child in element.children:
+            xml_string += xml_element_to_string(child, namespace_map, root=False)  # Recursive call
+
+        # End tag
+        xml_string += f'</{tag_name}>'
+
+        return xml_string
+
+    def convert_attribute_name(attr_name, namespace_map):
+        if "}" in attr_name:
+            namespace, local_name = attr_name[1:].split("}")
+            namespace_prefix = namespace_map.get(namespace, '')
+            return f'{namespace_prefix}:{local_name}' if namespace_prefix else local_name
+        else:
+            return attr_name
+
+    def omml_to_mathml(omml_element):
+        mathml_element = omml2mml_transform(omml_element)
+        return mathml_element
+
+    def math_handler(element):
+        namespace_map = {
+            "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas": "wpc",
+            "http://schemas.microsoft.com/office/mac/office/2008/main": "mo",
+            "http://schemas.openxmlformats.org/markup-compatibility/2006": "mc",
+            "urn:schemas-microsoft-com:mac:vml": "mv",
+            "urn:schemas-microsoft-com:office:office": "o",
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships": "r",
+            "http://schemas.openxmlformats.org/officeDocument/2006/math": "m",
+            "urn:schemas-microsoft-com:vml": "v",
+            "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing": "wp14",
+            "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing": "wp",
+            "urn:schemas-microsoft-com:office:word": "w10",
+            "http://schemas.openxmlformats.org/wordprocessingml/2006/main": "w",
+            "http://schemas.microsoft.com/office/word/2010/wordml": "w14",
+            "http://schemas.microsoft.com/office/word/2012/wordml": "w15",
+            "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup": "wpg",
+            "http://schemas.microsoft.com/office/word/2010/wordprocessingInk": "wpi",
+            "http://schemas.microsoft.com/office/word/2006/wordml": "wne",
+            "http://schemas.microsoft.com/office/word/2010/wordprocessingShape": "wps",
+            "http://schemas.openxmlformats.org/officeDocument/2006/math": "math",
+        }
+
+        omml_xml_string = xml_element_to_string(element, namespace_map=namespace_map)
+        omml_xml = etree.fromstring(omml_xml_string)
+        
+        mathml = omml_to_mathml(omml_xml)
+        mathml_string = etree.tostring(mathml, pretty_print=True, encoding='unicode')
+        mathml_text_node = documents.Text(mathml_string)
+
+
+        # Return the Run as part of the _ReadResult
+        return _ReadResult([mathml_text_node], [], [])
 
     handlers = {
         "w:t": text,
@@ -567,7 +664,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:endnoteReference": note_reference_reader("endnote"),
         "w:commentReference": read_comment_reference,
         "mc:AlternateContent": alternate_content,
-        "w:sdt": read_sdt
+        "w:sdt": read_sdt,
+        "{http://schemas.openxmlformats.org/officeDocument/2006/math}oMathPara": math_handler,
     }
 
     def read(element):

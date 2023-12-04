@@ -16,6 +16,8 @@ setup(
     author_email='mike@zwobble.org',
     url='https://github.com/mwilliamson/python-mammoth',
     packages=['mammoth', 'mammoth.docx', 'mammoth.html', 'mammoth.styles', 'mammoth.styles.parser', 'mammoth.writers'],
+    package_data={'mammoth.docx': ['OMML2MML.xsl']},
+    include_package_data=True,
     entry_points={
         "console_scripts": [
             "mammoth=mammoth.cli:main"
@@ -24,6 +26,7 @@ setup(
     keywords="docx word office clean html markdown md",
     install_requires=[
         "cobble>=0.1.3,<0.2",
+        "lxml>=4.6.3",
     ],
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     license="BSD-2-Clause",
