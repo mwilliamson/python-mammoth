@@ -53,6 +53,20 @@ def test_can_read_multiple_classes_on_element():
     )
 
 
+def test_can_read_attribute_on_element():
+    assert_equal(
+        html_paths.path([html_paths.element(["p"], attributes={"lang": "fr"})]),
+        read_html_path("p[lang='fr']")
+    )
+
+
+def test_can_read_multiple_attributes_on_element():
+    assert_equal(
+        html_paths.path([html_paths.element(["p"], attributes={"lang": "fr", "data-x": "y"})]),
+        read_html_path("p[lang='fr'][data-x='y']")
+    )
+
+
 def test_can_read_when_element_must_be_fresh():
     assert_equal(
         html_paths.path([html_paths.element(["p"], fresh=True)]),
