@@ -299,6 +299,13 @@ def test_can_extract_raw_text():
         assert_equal("Apple\n\nBanana\n\n", result.value)
 
 
+def test_can_read_strict_format():
+    with open(generate_test_path("strict-format.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj)
+        assert_equal([], result.messages)
+        assert_equal("<p>Test</p>", result.value)
+
+
 def _copy_of_test_data(path):
     destination = io.BytesIO()
     with open(generate_test_path(path), "rb") as source:
