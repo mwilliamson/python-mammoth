@@ -5,24 +5,24 @@ from mammoth.docx import body_xml
 from ..testing import assert_equal
 
 
-class ReadXmlElementTests(object):
-    def test_can_read_text_within_document(self):
-        element = _document_element_with_text("Hello!")
-        assert_equal(
-            documents.document([documents.paragraph([documents.run([documents.Text("Hello!")])])]),
-            _read_and_get_document_xml_element(element)
-        )
+def test_can_read_text_within_document():
+    element = _document_element_with_text("Hello!")
+    assert_equal(
+        documents.document([documents.paragraph([documents.run([documents.Text("Hello!")])])]),
+        _read_and_get_document_xml_element(element)
+    )
 
-    def test_footnotes_of_document_are_read(self):
-        notes = [documents.note("footnote", "4", [documents.paragraph([])])]
 
-        body_xml = xml_element("w:body")
-        document_xml = xml_element("w:document", {}, [body_xml])
+def test_footnotes_of_document_are_read():
+    notes = [documents.note("footnote", "4", [documents.paragraph([])])]
 
-        document = _read_and_get_document_xml_element(document_xml, notes=notes)
-        footnote = document.notes.find_note("footnote", "4")
-        assert_equal("4", footnote.note_id)
-        assert isinstance(footnote.body[0], documents.Paragraph)
+    body_xml = xml_element("w:body")
+    document_xml = xml_element("w:document", {}, [body_xml])
+
+    document = _read_and_get_document_xml_element(document_xml, notes=notes)
+    footnote = document.notes.find_note("footnote", "4")
+    assert_equal("4", footnote.note_id)
+    assert isinstance(footnote.body[0], documents.Paragraph)
 
 
 def _read_and_get_document_xml_element(*args, **kwargs):
