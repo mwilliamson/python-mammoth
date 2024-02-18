@@ -8,14 +8,16 @@ from ..testing import assert_equal
 
 
 def test_when_body_element_is_present_then_body_is_read():
-    paragraph_xml = xml_element("w:p", {}, [])
+    text_xml = xml_element("w:t", {}, [xml_text("Hello!")])
+    run_xml = xml_element("w:r", {}, [text_xml])
+    paragraph_xml = xml_element("w:p", {}, [run_xml])
     body_xml = xml_element("w:body", {}, [paragraph_xml])
     document_xml = xml_element("w:document", {}, [body_xml])
 
     document = _read_and_get_document_xml_element(document_xml)
 
     assert_equal(
-        documents.document([documents.paragraph([])]),
+        documents.document([documents.paragraph([documents.run([documents.text("Hello!")])])]),
         document
     )
 
@@ -28,14 +30,6 @@ def test_when_body_element_is_not_present_then_error_is_raised():
     error = pytest.raises(ValueError, lambda: _read_and_get_document_xml_element(document_xml))
 
     assert_equal(str(error.value), "Could not find the body element: are you sure this is a docx file?")
-
-
-def test_can_read_text_within_document():
-    element = _document_element_with_text("Hello!")
-    assert_equal(
-        documents.document([documents.paragraph([documents.run([documents.Text("Hello!")])])]),
-        _read_and_get_document_xml_element(element)
-    )
 
 
 def test_footnotes_of_document_are_read():
@@ -55,19 +49,3 @@ def _read_and_get_document_xml_element(*args, **kwargs):
     result = read_document_xml_element(*args, body_reader=body_reader, **kwargs)
     assert_equal([], result.messages)
     return result.value
-
-
-def _document_element_with_text(text):
-    return xml_element("w:document", {}, [
-        xml_element("w:body", {}, [_paragraph_element_with_text(text)])
-    ])
-
-def _paragraph_element_with_text(text):
-    return xml_element("w:p", {}, [_run_element_with_text(text)])
-
-def _run_element_with_text(text):
-    return xml_element("w:r", {}, [_text_element(text)])
-
-
-def _text_element(value):
-    return xml_element("w:t", {}, [xml_text(value)])
