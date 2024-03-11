@@ -105,7 +105,20 @@ class ParagraphTests(object):
         assert_equal("1", paragraph.numbering.level_index)
         assert_equal(True, paragraph.numbering.is_ordered)
 
-    def test_numbering_on_paragraph_style_takes_precedence_over_numpr(self):
+    def test_numbering_on_paragraph_style_takes_precedence_when_no_numPr_is_present(self):
+        properties_xml = xml_element("w:pPr", {}, [
+            xml_element("w:pStyle", {"w:val": "List"}),
+        ])
+        paragraph_xml = xml_element("w:p", {}, [properties_xml])
+
+        numbering = _NumberingMap(
+            levels_by_paragraph_style_id={"List": documents.numbering_level("1", True)}
+        )
+        paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
+
+        assert_equal(True, paragraph.numbering.is_ordered)
+
+    def test_numbering_on_numPr_takes_precedence_over_paragraph_style(self):
         numbering_properties_xml = xml_element("w:numPr", {}, [
             xml_element("w:ilvl", {"w:val": "1"}),
             xml_element("w:numId", {"w:val": "42"}),
@@ -122,8 +135,8 @@ class ParagraphTests(object):
         )
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
-        assert_equal(True, paragraph.numbering.is_ordered)
-
+        assert_equal(False, paragraph.numbering.is_ordered)
+        
     def test_numbering_properties_are_ignored_if_lvl_is_missing(self):
         paragraph_xml = self._paragraph_with_numbering_properties([
             xml_element("w:numId", {"w:val": "42"}),
