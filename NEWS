@@ -1,3 +1,9 @@
+# 1.7.1
+
+* Switch the precedence of numbering properties in paragraph properties and the
+  numbering in paragraph styles so that the numbering properties in paragraph
+  properties takes precedence.
+
 # 1.7.0
 
 * Support attributes in HTML paths in style mappings.

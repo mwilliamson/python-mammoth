@@ -236,17 +236,17 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return results.warning("{0} style with ID {1} was referenced but not defined in the document".format(style_type, style_id))
 
     def _read_numbering_properties(paragraph_style_id, element):
+        num_id = element.find_child_or_null("w:numId").attributes.get("w:val")
+        level_index = element.find_child_or_null("w:ilvl").attributes.get("w:val")
+        if num_id is not None and level_index is not None:
+            return numbering.find_level(num_id, level_index)
+
         if paragraph_style_id is not None:
             level = numbering.find_level_by_paragraph_style_id(paragraph_style_id)
             if level is not None:
                 return level
 
-        num_id = element.find_child_or_null("w:numId").attributes.get("w:val")
-        level_index = element.find_child_or_null("w:ilvl").attributes.get("w:val")
-        if num_id is None or level_index is None:
-            return None
-        else:
-            return numbering.find_level(num_id, level_index)
+        return None
 
     def _read_paragraph_indent(element):
         attributes = element.attributes
