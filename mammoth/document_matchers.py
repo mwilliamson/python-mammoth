@@ -51,6 +51,13 @@ class small_caps(object):
     element_type = "small_caps"
 
 
+def highlight(color=None):
+    return HighlightMatcher(color=color)
+
+
+HighlightMatcher = collections.namedtuple("HighlightMatcher", ["color"])
+HighlightMatcher.element_type = "highlight"
+
 class comment_reference(object):
     element_type = "comment_reference"
 

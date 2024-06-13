@@ -242,6 +242,37 @@ def test_small_caps_runs_can_be_mapped_using_style_mapping():
     assert_equal("<span>Hello</span>", result.value)
 
 
+def test_highlighted_runs_are_ignored_by_default():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], highlight="yellow"),
+    )
+    assert_equal("Hello", result.value)
+
+
+def test_highlighted_runs_can_be_configured_with_style_mapping_for_all_highlights():
+    result = convert_document_element_to_html(
+        documents.run(children=[documents.text("Hello")], highlight="yellow"),
+        style_map=[
+            _style_mapping("highlight => mark"),
+        ],
+    )
+    assert_equal("<mark>Hello</mark>", result.value)
+
+
+def test_highlighted_runs_can_be_configured_with_style_mapping_for_specific_highlight_color():
+    result = convert_document_element_to_html(
+        documents.paragraph(children=[
+            documents.run(children=[documents.text("Yellow")], highlight="yellow"),
+            documents.run(children=[documents.text("Red")], highlight="red"),
+        ]),
+        style_map=[
+            _style_mapping("highlight[color='yellow'] => mark.yellow"),
+            _style_mapping("highlight => mark"),
+        ]
+    )
+    assert_equal('<p><mark class="yellow">Yellow</mark><mark>Red</mark></p>', result.value)
+
+
 def test_superscript_runs_are_wrapped_in_sup_tags():
     result = convert_document_element_to_html(
         documents.run(

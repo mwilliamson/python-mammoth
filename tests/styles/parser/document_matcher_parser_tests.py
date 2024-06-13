@@ -141,6 +141,18 @@ def test_reads_small_caps():
         read_document_matcher("small-caps")
     )
 
+def test_reads_highlight_without_color():
+    assert_equal(
+        document_matchers.highlight(),
+        read_document_matcher("highlight")
+    )
+
+def test_reads_highlight_with_color():
+    assert_equal(
+        document_matchers.highlight(color="yellow"),
+        read_document_matcher("highlight[color='yellow']")
+    )
+
 def test_reads_comment_reference():
     assert_equal(
         document_matchers.comment_reference,

@@ -52,6 +52,9 @@ def parse_document_matcher(tokens):
     elif tokens.try_skip(TokenType.IDENTIFIER, "small-caps"):
         return document_matchers.small_caps
 
+    elif tokens.try_skip(TokenType.IDENTIFIER, "highlight"):
+        return _parse_highlight(tokens)
+
     elif tokens.try_skip(TokenType.IDENTIFIER, "comment-reference"):
         return document_matchers.comment_reference
 
@@ -96,6 +99,18 @@ def _parse_list_type(tokens):
         return False
     else:
         raise LineParseError("Unrecognised list type: {0}".format(list_type))
+
+
+def _parse_highlight(tokens):
+    if tokens.try_skip(TokenType.SYMBOL, "["):
+        tokens.skip(TokenType.IDENTIFIER, "color")
+        tokens.skip(TokenType.SYMBOL, "=")
+        color = parse_string(tokens)
+        tokens.skip(TokenType.SYMBOL, "]");
+    else:
+        color = None
+
+    return document_matchers.highlight(color=color)
 
 
 def _parse_break(tokens):
