@@ -405,6 +405,15 @@ class RunTests(object):
         run = self._read_run_with_properties([font_size_xml])
         assert_equal(None, run.font_size)
 
+    def test_run_has_no_highlight_by_default(self):
+        run = self._read_run_with_properties([])
+        assert_equal(None, run.highlight)
+
+    def test_run_has_highlight_read_from_properties(self):
+        highlight_xml = xml_element("w:highlight", {"w:val": "yellow"})
+        run = self._read_run_with_properties([highlight_xml])
+        assert_equal("yellow", run.highlight)
+
     def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
