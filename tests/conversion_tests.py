@@ -208,7 +208,7 @@ def test_strikethrough_runs_can_be_configured_with_style_mapping():
     assert_equal("<del>Hello</del>", result.value)
 
 
-def test_sml_caps_runs_are_ignored_by_default():
+def test_all_caps_runs_are_ignored_by_default():
     result = convert_document_element_to_html(
         documents.run(children=[documents.text("Hello")], is_all_caps=True),
     )
