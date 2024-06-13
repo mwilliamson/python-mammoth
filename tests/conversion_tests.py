@@ -491,12 +491,16 @@ def test_breaks_that_are_not_line_breaks_are_ignored():
 
 def test_breaks_can_be_mapped_using_style_mappings():
     result = convert_document_element_to_html(
-        documents.page_break,
+        documents.run(children=[
+            documents.page_break,
+            documents.line_break,
+        ]),
         style_map=[
-            _style_mapping("br[type='page'] => hr")
+            _style_mapping("br[type='page'] => hr"),
+            _style_mapping("br[type='line'] => br.line-break"),
         ],
     )
-    assert_equal("<hr />", result.value)
+    assert_equal('<hr /><br class="line-break" />', result.value)
 
 
 def test_images_are_converted_to_img_tags_with_data_uri():
