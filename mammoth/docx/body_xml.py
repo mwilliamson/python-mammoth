@@ -102,7 +102,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
         is_all_caps = read_boolean_element(properties.find_child("w:caps"))
         is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
-        highlight = properties.find_child_or_null("w:highlight").attributes.get("w:val")
+        highlight = read_highlight_value(properties.find_child_or_null("w:highlight").attributes.get("w:val"))
 
         def add_complex_field_hyperlink(children):
             hyperlink_kwargs = current_hyperlink_kwargs()
@@ -138,6 +138,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def read_underline_element(element):
         return element and element.attributes.get("w:val") not in [None, "false", "0", "none"]
+
+    def read_highlight_value(value):
+        if not value or value == "none":
+            return None
+        else:
+            return value
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")

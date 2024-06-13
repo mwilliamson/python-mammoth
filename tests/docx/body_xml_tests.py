@@ -414,6 +414,11 @@ class RunTests(object):
         run = self._read_run_with_properties([highlight_xml])
         assert_equal("yellow", run.highlight)
 
+    def test_when_highlight_is_none_then_run_has_no_highlight(self):
+        highlight_xml = xml_element("w:highlight", {"w:val": "none"})
+        run = self._read_run_with_properties([highlight_xml])
+        assert_equal(None, run.highlight)
+
     def _read_run_with_properties(self, properties, styles=None):
         properties_xml = xml_element("w:rPr", {}, properties)
         run_xml = xml_element("w:r", {}, [properties_xml])
