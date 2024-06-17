@@ -10,6 +10,17 @@ def test_text_element_is_converted_to_text_content():
 
     assert_equal("Hello.", result)
 
+@istest
+def raw_text_of_line_break_element_is_newline():
+    assert_equal("\n", extract_raw_text_from_element(documents.line_break))
+
+@istest
+def raw_text_of_page_break_element_is_newline():
+    assert_equal("\n", extract_raw_text_from_element(documents.page_break))
+
+@istest
+def raw_text_of_column_break_element_is_newline():
+    assert_equal("\n", extract_raw_text_from_element(documents.column_break))
 
 def test_tab_element_is_converted_to_tab_character():
     element = documents.tab()
