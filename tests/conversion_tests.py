@@ -339,6 +339,20 @@ def test_hyperlink_target_frame_is_used_as_anchor_target():
     assert_equal('<a href="#start" target="_blank">Hello</a>', result.value)
 
 
+def test_unchecked_checkbox_is_converted_to_unchecked_checkbox_input():
+    result = convert_document_element_to_html(
+        documents.checkbox(checked=False),
+    )
+    assert_equal('<input type="checkbox" />', result.value)
+
+
+def test_checked_checkbox_is_converted_to_checked_checkbox_input():
+    result = convert_document_element_to_html(
+        documents.checkbox(checked=True),
+    )
+    assert_equal('<input checked="checked" type="checkbox" />', result.value)
+
+
 def test_bookmarks_are_converted_to_anchors_with_ids():
     result = convert_document_element_to_html(
         documents.bookmark(name="start"),

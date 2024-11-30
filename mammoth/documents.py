@@ -66,6 +66,12 @@ class Hyperlink(HasChildren):
     target_frame = cobble.field()
 
 @cobble.data
+class Checkbox(Element):
+    checked = cobble.field()
+
+checkbox = Checkbox
+
+@cobble.data
 class Table(HasChildren):
     style_id = cobble.field()
     style_name = cobble.field()

@@ -165,6 +165,15 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         return [html.collapsible_element("a", attributes, nodes)]
 
 
+    def visit_checkbox(self, checkbox, context):
+        attributes = {"type": "checkbox"}
+
+        if checkbox.checked:
+            attributes["checked"] = "checked"
+
+        return [html.element("input", attributes)]
+
+
     def visit_bookmark(self, bookmark, context):
         element = html.collapsible_element(
             "a",
