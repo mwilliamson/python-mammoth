@@ -7,7 +7,7 @@ from .. import results
 from .. import lists
 from . import complex_fields
 from .dingbats import dingbats
-from .xmlparser import node_types, XmlElement
+from .xmlparser import node_types, XmlElement, null_xml_element
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
 
@@ -192,29 +192,45 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def read_fld_char(element):
         fld_char_type = element.attributes.get("w:fldCharType")
         if fld_char_type == "begin":
-            complex_field_stack.append(complex_fields.unknown)
+            complex_field_stack.append(complex_fields.begin(fld_char=element))
             del current_instr_text[:]
+
         elif fld_char_type == "end":
-            complex_field_stack.pop()
+            complex_field = complex_field_stack.pop()
+            if isinstance(complex_field, complex_fields.Begin):
+                complex_field = parse_current_instr_text(complex_field)
+
+            if isinstance(complex_field, complex_fields.Checkbox):
+                return _success(documents.checkbox(checked=complex_field.checked))
+
         elif fld_char_type == "separate":
-            instr_text = "".join(current_instr_text)
-            hyperlink_kwargs = parse_hyperlink_field_code(instr_text)
-            if hyperlink_kwargs is None:
-                complex_field = complex_fields.unknown
-            else:
-                complex_field = complex_fields.hyperlink(hyperlink_kwargs)
-            complex_field_stack.pop()
+            complex_field_separate = complex_field_stack.pop()
+            complex_field = parse_current_instr_text(complex_field_separate)
             complex_field_stack.append(complex_field)
         return _empty_result
 
-    def parse_hyperlink_field_code(instr_text):
+    def parse_current_instr_text(complex_field):
+        instr_text = "".join(current_instr_text)
+
+        if isinstance(complex_field, complex_fields.Begin):
+            fld_char = complex_field.fld_char
+        else:
+            fld_char = null_xml_element
+
+        return parse_instr_text(instr_text, fld_char=fld_char)
+
+    def parse_instr_text(instr_text, *, fld_char):
         external_link_result = re.match(r'\s*HYPERLINK "(.*)"', instr_text)
         if external_link_result is not None:
-            return dict(href=external_link_result.group(1))
+            return complex_fields.hyperlink(dict(href=external_link_result.group(1)))
 
         internal_link_result = re.match(r'\s*HYPERLINK\s+\\l\s+"(.*)"', instr_text)
         if internal_link_result is not None:
-            return dict(anchor=internal_link_result.group(1))
+            return complex_fields.hyperlink(dict(anchor=internal_link_result.group(1)))
+
+        checkbox_result = re.match(r'\s*FORMCHECKBOX\s*', instr_text)
+        if checkbox_result is not None:
+            return complex_fields.checkbox(checked=False)
 
         return None
 

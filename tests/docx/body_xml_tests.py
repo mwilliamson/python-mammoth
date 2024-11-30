@@ -18,6 +18,7 @@ from .document_matchers import (
     is_empty_run,
     is_run,
     is_hyperlink,
+    is_checkbox,
     is_text,
     is_table,
     is_row,
@@ -627,6 +628,52 @@ class ComplexFieldTests(object):
                 ),
             ),
             is_empty_run,
+        )))
+
+
+class CheckboxTests:
+    def test_complex_field_checkbox_without_separate_is_read(self):
+        element = xml_element("w:p", {}, [
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "begin"})
+            ]),
+            xml_element("w:instrText", {}, [
+                xml_text(' FORMCHECKBOX ')
+            ]),
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "end"})
+            ])
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox())),
+        )))
+
+    def test_complex_field_checkbox_with_separate_is_read(self):
+        element = xml_element("w:p", {}, [
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "begin"})
+            ]),
+            xml_element("w:instrText", {}, [
+                xml_text(' FORMCHECKBOX ')
+            ]),
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "separate"})
+            ]),
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "end"})
+            ])
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox())),
         )))
 
 

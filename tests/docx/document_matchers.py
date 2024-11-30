@@ -9,13 +9,14 @@ def create_element_matcher(element_type):
             instance_of(element_type),
             has_attrs(**kwargs),
         )
-    
+
     return matcher
 
 
 is_paragraph = create_element_matcher(documents.Paragraph)
 is_run = create_element_matcher(documents.Run)
 is_hyperlink = create_element_matcher(documents.Hyperlink)
+is_checkbox = create_element_matcher(documents.Checkbox)
 is_table = create_element_matcher(documents.Table)
 is_row = create_element_matcher(documents.TableRow)
 
