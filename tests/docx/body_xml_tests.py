@@ -676,6 +676,99 @@ class CheckboxTests:
             is_run(children=is_sequence(is_checkbox())),
         )))
 
+    def test_complex_field_checkbox_without_default_nor_checked_is_unchecked(self):
+        element = self._complex_field_checkbox_paragraph([
+            xml_element("w:checkBox"),
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox(checked=False))),
+        )))
+
+    def test_complex_field_checkbox_with_default_0_and_without_checked_is_unchecked(self):
+        element = self._complex_field_checkbox_paragraph([
+            xml_element("w:checkBox", {}, [
+                xml_element("w:default", {"w:val": "0"}),
+            ]),
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox(checked=False))),
+        )))
+
+    def test_complex_field_checkbox_with_default_1_and_without_checked_is_checked(self):
+        element = self._complex_field_checkbox_paragraph([
+            xml_element("w:checkBox", {}, [
+                xml_element("w:default", {"w:val": "1"}),
+            ]),
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox(checked=True))),
+        )))
+
+    def test_complex_field_checkbox_with_default_1_and_checked_0_is_unchecked(self):
+        element = self._complex_field_checkbox_paragraph([
+            xml_element("w:checkBox", {}, [
+                xml_element("w:default", {"w:val": "1"}),
+                xml_element("w:checked", {"w:val": "0"}),
+            ]),
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox(checked=False))),
+        )))
+
+    def test_complex_field_checkbox_with_default_0_and_checked_1_is_checked(self):
+        element = self._complex_field_checkbox_paragraph([
+            xml_element("w:checkBox", {}, [
+                xml_element("w:default", {"w:val": "0"}),
+                xml_element("w:checked", {"w:val": "1"}),
+            ]),
+        ])
+
+        paragraph = _read_and_get_document_xml_element(element);
+
+        assert_that(paragraph, is_paragraph(children=is_sequence(
+            is_empty_run,
+            is_empty_run,
+            is_run(children=is_sequence(is_checkbox(checked=True))),
+        )))
+
+    def _complex_field_checkbox_paragraph(self, ff_data_children):
+        return xml_element("w:p", {}, [
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "begin"}, [
+                    xml_element("w:ffData", {}, ff_data_children)
+                ]),
+            ]),
+            xml_element("w:instrText", {}, [
+                xml_text(' FORMCHECKBOX ')
+            ]),
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "separate"})
+            ]),
+            xml_element("w:r", {}, [
+                xml_element("w:fldChar", {"w:fldCharType": "end"})
+            ]),
+        ])
+
 
 def test_can_read_tab_element():
     element = xml_element("w:tab")

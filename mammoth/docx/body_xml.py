@@ -134,7 +134,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
 
     def read_boolean_element(element):
-        return element and element.attributes.get("w:val") not in ["false", "0"]
+        if element is None:
+            return False
+        else:
+            return element.attributes.get("w:val") not in ["false", "0"]
 
     def read_underline_element(element):
         return element and element.attributes.get("w:val") not in [None, "false", "0", "none"]
@@ -231,7 +234,17 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         checkbox_result = re.match(r'\s*FORMCHECKBOX\s*', instr_text)
         if checkbox_result is not None:
-            return complex_fields.checkbox(checked=False)
+            checkbox_element = fld_char \
+                .find_child_or_null("w:ffData") \
+                .find_child_or_null("w:checkBox")
+            checked_element = checkbox_element.find_child("w:checked")
+
+            if checked_element is None:
+                checked = read_boolean_element(checkbox_element.find_child("w:default"))
+            else:
+                checked = read_boolean_element(checked_element)
+
+            return complex_fields.checkbox(checked=checked)
 
         return None
 
