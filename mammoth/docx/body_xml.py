@@ -207,6 +207,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             complex_field_separate = complex_field_stack.pop()
             complex_field = parse_current_instr_text(complex_field_separate)
             complex_field_stack.append(complex_field)
+
         return _empty_result
 
     def parse_current_instr_text(complex_field):
