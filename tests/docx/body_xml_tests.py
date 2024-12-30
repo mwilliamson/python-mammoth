@@ -751,6 +751,43 @@ class CheckboxTests:
             is_run(children=is_sequence(is_checkbox(checked=True))),
         )))
 
+    def test_structured_document_tag_checkbox_without_checked_is_not_checked(self):
+        element = xml_element("w:sdt", {}, [
+            xml_element("w:sdtPr", {}, [
+                xml_element("wordml:checkbox"),
+            ]),
+        ])
+
+        result = _read_and_get_document_xml_element(element)
+
+        assert_that(result, is_checkbox(checked=False))
+
+    def test_structured_document_tag_checkbox_with_checked_0_is_not_checked(self):
+        element = xml_element("w:sdt", {}, [
+            xml_element("w:sdtPr", {}, [
+                xml_element("wordml:checkbox", {}, [
+                    xml_element("wordml:checked", {"wordml:val": "0"}),
+                ]),
+            ]),
+        ])
+
+        result = _read_and_get_document_xml_element(element)
+
+        assert_that(result, is_checkbox(checked=False))
+
+    def test_structured_document_tag_checkbox_with_checked_1_is_checked(self):
+        element = xml_element("w:sdt", {}, [
+            xml_element("w:sdtPr", {}, [
+                xml_element("wordml:checkbox", {}, [
+                    xml_element("wordml:checked", {"wordml:val": "1"}),
+                ]),
+            ]),
+        ])
+
+        result = _read_and_get_document_xml_element(element)
+
+        assert_that(result, is_checkbox(checked=True))
+
     def _complex_field_checkbox_paragraph(self, ff_data_children):
         return xml_element("w:p", {}, [
             xml_element("w:r", {}, [

@@ -1,3 +1,8 @@
+# 1.9.0
+
+* Detect checkboxes, both as complex fields and structured document tags, and
+  convert them to checkbox inputs.
+
 # 1.8.0
 
 * Add style mapping for highlights.

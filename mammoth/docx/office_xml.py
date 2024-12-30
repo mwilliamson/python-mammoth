@@ -23,6 +23,10 @@ _namespaces = [
     ("mc", "http://schemas.openxmlformats.org/markup-compatibility/2006"),
     ("v", "urn:schemas-microsoft-com:vml"),
     ("office-word", "urn:schemas-microsoft-com:office:word"),
+
+    # [MS-DOCX]: Word Extensions to the Office Open XML (.docx) File Format
+    # https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/b839fe1f-e1ca-4fa6-8c26-5954d0abbccd
+    ("wordml", "http://schemas.microsoft.com/office/word/2010/wordml"),
 ]
 
 

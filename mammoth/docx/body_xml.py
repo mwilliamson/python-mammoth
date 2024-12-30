@@ -137,7 +137,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         if element is None:
             return False
         else:
-            return element.attributes.get("w:val") not in ["false", "0"]
+            return read_boolean_attribute_value(element.attributes.get("w:val"))
+
+    def read_boolean_attribute_value(value):
+        return value not in ["false", "0"]
 
     def read_underline_element(element):
         return element and element.attributes.get("w:val") not in [None, "false", "0", "none"]
@@ -569,7 +572,17 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return read_child_elements(element.find_child("mc:Fallback"))
 
     def read_sdt(element):
-        return read_child_elements(element.find_child_or_null("w:sdtContent"))
+        checkbox = element.find_child_or_null("w:sdtPr").find_child("wordml:checkbox")
+
+        if checkbox is not None:
+            checked_element = checkbox.find_child("wordml:checked")
+            is_checked = (
+                checked_element is not None and
+                read_boolean_attribute_value(checked_element.attributes.get("wordml:val"))
+            )
+            return _success(documents.checkbox(checked=is_checked))
+        else:
+            return read_child_elements(element.find_child_or_null("w:sdtContent"))
 
     handlers = {
         "w:t": text,
