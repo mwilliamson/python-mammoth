@@ -42,6 +42,7 @@ class XmlElementList(object):
 
 class NullXmlElement(object):
     attributes = {}
+    children = []
 
     def find_child_or_null(self, name):
         return self
