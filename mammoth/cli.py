@@ -25,12 +25,13 @@ def main():
             convert_image = mammoth.images.img_element(ImageWriter(args.output_dir))
             output_filename = "{0}.html".format(os.path.basename(args.path).rpartition(".")[0])
             output_path = os.path.join(args.output_dir, output_filename)
-        
+
         result = mammoth.convert(
             docx_fileobj,
             style_map=style_map,
             convert_image=convert_image,
             output_format=args.output_format,
+            ignore_empty_paragraphs=not args.preserve_layout
         )
         for message in result.messages:
             sys.stderr.write(message.message)
@@ -96,6 +97,11 @@ def _parse_args():
         "--style-map",
         required=False,
         help="File containg a style map.")
+    parser.add_argument(
+        "--preserve-layout",
+        required=False,
+        action='store_true',
+        help="Keep all paragraphs from the input document. Useful if spacing is important for proper layout of output document.")
     return parser.parse_args()
 
 
