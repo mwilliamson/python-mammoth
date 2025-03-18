@@ -414,7 +414,7 @@ class HtmlWriter(Writer):
 
 
 def _escape_html(text):
-    return escape(text, HTML_COMMON_ESCAPE_SEQUENCES)
+    return escape(str(text), HTML_COMMON_ESCAPE_SEQUENCES)
 
 
 def _generate_attribute_string(attributes):

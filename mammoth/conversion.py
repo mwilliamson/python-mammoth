@@ -188,7 +188,13 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     _default_table_path = html_paths.path([html_paths.element(["table"], fresh=True)])
 
     def visit_table(self, table, context):
-        return self._find_html_path(table, "table", self._default_table_path) \
+        default_path = html_paths.path([html_paths.element(
+            ["table"],
+            {
+                "class": table.style_id,
+            },
+            fresh=True)])
+        return self._find_html_path(table, "table", default_path) \
             .wrap(lambda: self._convert_table_children(table, context))
 
     def _convert_table_children(self, table, context):
@@ -213,7 +219,14 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
 
     def visit_table_row(self, table_row, context):
-        return [html.element("tr", {}, [html.force_write] + self._visit_all(table_row.children, context))]
+        return [
+            html.element("tr",
+                         {
+                            "class": str(table_row.style_id),
+                         },
+                         [html.force_write] + self._visit_all(table_row.children, context)
+                         )
+        ]
 
 
     def visit_table_cell(self, table_cell, context):
@@ -226,6 +239,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             attributes["colspan"] = str(table_cell.colspan)
         if table_cell.rowspan != 1:
             attributes["rowspan"] = str(table_cell.rowspan)
+        attributes["class"] = str(table_cell.style_id)
         nodes = [html.force_write] + self._visit_all(table_cell.children, context)
         return [
             html.element(tag_name, attributes, nodes)

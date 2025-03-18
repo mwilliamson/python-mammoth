@@ -9,6 +9,7 @@ def img_element(func):
         if image.alt_text:
             attributes["alt"] = image.alt_text
         attributes.update(func(image))
+        attributes.update(image.shape)
 
         return [html.element("img", attributes)]
 

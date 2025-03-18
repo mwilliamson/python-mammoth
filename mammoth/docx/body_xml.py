@@ -5,7 +5,7 @@ import sys
 from .. import documents
 from .. import results
 from .. import lists
-from . import complex_fields
+from . import complex_fields, xmlparser
 from .dingbats import dingbats
 from .xmlparser import node_types, XmlElement, null_xml_element
 from .styles_xml import Styles
@@ -13,6 +13,9 @@ from .uris import replace_fragment, uri_to_zip_entry_name
 
 if sys.version_info >= (3, ):
     unichr = chr
+
+EMU_TO_INCHES = 914400
+EMU_TO_PIXELS = 9525
 
 
 def reader(
@@ -351,15 +354,32 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
         is_header = bool(properties.find_child("w:tblHeader"))
-        return _read_xml_elements(element.children) \
-            .map(lambda children: documents.table_row(
+        return _ReadResult.map_results(
+            read_table_conditional_style(properties),
+            _read_xml_elements(element.children),
+            lambda style, children: documents.table_row(
                 children=children,
                 is_header=is_header,
-            ))
+                style_id=style[0],
+                style_name=style[1],
+            )
+        )
+
+
+    def read_table_conditional_style(properties):
+        """
+        The id in a conditional style is present in `w:val` and represents a bit mask?
+
+        See `Conditional Table Style <https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.conditionalformatstyle?view=openxml-3.0.1>`_
+        for more details about how conditional styles work.
+
+        """
+        return _read_style(properties, "w:cnfStyle", "Table", styles.find_table_style_by_id)
 
 
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
+        style = read_table_conditional_style(properties)
         gridspan = properties \
             .find_child_or_null("w:gridSpan") \
             .attributes.get("w:val")
@@ -369,11 +389,15 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             colspan = int(gridspan)
 
-        return _read_xml_elements(element.children) \
-            .map(lambda children: _add_attrs(
+        return _ReadResult.map_results(
+            read_table_conditional_style(properties),
+            _read_xml_elements(element.children),
+            lambda style, children: _add_attrs(
                 documents.table_cell(
                     children=children,
-                    colspan=colspan
+                    colspan=colspan,
+                    style_id=style[0],
+                    style_name=style[1],
                 ),
                 _vmerge=read_vmerge(properties),
             ))
@@ -487,29 +511,31 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             alt_text = properties.get("descr")
         else:
             alt_text = properties.get("title")
-        blips = element.find_children("a:graphic") \
+        pic_element = element.find_children("a:graphic") \
             .find_children("a:graphicData") \
-            .find_children("pic:pic") \
-            .find_children("pic:blipFill") \
+            .find_children("pic:pic")
+        blips = pic_element.find_children("pic:blipFill") \
             .find_children("a:blip")
-        return _read_blips(blips, alt_text)
+        shape_props_element = pic_element.find_children("pic:spPr")
+        shape_props = _find_image_shapes(shape_props_element)
+        return _read_blips(blips, alt_text, shape_props)
 
-    def _read_blips(blips, alt_text):
-        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text), blips))
+    def _read_blips(blips, alt_text, shape_props):
+        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text, shape_props), blips))
 
-    def _read_blip(element, alt_text):
+    def _read_blip(element, alt_text, shape_props):
         blip_image = _find_blip_image(element)
 
         if blip_image is None:
             warning = results.warning("Could not find image file for a:blip element")
             return _empty_result_with_message(warning)
         else:
-            return _read_image(blip_image, alt_text)
+            return _read_image(blip_image, alt_text, shape_props)
 
-    def _read_image(image_file, alt_text):
+    def _read_image(image_file, alt_text, shape_props):
         image_path, open_image = image_file
         content_type = content_types.find_content_type(image_path)
-        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
+        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image, shape=shape_props)
 
         if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
             messages = []
@@ -527,6 +553,25 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _find_linked_image(link_relationship_id)
         else:
             return None
+
+    def _find_image_shapes(props_element):
+        return lists.map(lambda element: _find_image_shape(element), props_element)[-1]
+
+    def _find_image_shape(element):
+        location_element = element.find_child("a:xfrm") \
+            .find_child("a:off")
+        size_element = element.find_child("a:xfrm") \
+            .find_child("a:ext")
+        shape_element = element.find_child("a:prstGeom")
+        return {
+            "width": str(float(size_element.attributes.get("cx")) / EMU_TO_PIXELS),
+            "height": str(float(size_element.attributes.get("cy")) / EMU_TO_PIXELS),
+            "position": "relative",
+            "left": str(float(location_element.attributes.get("x"))),
+            "top": str(float(location_element.attributes.get("y"))),
+            "_ms_shape": shape_element.attributes.get("prst")
+        }
+
 
     def _find_embedded_image(relationship_id):
         target = relationships.find_target_by_relationship_id(relationship_id)
@@ -557,6 +602,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _empty_result_with_message(warning)
         else:
             title = element.attributes.get("o:title")
+            print("From body xml 1")
+            print(dir(element))
+            i=i
             return _read_image(_find_embedded_image(relationship_id), title)
 
     def note_reference_reader(note_type):

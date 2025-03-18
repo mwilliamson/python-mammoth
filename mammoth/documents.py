@@ -79,11 +79,15 @@ class Table(HasChildren):
 @cobble.data
 class TableRow(HasChildren):
     is_header = cobble.field()
+    style_id = cobble.field()
+    style_name = cobble.field()
 
 @cobble.data
 class TableCell(HasChildren):
     colspan = cobble.field()
     rowspan = cobble.field()
+    style_id = cobble.field()
+    style_name = cobble.field()
 
 @cobble.data
 class Break(Element):
@@ -104,6 +108,7 @@ class Image(Element):
     alt_text = cobble.field()
     content_type = cobble.field()
     open = cobble.field()
+    shape = cobble.field()
 
 
 def document(children, notes=None, comments=None):
@@ -184,15 +189,15 @@ bookmark = Bookmark
 def table(children, style_id=None, style_name=None):
     return Table(children=children, style_id=style_id, style_name=style_name)
 
-def table_row(children, is_header=None):
-    return TableRow(children=children, is_header=bool(is_header))
+def table_row(children, is_header=None, style_id=None, style_name=None):
+    return TableRow(children=children, is_header=bool(is_header), style_id=style_id, style_name=style_name)
 
-def table_cell(children, colspan=None, rowspan=None):
+def table_cell(children, colspan=None, rowspan=None, style_id=None, style_name=None):
     if colspan is None:
         colspan = 1
     if rowspan is None:
         rowspan = 1
-    return TableCell(children=children, colspan=colspan, rowspan=rowspan)
+    return TableCell(children=children, colspan=colspan, rowspan=rowspan, style_id=style_id, style_name=style_name)
 
 
 def numbering_level(level_index, is_ordered):
