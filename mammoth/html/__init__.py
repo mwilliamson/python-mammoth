@@ -1,5 +1,6 @@
 from ..lists import flat_map
 from .nodes import TextNode, Tag, Element, ForceWrite, NodeVisitor
+from .html_styles import *
 
 
 def text(value):

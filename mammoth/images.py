@@ -10,6 +10,7 @@ def img_element(func):
             attributes["alt"] = image.alt_text
         attributes.update(func(image))
         attributes.update(image.shape)
+        attributes['style'] = f"clip-path: {html.MS_SHAPES.get(image.shape.get('_ms_shape', ''), '')}"
 
         return [html.element("img", attributes)]
 

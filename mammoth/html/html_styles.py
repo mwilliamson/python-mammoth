@@ -197,5 +197,6 @@ MS_SHAPES = {
     "hexagon": "polygon(93.30% 75%,50% 100%,6.70% 75%,6.70% 25%,50% 0%,93.30% 25%)",
     "diamond": "polygon(100% 50%,50% 100%,0% 50%,50% 0.00%)",
     "roundRect": "inset(0% 0% 0% 0% round 5%)",
-    "circle": "inset(0% 0% 0% 0% round 100%)"
+    "circle": "inset(0% 0% 0% 0% round 100%)",
+    "rtTriangle": "polygon(100% 100%,0% 100%,0% 0%,100% 100%)"
 }
