@@ -4,11 +4,18 @@ from __future__ import unicode_literals
 
 from functools import partial
 
+import copy
+
 import cobble
 
 from . import documents, results, html_paths, images, writers, html
 from .docx.files import InvalidFileReferenceError
+from .html import ForceWrite, Element as HTMLElement
+from .attributes import compose_attributes
 from .lists import find_index
+
+
+LIST_ELEMENT_TAG_NAMES = (['ul', 'ol'], ['ul'], ['ol'])
 
 
 def convert_document_element_to_html(element,
@@ -102,8 +109,31 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             else:
                 return [html.force_write] + content
 
+        attributes = compose_attributes(paragraph)
+
         html_path = self._find_html_path_for_paragraph(paragraph)
-        return html_path.wrap(children)
+        html_path = html_path.wrap(children)
+
+        self._update_path_with_attributes(html_path, LIST_ELEMENT_TAG_NAMES, attributes=attributes)
+        return html_path
+
+    def _update_path_with_attributes(self, html_path, skip_tags=[], attributes={}):
+        for e in html_path:
+            if not isinstance(e, HTMLElement):
+                continue
+
+            skip = e.tag.tag_names in skip_tags
+            children = e.children
+            first_child = children[0] if len(children) else None
+            is_child_element = not first_child is None and isinstance(first_child, HTMLElement)
+            is_child_list = is_child_element and first_child.tag.tag_names in LIST_ELEMENT_TAG_NAMES
+
+            if skip or is_child_list:
+                pass  # Skips the case in which we have a list inside a list but because of proper HTML we had to insert
+                      # a list item in between.
+            else:
+                e.attributes.update(attributes)
+            self._update_path_with_attributes(e.children, skip_tags, attributes)
 
 
     def visit_run(self, run, context):
@@ -157,20 +187,13 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         else:
             href = "#{0}".format(self._html_id(hyperlink.anchor))
 
-        attributes = {"href": href}
-        if hyperlink.target_frame is not None:
-            attributes["target"] = hyperlink.target_frame
-
+        attributes = compose_attributes(hyperlink, {"href": href})
         nodes = self._visit_all(hyperlink.children, context)
         return [html.collapsible_element("a", attributes, nodes)]
 
 
     def visit_checkbox(self, checkbox, context):
-        attributes = {"type": "checkbox"}
-
-        if checkbox.checked:
-            attributes["checked"] = "checked"
-
+        attributes = compose_attributes(checkbox, {"type": "checkbox"})
         return [html.element("input", attributes)]
 
 
@@ -190,9 +213,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def visit_table(self, table, context):
         default_path = html_paths.path([html_paths.element(
             ["table"],
-            {
-                "class": table.style_id,
-            },
+            compose_attributes(table),
             fresh=True)])
         return self._find_html_path(table, "table", default_path) \
             .wrap(lambda: self._convert_table_children(table, context))
@@ -221,9 +242,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def visit_table_row(self, table_row, context):
         return [
             html.element("tr",
-                         {
-                            "class": str(table_row.style_id),
-                         },
+                         compose_attributes(table_row),
                          [html.force_write] + self._visit_all(table_row.children, context)
                          )
         ]
@@ -234,12 +253,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             tag_name = "th"
         else:
             tag_name = "td"
-        attributes = {}
-        if table_cell.colspan != 1:
-            attributes["colspan"] = str(table_cell.colspan)
-        if table_cell.rowspan != 1:
-            attributes["rowspan"] = str(table_cell.rowspan)
-        attributes["class"] = str(table_cell.style_id)
+        attributes = compose_attributes(table_cell)
         nodes = [html.force_write] + self._visit_all(table_cell.children, context)
         return [
             html.element(tag_name, attributes, nodes)
@@ -340,7 +354,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
     def _find_html_path_for_paragraph(self, paragraph):
         default = html_paths.path([html_paths.element("p", fresh=True)])
-        return self._find_html_path(paragraph, "paragraph", default, warn_unrecognised=True)
+        html_path = self._find_html_path(paragraph, "paragraph", default, warn_unrecognised=True)
+        return html_path
 
     def _find_html_path_for_run(self, run):
         return self._find_html_path(run, "run", default=html_paths.empty, warn_unrecognised=True)
@@ -349,7 +364,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def _find_html_path(self, element, element_type, default, warn_unrecognised=False):
         style = self._find_style(element, element_type)
         if style is not None:
-            return style.html_path
+            return copy.deepcopy(style.html_path)
 
         if warn_unrecognised and getattr(element, "style_id", None) is not None:
             self._messages.append(results.warning(
