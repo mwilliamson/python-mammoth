@@ -86,26 +86,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _success(documents.Text(_inner_text(element)))
 
     def run(element):
+        # At least in my test documents, this bit is useless if a run is inside a pPr.
+        # Meaning, the rPr element will only appear inside a run if that run has special formatting.
+        # If the run follows the parent's formatting, the rPr element will be in the parent's *Pr element.
         properties = element.find_child_or_null("w:rPr")
-        vertical_alignment = properties \
-            .find_child_or_null("w:vertAlign") \
-            .attributes.get("w:val")
-        font = properties.find_child_or_null("w:rFonts").attributes.get("w:ascii")
-
-        font_size_string = properties.find_child_or_null("w:sz").attributes.get("w:val")
-        if _is_int(font_size_string):
-            # w:sz gives the font size in half points, so halve the value to get the size in points
-            font_size = int(font_size_string) / 2
-        else:
-            font_size = None
-
-        is_bold = read_boolean_element(properties.find_child("w:b"))
-        is_italic = read_boolean_element(properties.find_child("w:i"))
-        is_underline = read_underline_element(properties.find_child("w:u"))
-        is_strikethrough = read_boolean_element(properties.find_child("w:strike"))
-        is_all_caps = read_boolean_element(properties.find_child("w:caps"))
-        is_small_caps = read_boolean_element(properties.find_child("w:smallCaps"))
-        highlight = read_highlight_value(properties.find_child_or_null("w:highlight").attributes.get("w:val"))
+        formatting = _find_run_properties(properties)
 
         def add_complex_field_hyperlink(children):
             hyperlink_kwargs = current_hyperlink_kwargs()
@@ -121,17 +106,33 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 children=children,
                 style_id=style[0],
                 style_name=style[1],
-                is_bold=is_bold,
-                is_italic=is_italic,
-                is_underline=is_underline,
-                is_strikethrough=is_strikethrough,
-                is_all_caps=is_all_caps,
-                is_small_caps=is_small_caps,
-                vertical_alignment=vertical_alignment,
-                font=font,
-                font_size=font_size,
-                highlight=highlight,
+                **formatting
             ))
+
+    def _find_run_properties(properties):
+        props = {}
+        props['vertical_alignment'] = properties \
+            .find_child_or_null("w:vertAlign") \
+            .attributes.get("w:val")
+        props['font'] = properties.find_child_or_null("w:rFonts").attributes.get("w:ascii")
+
+        font_size_string = properties.find_child_or_null("w:sz").attributes.get("w:val")
+        if _is_int(font_size_string):
+            # w:sz gives the font size in half points, so halve the value to get the size in points
+            props['font_size'] = int(font_size_string) / 2
+        else:
+            props['font_size'] = None
+
+        props['is_bold'] = read_boolean_element(properties.find_child("w:b"))
+        props['is_italic'] = read_boolean_element(properties.find_child("w:i"))
+        props['is_underline'] = read_underline_element(properties.find_child("w:u"))
+        props['is_strikethrough'] = read_boolean_element(properties.find_child("w:strike"))
+        props['is_all_caps'] = read_boolean_element(properties.find_child("w:caps"))
+        props['is_small_caps'] = read_boolean_element(properties.find_child("w:smallCaps"))
+        props['highlight'] = read_highlight_value(properties.find_child_or_null("w:highlight").attributes.get("w:val"))
+        props['is_deleted'] = properties.find_child("w:del")
+
+        return props
 
     def _read_run_style(properties):
         return _read_style(properties, "w:rStyle", "Run", styles.find_character_style_by_id)
@@ -156,18 +157,14 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
+        formatting = _find_paragraph_props(properties)
 
-        is_deleted = properties.find_child_or_null("w:rPr").find_child("w:del")
-
-        if is_deleted is not None:
+        if formatting['is_deleted'] is not None:
             for child in element.children:
                 deleted_paragraph_contents.append(child)
             return _empty_result
 
         else:
-            alignment = properties.find_child_or_null("w:jc").attributes.get("w:val")
-            indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
-
             children_xml = element.children
             if deleted_paragraph_contents:
                 children_xml = deleted_paragraph_contents + children_xml
@@ -184,9 +181,16 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                         paragraph_style_id=style[0],
                         element=properties.find_child_or_null("w:numPr"),
                     ),
-                    alignment=alignment,
-                    indent=indent,
+                    formatting=formatting
                 )).append_extra()
+
+    def _find_paragraph_props(properties):
+        rpr = properties.find_child_or_null("w:rPr")
+        return {
+            **_find_run_properties(rpr),
+            'alignment': properties.find_child_or_null("w:jc").attributes.get("w:val"),
+            'indent': _read_paragraph_indent(properties.find_child_or_null("w:ind"))
+        }
 
     def _read_paragraph_style(properties):
         return _read_style(properties, "w:pStyle", "Paragraph", styles.find_paragraph_style_by_id)
