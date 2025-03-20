@@ -21,6 +21,8 @@ class Paragraph(HasChildren):
     style_id = cobble.field()
     style_name = cobble.field()
     numbering = cobble.field()
+    alignment = cobble.field()
+    indent = cobble.field()
     formatting = cobble.field()
 
 
@@ -42,6 +44,7 @@ class Indent(object):
 
 @cobble.data
 class Run(HasChildren):
+    formatting = cobble.field()
     style_id = cobble.field()
     style_name = cobble.field()
     is_bold = cobble.field()
@@ -127,11 +130,11 @@ def document(children, notes=None, comments=None):
     return Document(children, notes, comments=comments)
 
 
-def paragraph(children, style_id=None, style_name=None, numbering=None, formatting=None):
-    if formatting.get('indent', None) is None:
-        formatting['indent'] = paragraph_indent()
+def paragraph(children, style_id=None, style_name=None, numbering=None, alignment=None, indent=None, formatting=None):
+    if indent is None:
+        indent = paragraph_indent()
 
-    return Paragraph(children, style_id, style_name, numbering, formatting=formatting)
+    return Paragraph(children, style_id, style_name, numbering, alignment=alignment, indent=indent, formatting=formatting)
 
 
 def paragraph_indent(start=None, end=None, first_line=None, hanging=None):
@@ -140,6 +143,7 @@ def paragraph_indent(start=None, end=None, first_line=None, hanging=None):
 
 def run(
         children,
+        formatting=None,
         style_id=None,
         style_name=None,
         is_bold=None,
@@ -152,12 +156,13 @@ def run(
         font=None,
         font_size=None,
         highlight=None,
-        **kwargs,
+        **kwargs
 ):
     if vertical_alignment is None:
         vertical_alignment = VerticalAlignment.baseline
     return Run(
         children=children,
+        formatting=formatting,
         style_id=style_id,
         style_name=style_name,
         is_bold=bool(is_bold),

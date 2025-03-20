@@ -11,7 +11,7 @@ import cobble
 from . import documents, results, html_paths, images, writers, html
 from .docx.files import InvalidFileReferenceError
 from .html import ForceWrite, Element as HTMLElement
-from .attributes import compose_attributes
+from .attributes import compose_attributes, compose_style
 from .lists import find_index
 
 
@@ -110,7 +110,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             else:
                 return [html.force_write] + content
 
-        initial_attributes = self._find_text_css_formatting(paragraph.formatting)
+        initial_attributes = compose_style(paragraph.formatting)
         attributes = compose_attributes(paragraph, initial_attributes)
 
         html_path = self._find_html_path_for_paragraph(paragraph)
@@ -168,7 +168,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
         return nodes()
 
-
     def _find_style_for_run_property(self, element_type, default=None):
         style = self._find_style(None, element_type)
         if style is not None:
@@ -177,55 +176,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             return html_paths.element(default, fresh=False)
         else:
             return html_paths.empty
-
-    def _find_text_css_formatting(self, formatting):
-        css = ""
-
-        highlight = formatting.get('highlight', None)
-        if highlight is not None:
-            css += f"background-color:{highlight};"
-
-        font = formatting.get('font', None)
-        if font is not None:
-            css += f"font-family:{font};"
-
-        font_size = formatting.get('font_size', None)
-        if font_size is not None:
-            css += f"font-size:{font_size}pt;"
-
-        font_color = formatting.get('font_color', None)
-        if font_color is not None:
-            css += f"color:#{font_color};"
-
-        vertical_alignment = formatting.get('vertical_alignment', None)
-        if vertical_alignment is not None:
-            if vertical_alignment == "superscript":
-                css += f"vertical-align:super;"
-            elif vertical_alignment == "subscript":
-                css += f"vertical-align:sub;"
-            else:
-                css += f"vertical-align:baseline;"
-
-        if formatting.get('is_small_caps', False):
-            css += f"font-variant: common-ligatures small-caps;"
-
-        if formatting.get('is_all_caps', False):
-            css += f"text-transform: uppercase;"
-
-        if formatting.get('is_strikethrough', False):
-            css += f"text-decoration: line-through;"
-
-        if formatting.get('is_underline', False):
-            css += f"text-decoration: underline;"
-
-        if formatting.get('is_italic', False):
-            css += f"font-style: italic;"
-
-        if formatting.get('is_bold', False):
-            css += f"font-weight: bold;"
-
-        return {"style": css} if len(css) else {}
-
 
     def visit_text(self, text, context):
         return [html.text(text.value)]
