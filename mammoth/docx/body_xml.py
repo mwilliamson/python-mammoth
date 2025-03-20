@@ -123,6 +123,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             props['font_size'] = None
 
+        font_color = properties.find_child_or_null("w:color").attributes.get("w:val")
+        if font_color is not None and font_color != 'auto':
+            props['font_color'] = font_color
+        else:
+            props['font_color'] = None
+
         props['is_bold'] = read_boolean_element(properties.find_child("w:b"))
         props['is_italic'] = read_boolean_element(properties.find_child("w:i"))
         props['is_underline'] = read_underline_element(properties.find_child("w:u"))
