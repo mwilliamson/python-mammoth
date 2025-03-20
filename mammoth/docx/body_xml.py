@@ -16,6 +16,9 @@ if sys.version_info >= (3, ):
 
 EMU_TO_INCHES = 914400
 EMU_TO_PIXELS = 9525
+POINT_TO_PIXEL = (1 / 0.75) # Per W3C
+TWIP_TO_PIXELS = 20 * POINT_TO_PIXEL
+EIGHTPOINT_TO_PIXEL = 8 * POINT_TO_PIXEL
 
 
 def reader(
@@ -347,7 +350,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _ReadResult.map_results(
             read_table_style(properties),
             _read_xml_elements(element.children)
-                .flat_map(calculate_row_spans),
+            .flat_map(calculate_row_spans),
 
             lambda style, children: documents.table(
                 children=children,
@@ -389,15 +392,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
-        style = read_table_conditional_style(properties)
-        gridspan = properties \
-            .find_child_or_null("w:gridSpan") \
-            .attributes.get("w:val")
-
-        if gridspan is None:
-            colspan = 1
-        else:
-            colspan = int(gridspan)
 
         return _ReadResult.map_results(
             read_table_conditional_style(properties),
@@ -405,12 +399,88 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             lambda style, children: _add_attrs(
                 documents.table_cell(
                     children=children,
-                    colspan=colspan,
+                    formatting=_find_table_cell_props(properties),
                     style_id=style[0],
                     style_name=style[1],
                 ),
                 _vmerge=read_vmerge(properties),
             ))
+
+    def _find_table_cell_props(properties):
+        """
+        Check out `Table Cell Properties <http://officeopenxml.com/WPtableCellProperties.php>`_
+        Check out `Table Grid <http://officeopenxml.com/WPtableGrid.php>`_
+        """
+        tcPr = properties.find_child_or_null("w:tcPr")
+        tcW = tcPr.find_child_or_null("w:tcW")
+        gridspan = properties.find_child_or_null("w:gridSpan").attributes.get('w:val')
+        vAlign = properties.find_child_or_null("w:vAlign")
+        width = tcW.attributes.get("w:val")
+        return {
+            **_find_conditional_style_props(tcPr),
+            'width': float(width) / TWIP_TO_PIXELS if width is not None else width,
+            'colspan': 1 if gridspan is None else int(gridspan),
+            'rowspan': 1,
+            'borders': _find_border_style_props(tcPr),
+            'vertical_merge': vAlign.attributes.get("w:val")
+        }
+
+    def _find_border_style_props(properties):
+        """
+        Check out `Table Cell Properties - Borders <http://officeopenxml.com/WPtableCellProperties-Borders.php>`_
+        """
+        tcBorders = properties.find_child_or_null("w:tcBorders")
+        top = tcBorders.find_child_or_null("w:top")
+        top_width = top.attributes.get('w:sz')
+        bottom = tcBorders.find_child_or_null("w:bottom")
+        bottom_width = bottom.attributes.get('w:sz')
+        left = tcBorders.find_child_or_null("w:left")
+        left_width = left.attributes.get('w:sz')
+        right = tcBorders.find_child_or_null("w:right")
+        right_width = right.attributes.get('w:sz')
+        return {
+            'top': {
+                'type': top.attributes.get('w:val'),
+                'size': float(top_width) / EIGHTPOINT_TO_PIXEL if top_width is not None else top_width,
+                'space': top.attributes.get('w:space'),
+                'color': top.attributes.get('w:color'),
+            },
+            'bottom': {
+                'type': bottom.attributes.get('w:val'),
+                'size': float(bottom_width) / EIGHTPOINT_TO_PIXEL if bottom_width is not None else bottom_width,
+                'space': bottom.attributes.get('w:space'),
+                'color': bottom.attributes.get('w:color'),
+            },
+            'left': {
+                'type': left.attributes.get('w:val'),
+                'size': float(left_width) / EIGHTPOINT_TO_PIXEL if left_width is not None else left_width,
+                'space': left.attributes.get('w:space'),
+                'color': left.attributes.get('w:color'),
+            },
+            'right': {
+                'type': right.attributes.get('w:val'),
+                'size': float(right_width) / EIGHTPOINT_TO_PIXEL if right_width is not None else right_width,
+                'space': right.attributes.get('w:space'),
+                'color': right.attributes.get('w:color'),
+            }
+        }
+
+    def _find_conditional_style_props(properties):
+        cnfStyle = properties.find_child_or_null("w:cnfStyle")
+        return {
+            'firstRow': cnfStyle.attributes.get("w:firstRow"),
+            'lastRow': cnfStyle.attributes.get("w:lastRow"),
+            'firstColumn': cnfStyle.attributes.get("w:firstColumn"),
+            'lastColumn': cnfStyle.attributes.get("w:lastColumn"),
+            'oddVBand': cnfStyle.attributes.get("w:oddVBand"),
+            'evenVBand': cnfStyle.attributes.get("w:evenVBand"),
+            'oddHBand': cnfStyle.attributes.get("w:oddHBand"),
+            'evenHBand': cnfStyle.attributes.get("w:evenHBand"),
+            'firstRowFirstColumn': cnfStyle.attributes.get("w:firstRowFirstColumn"),
+            'firstRowLastColumn': cnfStyle.attributes.get("w:firstRowLastColumn"),
+            'lastRowFirstColumn': cnfStyle.attributes.get("w:lastRowFirstColumn"),
+            'lastRowLastColumn': cnfStyle.attributes.get("w:lastRowLastColumn"),
+        }
 
     def read_vmerge(properties):
         vmerge_element = properties.find_child("w:vMerge")
@@ -446,11 +516,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             cell_index = 0
             for cell in row.children:
                 if cell._vmerge and cell_index in columns:
-                    columns[cell_index].rowspan += 1
+                    columns[cell_index].formatting['rowspan'] += 1
                 else:
                     columns[cell_index] = cell
                     cell._vmerge = False
-                cell_index += cell.colspan
+                cell_index += cell.formatting['colspan']
 
         for row in rows:
             row.children = lists.filter(lambda cell: not cell._vmerge, row.children)
@@ -612,9 +682,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             return _empty_result_with_message(warning)
         else:
             title = element.attributes.get("o:title")
-            print("From body xml 1")
-            print(dir(element))
-            i=i
             return _read_image(_find_embedded_image(relationship_id), title)
 
     def note_reference_reader(note_type):

@@ -1,4 +1,12 @@
 """
+    Style definitions simulating specific styles defined in Microsoft Word following the OpenOfficeXML documentation.
+    Not all style definitions are correct or proper. I paid more attention to the ones I cared most.
+    If you find a style is not sufficient, update this file to reflect a better simulation of the MS styles.
+    I attempt to organize the styles by dictionaries with the key being the token string found in the XML and the
+    value being the CSS result that should be injected in the HTML output.
+"""
+
+"""
     All possible WordML shapes below. For now, I only define a select few.
     See `DrawingML <http://officeopenxml.com/drwSp-prstGeom.php>`_
 
@@ -192,11 +200,71 @@
     wedgeRoundRectCallout
 """
 MS_SHAPES = {
-    "rect": "polygon(100% 100%,0% 100%,0% 0%,100% 0%)",
-    "triangle": "polygon(100% 100%,0% 100%,50% 0%)",
-    "hexagon": "polygon(93.30% 75%,50% 100%,6.70% 75%,6.70% 25%,50% 0%,93.30% 25%)",
-    "diamond": "polygon(100% 50%,50% 100%,0% 50%,50% 0.00%)",
-    "roundRect": "inset(0% 0% 0% 0% round 5%)",
-    "circle": "inset(0% 0% 0% 0% round 100%)",
-    "rtTriangle": "polygon(100% 100%,0% 100%,0% 0%,100% 100%)"
+    "rect": "clip-path: polygon(100% 100%,0% 100%,0% 0%,100% 0%);",
+    "triangle": "clip-path: polygon(100% 100%,0% 100%,50% 0%);",
+    "hexagon": "clip-path: polygon(93.30% 75%,50% 100%,6.70% 75%,6.70% 25%,50% 0%,93.30% 25%);",
+    "diamond": "clip-path: polygon(100% 50%,50% 100%,0% 50%,50% 0.00%);",
+    "roundRect": "clip-path: inset(0% 0% 0% 0% round 5%);",
+    "circle": "clip-path: inset(0% 0% 0% 0% round 100%);",
+    "rtTriangle": "clip-path: polygon(100% 100%,0% 100%,0% 0%,100% 100%);"
+}
+
+
+"""
+    single - a single line
+    dashDotStroked - a line with a series of alternating thin and thick strokes
+    dashed - a dashed line
+    dashSmallGap - a dashed line with small gaps
+    dotDash - a line with alternating dots and dashes
+    dotDotDash - a line with a repeating dot - dot - dash sequence
+    dotted - a dotted line
+    double - a double line
+    doubleWave - a double wavy line
+    inset - an inset set of lines
+    nil - no border
+    none - no border
+    outset - an outset set of lines
+    thick - a single line
+    thickThinLargeGap - a thick line contained within a thin line with a large-sized intermediate gap
+    thickThinMediumGap - a thick line contained within a thin line with a medium-sized intermediate gap
+    thickThinSmallGap - a thick line contained within a thin line with a small intermediate gap
+    thinThickLargeGap - a thin line contained within a thick line with a large-sized intermediate gap
+    thinThickMediumGap - a thick line contained within a thin line with a medium-sized intermediate gap
+    thinThickSmallGap - a thick line contained within a thin line with a small intermediate gap
+    thinThickThinLargeGap - a thin-thick-thin line with a large gap
+    thinThickThinMediumGap - a thin-thick-thin line with a medium gap
+    thinThickThinSmallGap - a thin-thick-thin line with a small gap
+    threeDEmboss - a three-staged gradient line, getting darker towards the paragraph
+    threeDEngrave - a three-staged gradient like, getting darker away from the paragraph
+    triple - a triple line
+    wave - a wavy line
+"""
+MS_BORDER_STYLES = {
+    'single': 'border-style: solid;',
+    'dashDotStroked': 'border-style: dashed dotted solid;',
+    'dashed': 'border-style: dashed;',
+    'dashSmallGap': 'border-style: dashed;',
+    'dotDash': 'border-style: dotted dashed;',
+    'dotDotDash': 'border-style: dotted dotted dashed;',
+    'dotted': 'border-style: dotted;',
+    'double': 'border-style: double;',
+    'doubleWave': 'border-style: double;',
+    'inset': 'border-style: inset;',
+    'nil': 'border-style: hidden;',
+    'none': 'border-style: none;',
+    'outset': 'border-style: outset;',
+    'thick': 'border-style: solid;',
+    'thickThinLargeGap': 'border-style: solid;',
+    'thickThinMediumGap': 'border-style: solid;',
+    'thickThinSmallGap': 'border-style: solid;',
+    'thinThickLargeGap': 'border-style: solid;',
+    'thinThickMediumGap': 'border-style: solid;',
+    'thinThickSmallGap': 'border-style: solid;',
+    'thinThickThinLargeGap': 'border-style: solid;',
+    'thinThickThinMediumGap': 'border-style: solid;',
+    'thinThickThinSmallGap': 'border-style: solid;',
+    'threeDEmboss': 'border-style: outset;',
+    'threeDEngrave': 'border-style: inset;',
+    'triple': 'border-style: solid;',
+    'wave': 'border-style: solid;',
 }

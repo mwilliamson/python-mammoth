@@ -38,6 +38,10 @@ def compose_attributes(element, initial_attributes={}):
     if shape is not None:
         attributes.update(shape)
         style = attributes.get('style', '')
-        attributes['style'] = style + f"clip-path: {MS_SHAPES.get(shape.get('_ms_shape', ''), '')};"
+        attributes['style'] = style + f"{MS_SHAPES.get(shape.get('_ms_shape', ''), '')}"
 
     return attributes
+
+
+def compose_border_style(formatting):
+    ...
