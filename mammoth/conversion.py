@@ -243,7 +243,7 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     def visit_table_row(self, table_row, context):
         return [
             html.element("tr",
-                         compose_attributes(table_row),
+                         compose_attributes(table_row, compose_style(table_row.formatting)),
                          [html.force_write] + self._visit_all(table_row.children, context)
                          )
         ]

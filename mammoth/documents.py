@@ -89,6 +89,7 @@ class Table(HasChildren):
 @cobble.data
 class TableRow(HasChildren):
     is_header = cobble.field()
+    formatting = cobble.field()
     style_id = cobble.field()
     style_name = cobble.field()
 
@@ -213,8 +214,8 @@ def table(children, formatting=None, style_id=None, style_name=None):
     return Table(children=children, formatting=formatting, style_id=style_id, style_name=style_name)
 
 
-def table_row(children, is_header=None, style_id=None, style_name=None):
-    return TableRow(children=children, is_header=bool(is_header), style_id=style_id, style_name=style_name)
+def table_row(children, is_header=None, formatting=None, style_id=None, style_name=None):
+    return TableRow(children=children, is_header=bool(is_header), formatting=formatting, style_id=style_id, style_name=style_name)
 
 
 def table_cell(children, formatting=None, style_id=None, style_name=None):

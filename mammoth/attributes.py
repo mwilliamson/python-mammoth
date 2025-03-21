@@ -53,7 +53,7 @@ def compose_attributes(element, initial_attributes={}):
 def compose_style(formatting):
     css = [
         compose_style_category(formatting, 'table_style'),
-        compose_style_category(formatting, 'border_style'),
+        compose_style_category(formatting, 'table_row_style'),
         compose_style_category(formatting, 'cell_style'),
         compose_style_category(formatting, 'border_style'),
         compose_style_category(formatting, 'text_style')

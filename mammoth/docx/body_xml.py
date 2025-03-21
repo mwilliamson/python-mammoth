@@ -446,10 +446,28 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             lambda style, children: documents.table_row(
                 children=children,
                 is_header=is_header,
+                formatting=_find_table_row_props(properties),
                 style_id=style[0],
                 style_name=style[1],
             )
         )
+
+    def _find_table_row_props(properties):
+        """
+        Check out `Table Properties <http://officeopenxml.com/WPtableProperties.php>`_.
+        Check out `Table Width <http://officeopenxml.com/WPtableProperties.php>`_.
+        Check out `Table Borders <http://officeopenxml.com/WPtableBorders.php>`_.
+        """
+        trHeight = properties.find_child_or_null("w:trHeight")
+        height = trHeight.attributes.get("w:val")
+
+        table_row_style = {}
+        if height is not None:
+            table_row_style['height'] = f"{round(float(height) * TWIP_TO_PIXELS,1)}px"
+
+        return {
+            'table_row_style': table_row_style
+        }
 
     def read_table_conditional_style(properties):
         """
@@ -520,7 +538,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 formatting['border-top-style'] = top_border
             if top_width is not None:
                 formatting['border-top-width'] = round(float(top_width) * EIGHTPOINT_TO_PIXEL,1)
-            if top_color is not None:
+            if top_color is not None and top_color != 'auto':
                 formatting['border-top-color'] = top_color
 
         bottom = tcBorders.find_child_or_null("w:bottom")
@@ -534,7 +552,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 formatting['border-bottom-style'] = bottom_border
             if bottom_width is not None:
                 formatting['border-bottom-width'] = round(float(bottom_width) * EIGHTPOINT_TO_PIXEL,1)
-            if bottom_color is not None:
+            if bottom_color is not None and bottom_color != 'auto':
                 formatting['border-bottom-color'] = bottom_color
 
         left = tcBorders.find_child_or_null("w:left")
@@ -548,7 +566,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 formatting['border-left-style'] = left_border
             if left_width is not None:
                 formatting['border-left-width'] = round(float(left_width) * EIGHTPOINT_TO_PIXEL,1)
-            if left_color is not None:
+            if left_color is not None and left_color != 'auto':
                 formatting['border-left-color'] = left_color
 
         right = tcBorders.find_child_or_null("w:right")
@@ -562,7 +580,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 formatting['border-right-style'] = right_border
             if right_width is not None:
                 formatting['border-right-width'] = round(float(right_width) * EIGHTPOINT_TO_PIXEL,1)
-            if right_color is not None:
+            if right_color is not None and right_color != 'auto':
                 formatting['border-right-color'] = right_color
 
         spacing = [
