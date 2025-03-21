@@ -1,15 +1,12 @@
 import base64
 
 from . import html
+from .attributes import compose_attributes
 
 
 def img_element(func):
     def convert_image(image):
-        attributes = {}
-        if image.alt_text:
-            attributes["alt"] = image.alt_text
-        attributes.update(func(image))
-
+        attributes = compose_attributes(image, func(image))
         return [html.element("img", attributes)]
 
     return convert_image

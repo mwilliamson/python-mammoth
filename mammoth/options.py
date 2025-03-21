@@ -72,16 +72,16 @@ r[style-name='Footnote anchor'] =>
 p[style-name='Endnote'] => p:fresh
 r[style-name='Endnote anchor'] =>
 
-p:unordered-list(1) => ul > li:fresh
-p:unordered-list(2) => ul|ol > li > ul > li:fresh
-p:unordered-list(3) => ul|ol > li > ul|ol > li > ul > li:fresh
-p:unordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh
-p:unordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul > li:fresh
-p:ordered-list(1) => ol > li:fresh
-p:ordered-list(2) => ul|ol > li > ol > li:fresh
-p:ordered-list(3) => ul|ol > li > ul|ol > li > ol > li:fresh
-p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
-p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ol > li:fresh
+p:unordered-list(1) => ul|ol > li:fresh
+p:unordered-list(2) => ul|ol > li > ul|ol > li:fresh
+p:unordered-list(3) => ul|ol > li > ul|ol > li > ul|ol > li:fresh
+p:unordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li:fresh
+p:unordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li:fresh
+p:ordered-list(1) => ul|ol > li:fresh
+p:ordered-list(2) => ul|ol > li > ul|ol > li:fresh
+p:ordered-list(3) => ul|ol > li > ul|ol > li > ul|ol > li:fresh
+p:ordered-list(4) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li:fresh
+p:ordered-list(5) => ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li > ul|ol > li:fresh
 
 r[style-name='Hyperlink'] =>
 

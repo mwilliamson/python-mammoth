@@ -106,7 +106,7 @@ def _parse_highlight(tokens):
         tokens.skip(TokenType.IDENTIFIER, "color")
         tokens.skip(TokenType.SYMBOL, "=")
         color = parse_string(tokens)
-        tokens.skip(TokenType.SYMBOL, "]");
+        tokens.skip(TokenType.SYMBOL, "]")
     else:
         color = None
 
@@ -118,7 +118,7 @@ def _parse_break(tokens):
     tokens.skip(TokenType.IDENTIFIER, "type")
     tokens.skip(TokenType.SYMBOL, "=")
     type_name = parse_string(tokens)
-    tokens.skip(TokenType.SYMBOL, "]");
+    tokens.skip(TokenType.SYMBOL, "]")
 
     if type_name == "line":
         return document_matchers.line_break
