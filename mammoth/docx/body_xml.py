@@ -10,7 +10,7 @@ from .dingbats import dingbats
 from .xmlparser import node_types, XmlElement, null_xml_element
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
-from ..html import MS_BORDER_STYLES
+from ..html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
 
 if sys.version_info >= (3,):
     unichr = chr
@@ -456,20 +456,23 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         Check out `Table Cell Properties <http://officeopenxml.com/WPtableCellProperties.php>`_
         Check out `Table Grid <http://officeopenxml.com/WPtableGrid.php>`_
         """
-        tcPr = properties.find_child_or_null("w:tcPr")
-        tcW = tcPr.find_child_or_null("w:tcW")
+        tcW = properties.find_child_or_null("w:tcW")
         gridspan = properties.find_child_or_null("w:gridSpan").attributes.get('w:val')
         vAlign = properties.find_child_or_null("w:vAlign").attributes.get("w:val")
         width = tcW.attributes.get("w:val")
+
+        cell_style = {}
+        if width is not None:
+            cell_style['column-width'] = float(width) / TWIP_TO_PIXELS
+        if vAlign is not None:
+            cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
+
         return {
-            'conditional_style': _find_conditional_style_props(tcPr),
-            'cell_style': {
-                'column-width': float(width) / TWIP_TO_PIXELS if width is not None else 'none',
-                'text-align': vAlign if vAlign is not None else 'none'
-            },
+            'conditional_style': _find_conditional_style_props(properties),
+            'cell_style': cell_style,
             'colspan': 1 if gridspan is None else int(gridspan),
             'rowspan': 1,
-            'border_style': _find_border_style_props(tcPr),
+            'border_style': _find_border_style_props(properties),
 
         }
 
@@ -484,59 +487,65 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         top_width = top.attributes.get('w:sz')
         top_space = top.attributes.get('w:space')
         top_style = top.attributes.get('w:val')
-        top_border = MS_BORDER_STYLES.get(top_style, 'none')
+        top_border = MS_BORDER_STYLES.get(top_style, None)
         top_color = top.attributes.get('w:color')
         if top is not None:
-            formatting.update({
-                'border-top-style': top_border if top_border is not None else 'none',
-                'border-top-width': float(top_width) / EIGHTPOINT_TO_PIXEL if top_width is not None else 'none',
-                'border-top-spacing': float(top_space) / POINT_TO_PIXEL if top_space is not None else 0,
-                'border-top-color': top_color if top_color is not None else 'none',
-            })
+            if top_border is not None:
+                formatting['border-top-style'] = top_border
+            if top_width is not None:
+                formatting['border-top-width'] = float(top_width) / EIGHTPOINT_TO_PIXEL
+            if top_space is not None:
+                formatting['border-top-spacing'] = float(top_space) / POINT_TO_PIXEL
+            if top_color is not None:
+                formatting['border-top-color'] = top_color
 
         bottom = tcBorders.find_child_or_null("w:bottom")
         bottom_width = bottom.attributes.get('w:sz')
         bottom_space = bottom.attributes.get('w:space')
         bottom_style = bottom.attributes.get('w:val')
-        bottom_border = MS_BORDER_STYLES.get(bottom_style, 'none')
+        bottom_border = MS_BORDER_STYLES.get(bottom_style, None)
         bottom_color = bottom.attributes.get('w:color')
-        if top is not None:
-            formatting.update({
-                'border-bottom-style': bottom_border if bottom_border is not None else 'none',
-                'border-bottom-width': float(
-                    bottom_width) / EIGHTPOINT_TO_PIXEL if bottom_width is not None else 'none',
-                'border-bottom-spacing': float(bottom_space) / POINT_TO_PIXEL if bottom_space is not None else 0,
-                'border-bottom-color': bottom_color if bottom_color is not None else 'none',
-            })
+        if bottom is not None:
+            if bottom_border is not None:
+                formatting['border-bottom-style'] = bottom_border
+            if bottom_width is not None:
+                formatting['border-bottom-width'] = float(bottom_width) / EIGHTPOINT_TO_PIXEL
+            if bottom_space is not None:
+                formatting['border-bottom-spacing'] = float(bottom_space) / POINT_TO_PIXEL
+            if bottom_color is not None:
+                formatting['border-bottom-color'] = bottom_color
 
         left = tcBorders.find_child_or_null("w:left")
         left_width = left.attributes.get('w:sz')
         left_space = left.attributes.get('w:space')
         left_style = left.attributes.get('w:val')
-        left_border = MS_BORDER_STYLES.get(left_style, 'none')
+        left_border = MS_BORDER_STYLES.get(left_style, None)
         left_color = left.attributes.get('w:color')
-        if top is not None:
-            formatting.update({
-                'border-left-style': left_border if left_border is not None else 'none',
-                'border-left-width': float(left_width) / EIGHTPOINT_TO_PIXEL if left_width is not None else 'none',
-                'border-left-spacing': float(left_space) / POINT_TO_PIXEL if left_space is not None else 0,
-                'border-left-color': left_color if left_color is not None else 'none',
-            })
+        if left is not None:
+            if left_border is not None:
+                formatting['border-left-style'] = left_border
+            if left_width is not None:
+                formatting['border-left-width'] = float(left_width) / EIGHTPOINT_TO_PIXEL
+            if left_space is not None:
+                formatting['border-left-spacing'] = float(left_space) / POINT_TO_PIXEL
+            if left_color is not None:
+                formatting['border-left-color'] = left_color
 
         right = tcBorders.find_child_or_null("w:right")
         right_width = right.attributes.get('w:sz')
         right_space = right.attributes.get('w:space')
         right_style = right.attributes.get('w:val')
-        right_border = MS_BORDER_STYLES.get(right_style, 'none')
+        right_border = MS_BORDER_STYLES.get(right_style, None)
         right_color = right.attributes.get('w:color')
         if right is not None:
-            formatting.update({
-                'border-right-style': right_border if right_border is not None else 'none',
-                'border-right-width': float(
-                    right_width) / EIGHTPOINT_TO_PIXEL if right_width is not None else 'none',
-                'border-right-spacing': float(right_space) / POINT_TO_PIXEL if right_space is not None else 0,
-                'border-right-color': right_color if right_color is not None else 'none',
-            })
+            if right_border is not None:
+                formatting['border-right-style'] = right_border
+            if right_width is not None:
+                formatting['border-right-width'] = float(right_width) / EIGHTPOINT_TO_PIXEL
+            if right_space is not None:
+                formatting['border-right-spacing'] = float(right_space) / POINT_TO_PIXEL
+            if right_color is not None:
+                formatting['border-right-color'] = right_color
         return formatting
 
     def _find_conditional_style_props(properties):

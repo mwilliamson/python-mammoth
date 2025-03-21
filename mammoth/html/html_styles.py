@@ -268,3 +268,17 @@ MS_BORDER_STYLES = {
     'triple': 'solid',
     'wave': 'solid',
 }
+
+"""
+Specifies the vertical alignment for text between the top and bottom margins of the cell. Possible values are:
+
+    *. bottom - Specifies that the text should be vertically aligned to the bottom margin.
+    *. center - Specifies that the text should be vertically aligned to the center of the cell.
+    *. top - Specifies that the text should be vertically aligned to the top margin.
+    
+"""
+MS_CELL_ALIGNMENT_STYLES = {
+    'top': 'top',
+    'center': 'middle',
+    'bottom': 'bottom'
+}
