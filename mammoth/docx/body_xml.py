@@ -15,11 +15,13 @@ from ..html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
 if sys.version_info >= (3,):
     unichr = chr
 
+# Conversion units
 EMU_TO_INCHES = 914400
 EMU_TO_PIXELS = 9525
 POINT_TO_PIXEL = (1 / 0.75)  # Per W3C
-TWIP_TO_PIXELS = 20 * POINT_TO_PIXEL
-EIGHTPOINT_TO_PIXEL = 8 * POINT_TO_PIXEL
+TWIP_TO_PIXELS = POINT_TO_PIXEL / 20 # 20 -> 1 inch; 72pt / in per PostScript -> 72 points
+EIGHTPOINT_TO_PIXEL = POINT_TO_PIXEL / 8
+FIFTHPERCENT_TO_PERCENT = 0.02
 
 
 def reader(
@@ -403,6 +405,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
             lambda style, children: documents.table(
                 children=children,
+                formatting=_find_table_props(properties),
                 style_id=style[0],
                 style_name=style[1],
             ),
@@ -410,6 +413,29 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def read_table_style(properties):
         return _read_style(properties, "w:tblStyle", "Table", styles.find_table_style_by_id)
+
+    def _find_table_props(properties):
+        """
+        Check out `Table Properties <http://officeopenxml.com/WPtableProperties.php>`_.
+        Check out `Table Width <http://officeopenxml.com/WPtableProperties.php>`_.
+        Check out `Table Borders <http://officeopenxml.com/WPtableBorders.php>`_.
+        """
+        tblBorders = properties.find_child_or_null("w:tblBorders")
+        tblW = properties.find_child_or_null("w:tblW")
+        width = tblW.attributes.get('w:w')
+        width_type = tblW.attributes.get('w:type')
+
+        table_style = {}
+        if width is not None:
+            if width_type == 'dxa':
+                table_style['width'] = f"{round(float(width) * TWIP_TO_PIXELS,1)}px"
+            elif width_type == 'pct':
+                table_style['width'] = f"{round(float(width) * FIFTHPERCENT_TO_PERCENT,1)}%"
+
+        return {
+            'table_style': table_style,
+            'border_style': _find_border_style_props(tblBorders)
+        }
 
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
@@ -459,11 +485,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         tcW = properties.find_child_or_null("w:tcW")
         gridspan = properties.find_child_or_null("w:gridSpan").attributes.get('w:val')
         vAlign = properties.find_child_or_null("w:vAlign").attributes.get("w:val")
-        width = tcW.attributes.get("w:val")
+        width = tcW.attributes.get("w:w")
 
         cell_style = {}
         if width is not None:
-            cell_style['column-width'] = float(width) / TWIP_TO_PIXELS
+            cell_style['width'] = f"{round(float(width) * TWIP_TO_PIXELS,1)}px"
         if vAlign is not None:
             cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
 
@@ -493,9 +519,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             if top_border is not None:
                 formatting['border-top-style'] = top_border
             if top_width is not None:
-                formatting['border-top-width'] = float(top_width) / EIGHTPOINT_TO_PIXEL
-            if top_space is not None:
-                formatting['border-top-spacing'] = float(top_space) / POINT_TO_PIXEL
+                formatting['border-top-width'] = round(float(top_width) * EIGHTPOINT_TO_PIXEL,1)
             if top_color is not None:
                 formatting['border-top-color'] = top_color
 
@@ -509,9 +533,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             if bottom_border is not None:
                 formatting['border-bottom-style'] = bottom_border
             if bottom_width is not None:
-                formatting['border-bottom-width'] = float(bottom_width) / EIGHTPOINT_TO_PIXEL
-            if bottom_space is not None:
-                formatting['border-bottom-spacing'] = float(bottom_space) / POINT_TO_PIXEL
+                formatting['border-bottom-width'] = round(float(bottom_width) * EIGHTPOINT_TO_PIXEL,1)
             if bottom_color is not None:
                 formatting['border-bottom-color'] = bottom_color
 
@@ -525,9 +547,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             if left_border is not None:
                 formatting['border-left-style'] = left_border
             if left_width is not None:
-                formatting['border-left-width'] = float(left_width) / EIGHTPOINT_TO_PIXEL
-            if left_space is not None:
-                formatting['border-left-spacing'] = float(left_space) / POINT_TO_PIXEL
+                formatting['border-left-width'] = round(float(left_width) * EIGHTPOINT_TO_PIXEL,1)
             if left_color is not None:
                 formatting['border-left-color'] = left_color
 
@@ -541,11 +561,20 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             if right_border is not None:
                 formatting['border-right-style'] = right_border
             if right_width is not None:
-                formatting['border-right-width'] = float(right_width) / EIGHTPOINT_TO_PIXEL
-            if right_space is not None:
-                formatting['border-right-spacing'] = float(right_space) / POINT_TO_PIXEL
+                formatting['border-right-width'] = round(float(right_width) * EIGHTPOINT_TO_PIXEL,1)
             if right_color is not None:
                 formatting['border-right-color'] = right_color
+
+        spacing = [
+            float(top_space) if top_space is not None else -1,
+            float(bottom_space) if bottom_space is not None else -1,
+            float(left_space) if left_space is not None else -1,
+            float(right_space) if right_space is not None else -1,
+        ]
+        max_spacing = max(spacing)
+        if max_spacing > -1:
+            formatting['border-spacing'] = round(max_spacing * POINT_TO_PIXEL,1)
+
         return formatting
 
     def _find_conditional_style_props(properties):
@@ -721,11 +750,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             .find_child("a:ext")
         shape_element = element.find_child("a:prstGeom")
         return {
-            "width": str(float(size_element.attributes.get("cx")) / EMU_TO_PIXELS),
-            "height": str(float(size_element.attributes.get("cy")) / EMU_TO_PIXELS),
+            "width": str(round(float(size_element.attributes.get("cx")) / EMU_TO_PIXELS,1)),
+            "height": str(round(float(size_element.attributes.get("cy")) / EMU_TO_PIXELS,1)),
             "position": "relative",
-            "left": str(float(location_element.attributes.get("x"))),
-            "top": str(float(location_element.attributes.get("y"))),
+            "left": str(round(float(location_element.attributes.get("x")),1)),
+            "top": str(round(float(location_element.attributes.get("y")),1)),
             "_ms_shape": shape_element.attributes.get("prst")
         }
 

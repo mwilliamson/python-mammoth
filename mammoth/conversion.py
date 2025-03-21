@@ -211,9 +211,10 @@ class _DocumentConverter(documents.element_visitor(args=1)):
     _default_table_path = html_paths.path([html_paths.element(["table"], fresh=True)])
 
     def visit_table(self, table, context):
+        initial_attributes = compose_style(table.formatting)
         default_path = html_paths.path([html_paths.element(
             ["table"],
-            compose_attributes(table),
+            compose_attributes(table, initial_attributes),
             fresh=True)])
         return self._find_html_path(table, "table", default_path) \
             .wrap(lambda: self._convert_table_children(table, context))
@@ -253,7 +254,8 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             tag_name = "th"
         else:
             tag_name = "td"
-        attributes = compose_attributes(table_cell)
+        initial_attributes = compose_style(table_cell.formatting)
+        attributes = compose_attributes(table_cell, initial_attributes)
         nodes = [html.force_write] + self._visit_all(table_cell.children, context)
         return [
             html.element(tag_name, attributes, nodes)

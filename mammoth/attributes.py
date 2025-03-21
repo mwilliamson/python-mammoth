@@ -13,7 +13,13 @@ def compose_attributes(element, initial_attributes={}):
 
     style_id = getattr(element, 'style_id', None)
     if not style_id is None:
-        attributes['class'] = str(style_id)
+        class_name = str(style_id)
+        try:
+            int(class_name)
+            # Must be the conditional style id
+            attributes['class'] = f"c{class_name}"
+        except:
+            attributes['class'] = class_name
 
     checked = getattr(element, 'checked', False)
     if checked:
@@ -46,6 +52,8 @@ def compose_attributes(element, initial_attributes={}):
 
 def compose_style(formatting):
     css = [
+        compose_style_category(formatting, 'table_style'),
+        compose_style_category(formatting, 'border_style'),
         compose_style_category(formatting, 'cell_style'),
         compose_style_category(formatting, 'border_style'),
         compose_style_category(formatting, 'text_style')

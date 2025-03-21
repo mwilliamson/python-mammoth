@@ -81,6 +81,7 @@ checkbox = Checkbox
 
 @cobble.data
 class Table(HasChildren):
+    formatting = cobble.field()
     style_id = cobble.field()
     style_name = cobble.field()
 
@@ -208,8 +209,8 @@ class Bookmark(Element):
 bookmark = Bookmark
 
 
-def table(children, style_id=None, style_name=None):
-    return Table(children=children, style_id=style_id, style_name=style_name)
+def table(children, formatting=None, style_id=None, style_name=None):
+    return Table(children=children, formatting=formatting, style_id=style_id, style_name=style_name)
 
 
 def table_row(children, is_header=None, style_id=None, style_name=None):
