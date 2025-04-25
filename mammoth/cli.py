@@ -5,17 +5,23 @@ import shutil
 import sys
 
 import mammoth
+from mammoth.attributes import CSSStore
 from . import writers
+from .debug import set_debug_mode, is_debug_mode
 
 
 def main():
     args = _parse_args()
+
+    set_debug_mode(args.debug)
     
     if args.style_map is None:
         style_map = None
     else:
         with open(args.style_map) as style_map_fileobj:
             style_map = style_map_fileobj.read()
+
+    #css = CSSStore(args.embed_css)
     
     with open(args.path, "rb") as docx_fileobj:
         if args.output_dir is None:
@@ -87,12 +93,16 @@ def _parse_args():
     output_group.add_argument(
         "--output-dir",
         help="Output directory for generated HTML and images. Images will be stored in separate files. Mutually exclusive with output-path.")
-    
     parser.add_argument(
         "--output-format",
         required=False,
         choices=writers.formats(),
         help="Output format.")
+    output_group.add_argument(
+        "--embed-css",
+        help="CSS file containing extra CSS styles to embed in the appropriate elements. The main use case for this option is to define styles that "
+             "simulate the general look and feel of Microsoft's Word styles. For example, you can define a CSS rule for PlainTable5 that mimics how "
+             "such tables are supposed to look. Another use case is to override the styling of select elements.")
     parser.add_argument(
         "--style-map",
         required=False,
@@ -102,6 +112,11 @@ def _parse_args():
         required=False,
         action='store_true',
         help="Keep all paragraphs from the input document. Useful if spacing is important for proper layout of output document.")
+    parser.add_argument(
+        "--debug",
+        required=False,
+        action='store_true',
+        help="Allows to run utility in debug mode if testing a logic path on this installation of the project.")
     return parser.parse_args()
 
 
