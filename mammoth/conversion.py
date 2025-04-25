@@ -101,7 +101,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
         ])
         return nodes + [notes_list, comments]
 
-
     def visit_paragraph(self, paragraph, context):
         def children():
             content = self._visit_all(paragraph.children, context)
@@ -136,7 +135,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             else:
                 e.attributes.update(attributes)
             self._update_path_with_attributes(e.children, skip_tags, attributes)
-
 
     def visit_run(self, run, context):
         nodes = lambda: self._visit_all(run.children, context)

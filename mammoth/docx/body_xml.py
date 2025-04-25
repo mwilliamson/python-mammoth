@@ -10,6 +10,7 @@ from .dingbats import dingbats
 from .xmlparser import node_types, XmlElement, null_xml_element
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
+from ..debug import is_debug_mode, print_and_pause
 from ..html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
 
 if sys.version_info >= (3,):
@@ -144,9 +145,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         if font_color is not None and font_color != 'none':
             font_color = font_color
         else:
-            font_color = None
+            font_color = '000000'
         if font_color is not None:
-            formatting['color'] = font_color
+            formatting['color'] = f'#{font_color}'
 
         is_bold = read_boolean_element(properties.find_child("w:b"))
         if is_bold:
@@ -251,6 +252,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
         props['indent'] = indent
+
+        formatting['conditional_style']: _find_conditional_style_props(properties)
         return props, formatting
 
     def _read_paragraph_style(properties):
@@ -466,6 +469,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             table_row_style['height'] = f"{round(float(height) * TWIP_TO_PIXELS,1)}px"
 
         return {
+            'conditional_style': _find_conditional_style_props(properties),
             'table_row_style': table_row_style
         }
 
