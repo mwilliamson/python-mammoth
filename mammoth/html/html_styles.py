@@ -209,7 +209,6 @@ MS_SHAPES = {
     "rtTriangle": "clip-path: polygon(100% 100%,0% 100%,0% 0%,100% 100%);"
 }
 
-
 """
     single - a single line
     dashDotStroked - a line with a series of alternating thin and thick strokes
@@ -281,4 +280,22 @@ MS_CELL_ALIGNMENT_STYLES = {
     'top': 'top',
     'center': 'middle',
     'bottom': 'bottom'
+}
+
+"""
+See http://officeopenxml.com/prSlide-color.php
+"""
+OFFICE_THEME_COLORS = {
+    "dark1": "000000",
+    "dark2": "44546A",
+    "light1": "FFFFFF",
+    "light2": "E7E6E6",
+    "accent1": "4472C4",
+    "accent2": "ED7D31",
+    "accent3": "A5A5A5",
+    "accent4": "FFC000",
+    "accent5": "5B9BD5",
+    "accent6": "70AD47",
+    "link": "0563C1",
+    "followed_link": "954F72",
 }
