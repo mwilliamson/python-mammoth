@@ -136,6 +136,44 @@ class CSSStore(dict):
             style = attributes.get('style', '')
             attributes['style'] = style + f"{MS_SHAPES.get(shape.get('_ms_shape', ''), '')}"
 
+        if is_debug_mode():
+            attributes = CSSStore._compose_conditional_styles(attributes, formatting)
+
+        return attributes
+
+    @staticmethod
+    def _compose_conditional_styles(attributes, formatting):
+        conditional_formatting = formatting.get('conditional_style', {})
+
+        if not ('style' in attributes and len(attributes['style'])):
+            attributes['style'] = ''
+
+        oddHBand = conditional_formatting.get('oddHBand', 0)
+        oddVBand = conditional_formatting.get('oddVBand', 0)
+        evenHBand = conditional_formatting.get('evenHBand', 0)
+        evenVBand = conditional_formatting.get('evenVBand', 0)
+
+        oddHBand = int(oddHBand) if oddHBand is not None else 0
+        oddVBand = int(oddVBand) if oddVBand is not None else 0
+        evenHBand = int(evenHBand) if evenHBand is not None else 0
+        evenVBand = int(evenVBand) if evenVBand is not None else 0
+
+        if oddHBand or oddVBand or evenHBand or evenVBand:
+            attributes['style'] += f'background-color:{STYLES["root"]["ms-table-banding-gray"]};'
+
+        if is_debug_mode():
+            firstRow = conditional_formatting.get('firstRow', 0)
+            firstRow = int(firstRow) if firstRow is not None else 0
+
+            if firstRow:
+                attributes['style'] += 'text-transform:uppercase;font-weight:bold;border-bottom:thin solid;'
+
+            firstColumn = conditional_formatting.get('firstColumn', 0)
+            firstColumn = int(firstColumn) if firstColumn is not None else 0
+
+            if firstColumn:
+                attributes[
+                    'style'] += 'text-transform:none;font-weight:bold;background-color:white !important;font-style:italic;'
         return attributes
 
     @staticmethod
@@ -206,13 +244,17 @@ def compose_attributes(element, initial_attributes={}):
         style = attributes.get('style', '')
         attributes['style'] = style + f"{MS_SHAPES.get(shape.get('_ms_shape', ''), '')}"
 
-    attributes = compose_conditional_styles(attributes, formatting)
+    if is_debug_mode():
+        attributes = compose_conditional_styles(attributes, formatting)
 
     return attributes
 
 
 def compose_conditional_styles(attributes, formatting):
     conditional_formatting = formatting.get('conditional_style', {})
+
+    if not ('style' in attributes and len(attributes['style'])):
+        attributes['style'] = ''
 
     oddHBand = conditional_formatting.get('oddHBand', 0)
     oddVBand = conditional_formatting.get('oddVBand', 0)
@@ -226,6 +268,19 @@ def compose_conditional_styles(attributes, formatting):
 
     if oddHBand or oddVBand or evenHBand or evenVBand:
         attributes['style'] += f'background-color:{STYLES["root"]["ms-table-banding-gray"]};'
+
+    if is_debug_mode():
+        firstRow = conditional_formatting.get('firstRow', 0)
+        firstRow = int(firstRow) if firstRow is not None else 0
+
+        if firstRow:
+            attributes['style'] += 'text-transform:uppercase;font-weight:bold;border-bottom:thin solid;'
+
+        firstColumn = conditional_formatting.get('firstColumn', 0)
+        firstColumn = int(firstColumn) if firstColumn is not None else 0
+
+        if firstColumn:
+            attributes['style'] += 'text-transform:none;font-weight:bold;background-color:white !important;font-style:italic;'
     return attributes
 
 
