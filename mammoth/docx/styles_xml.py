@@ -20,11 +20,15 @@ class Styles(object):
             numbering_styles=numbering_styles,
         )
 
-    def __init__(self, paragraph_styles, character_styles, table_styles, numbering_styles):
+    def __init__(self, paragraph_styles, character_styles, table_styles, numbering_styles, node=None):
         self._paragraph_styles = paragraph_styles
         self._character_styles = character_styles
         self._table_styles = table_styles
         self._numbering_styles = numbering_styles
+        # I hate how UNFUNCTIONAL the code structure can be.
+        # Remember kids, just because you can does not mean you should FUNCTIONAL everything...
+        # Code style breaking attempt to keep the XML styles node available for actual style parsing and mapping to CSS.
+        self._styles_node = node
 
     def find_paragraph_style_by_id(self, style_id):
         return self._paragraph_styles.get(style_id)
@@ -73,6 +77,7 @@ def read_styles_xml_element(element):
         character_styles=character_styles,
         table_styles=table_styles,
         numbering_styles=numbering_styles,
+        node=element
     )
 
 
