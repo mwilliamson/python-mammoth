@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import re
 import sys
 
@@ -12,6 +13,7 @@ from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
 from ..debug import is_debug_mode, print_and_pause
 from ..html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
+from ..word_formatting import WordFormatting
 
 if sys.version_info >= (3,):
     unichr = chr
@@ -59,6 +61,9 @@ class _BodyReader(object):
 def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
     current_instr_text = []
     complex_field_stack = []
+
+    if is_debug_mode():
+        word_formatting = WordFormatting(styles._styles_node)
 
     # When a paragraph is marked as deleted, its contents should be combined
     # with the following paragraph. See 17.13.5.15 del (Deleted Paragraph) of
@@ -437,7 +442,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         return {
             'table_style': table_style,
-            'border_style': _find_border_style_props(tblBorders)
+            'border_style': _find_border_style_props(tblBorders, {'border-collapse': 'collapse'})
         }
 
     def table_row(element):
@@ -524,12 +529,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         }
 
-    def _find_border_style_props(properties):
+    def _find_border_style_props(properties, initial_formatting={}):
         """
         Check out `Table Cell Properties - Borders <http://officeopenxml.com/WPtableCellProperties-Borders.php>`_
         """
         tcBorders = properties.find_child_or_null("w:tcBorders")
-        formatting = {}
+        formatting = copy.deepcopy(initial_formatting)
 
         top = tcBorders.find_child_or_null("w:top")
         top_width = top.attributes.get('w:sz')
