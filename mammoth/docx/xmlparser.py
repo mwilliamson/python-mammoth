@@ -2,12 +2,15 @@ import xml.dom.minidom
 
 import cobble
 
+from mammoth.debug import is_debug_mode
+
 
 @cobble.data
 class XmlElement(object):
     name = cobble.field()
     attributes = cobble.field()
     children = cobble.field()
+    parent = cobble.field()
 
     def find_child_or_null(self, name):
         return self.find_child(name) or null_xml_element
@@ -57,10 +60,12 @@ null_xml_element = NullXmlElement()
 @cobble.data
 class XmlText(object):
     value = cobble.field()
+    parent = cobble.field()
+    children = []
 
 
-def element(name, attributes=None, children=None):
-    return XmlElement(name, attributes or {}, children or [])
+def element(name, attributes=None, children=None, parent=None):
+    return XmlElement(name, attributes or {}, children or [], parent)
 
 text = XmlText
 
@@ -83,15 +88,15 @@ def parse_xml(fileobj, namespace_mapping=None):
 
     document = xml.dom.minidom.parse(fileobj)
 
-    def convert_node(node):
+    def convert_node(node, parent=NullXmlElement()):
         if node.nodeType == xml.dom.Node.ELEMENT_NODE:
-            return convert_element(node)
+            return convert_element(node, parent)
         elif node.nodeType == xml.dom.Node.TEXT_NODE:
-            return XmlText(node.nodeValue)
+            return XmlText(node.nodeValue, parent)
         else:
             return None
 
-    def convert_element(element):
+    def convert_element(element, parent=NullXmlElement()):
         converted_name = convert_name(element)
 
         converted_attributes = dict(
@@ -106,7 +111,7 @@ def parse_xml(fileobj, namespace_mapping=None):
             if converted_child_node is not None:
                 converted_children.append(converted_child_node)
 
-        return XmlElement(converted_name, converted_attributes, converted_children)
+        return XmlElement(converted_name, converted_attributes, converted_children, parent)
 
     def convert_name(node):
         if node.namespaceURI is None:
@@ -118,4 +123,15 @@ def parse_xml(fileobj, namespace_mapping=None):
             else:
                 return "%s:%s" % (prefix, node.localName)
 
-    return convert_node(document.documentElement)
+    def add_parent_node(nodes, parent=NullXmlElement()):
+        if isinstance(nodes, list):
+            for node in nodes:
+                node.parent = parent
+                add_parent_node(node.children, node)
+        else:
+            nodes.parent = parent
+            add_parent_node(nodes.children, nodes)
+        return nodes
+
+    doc_tree = convert_node(document.documentElement)
+    return add_parent_node(doc_tree)
