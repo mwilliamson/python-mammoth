@@ -37,7 +37,7 @@ def read(fileobj):
 def _collapse_alternate_content(node):
     if isinstance(node, XmlElement):
         if node.name == "mc:AlternateContent":
-            return node.find_child("mc:Fallback").children
+            return node.find_child_or_null("mc:Fallback").children
         else:
             node.children = flat_map(_collapse_alternate_content, node.children)
             return [node]
