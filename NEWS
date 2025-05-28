@@ -1,3 +1,7 @@
+# 1.9.1
+
+* Ignore AlternateContent elements when there is no Fallback element.
+
 # 1.9.0
 
 * Detect checkboxes, both as complex fields and structured document tags, and
