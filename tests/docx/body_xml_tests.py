@@ -1406,17 +1406,30 @@ def test_text_boxes_have_content_appended_after_containing_paragraph():
     result = _read_and_get_document_xml_elements(paragraph)
     assert_equal(result[1].style_id, "textbox-content")
 
-def test_alternate_content_is_read_using_fallback():
-    element = xml_element("mc:AlternateContent", {}, [
-        xml_element("mc:Choice", {"Requires": "wps"}, [
-            _paragraph_with_style_id("first")
-        ]),
-        xml_element("mc:Fallback", {}, [
-            _paragraph_with_style_id("second")
+
+class AlternateContentTests(object):
+    def test_when_fallback_is_present_then_fallback_is_read(self):
+        element = xml_element("mc:AlternateContent", {}, [
+            xml_element("mc:Choice", {"Requires": "wps"}, [
+                _paragraph_with_style_id("first")
+            ]),
+            xml_element("mc:Fallback", {}, [
+                _paragraph_with_style_id("second")
+            ])
         ])
-    ])
-    result = _read_and_get_document_xml_element(element)
-    assert_equal("second", result.style_id)
+        result = _read_and_get_document_xml_element(element)
+        assert_equal("second", result.style_id)
+
+
+    def test_when_fallback_is_not_present_then_element_is_ignored(self):
+        element = xml_element("mc:AlternateContent", {}, [
+            xml_element("mc:Choice", {"Requires": "wps"}, [
+                _paragraph_with_style_id("first")
+            ]),
+        ])
+        result = _read_and_get_document_xml_elements(element)
+        assert_equal([], result)
+
 
 def test_sdt_is_read_using_sdt_content():
     element = xml_element("w:sdt", {}, [

@@ -569,7 +569,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return _success(documents.comment_reference(element.attributes["w:id"]))
 
     def alternate_content(element):
-        return read_child_elements(element.find_child("mc:Fallback"))
+        return read_child_elements(element.find_child_or_null("mc:Fallback"))
 
     def read_sdt(element):
         checkbox = element.find_child_or_null("w:sdtPr").find_child("wordml:checkbox")
