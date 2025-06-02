@@ -22,6 +22,7 @@ class WordFormatting(dict):
         defaults['ppr'] = self.load_ppr(doc_default.find_child_or_null("w:pPrDefault"))
         tcpr, borders = self.load_tcpr(doc_default.find_child_or_null("w:tcPrDefault"))
         defaults['tcpr'] = tcpr
+        defaults['tblpr'] = self.load_tblpr(doc_default.find_child_or_null("w:tblPrDefault"))
         defaults['borders'] = borders
         defaults['cnf'] = {}
         self['defaults'] = defaults
@@ -46,7 +47,7 @@ class WordFormatting(dict):
         elif unit == 'pct':
             return f'{round(float(val) * FIFTHPERCENT_TO_PERCENT,1)}%'
         else:
-            return f'{0}px'
+            return f'auto'
 
     @staticmethod
     def _read_boolean_element(element):
@@ -159,10 +160,9 @@ class WordFormatting(dict):
         return formatting
 
     @staticmethod
-    def load_tblpr(element):
+    def load_tblpr(tblpr):
         formatting = {}
-        cell_formatting = {}
-        tblpr = element.find_child_or_null("w:tblPr")
+        tblpPR = tblpr.find_child_or_null("w:tblpPr")
 
         indent = tblpr.find_child_or_null("w:tblInd")
         if not isinstance(indent, NullXmlElement):
@@ -170,6 +170,29 @@ class WordFormatting(dict):
             indent_type = indent.attributes.get("w:type", 0)
             formatting['padding-left'] = WordFormatting.format_to_unit(indent_width, indent_type)
 
+        horzAnchor = tblpPR.attributes.get("w:horzAnchor", None)
+        vertAnchor = tblpPR.attributes.get("w:vertAnchor", None)
+        if not (vertAnchor is None or horzAnchor is None):
+            tblpX = tblpPR.attributes.get("w:tblpX", 0)
+            tblpY = tblpPR.attributes.get("w:tblpY", 0)
+            leftFromText = tblpPR.attributes.get("w:leftFromText", 0)
+            rightFromText = tblpPR.attributes.get("w:rightFromText", 0)
+            topFromText = tblpPR.attributes.get("w:topFromText", 0)
+            bottomFromText = tblpPR.attributes.get("w:bottomFromText", 0)
+
+            formatting['position'] = 'relative'
+            formatting['left'] = WordFormatting.format_to_unit(tblpX, 'dxa')
+            formatting['margin-top'] = WordFormatting.format_to_unit(topFromText, 'dxa')
+            formatting['margin-bottom'] = WordFormatting.format_to_unit(bottomFromText, 'dxa')
+            formatting['margin-left'] = WordFormatting.format_to_unit(leftFromText, 'dxa')
+            formatting['margin-right'] = WordFormatting.format_to_unit(rightFromText, 'dxa')
+
+
+        tblW = tblpr.find_child_or_null("w:tblW")
+        if not tblW is None:
+            width = tblW.attributes.get('w:w')
+            width_type = tblW.attributes.get('w:type')
+            formatting['width'] = WordFormatting.format_to_unit(width, width_type)
         return formatting
 
     @staticmethod
@@ -177,18 +200,18 @@ class WordFormatting(dict):
         tcpr = element.find_child_or_null("w:tcPr")
         tcW = tcpr.find_child_or_null("w:tcW")
         gridspan = tcpr.find_child_or_null("w:gridSpan").attributes.get('w:val')
-        vAlign = tcpr.find_child_or_null("w:vAlign").attributes.get("w:val")
+        vAlign = tcpr.find_child_or_null("w:vAlign").attributes.get("w:val", "top")
         width = tcW.attributes.get("w:w")
 
         cell_style = {}
         if width is not None:
             cell_style['width'] = f"{round(float(width) * TWIP_TO_PIXELS, 1)}px"
-        if vAlign is not None:
-            cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
+
+        cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
 
         cell_style.update(WordFormatting.load_shade(tcpr))
 
-        return {}, WordFormatting.load_tcborders(tcpr)
+        return cell_style, WordFormatting.load_tcborders(tcpr)
 
     @staticmethod
     def load_shade(element):
@@ -314,16 +337,19 @@ class WordFormatting(dict):
     @staticmethod
     def load_tblcnfpr(element):
         formatting = []
-        cell_margin = WordFormatting.load_cell_margin(element.find_child_or_null("w:tblPr"))
+        tblFormatting = element.find_child_or_null("w:tblPr")
+        cell_margin = WordFormatting.load_cell_margin(tblFormatting)
         for tblStyle in element.find_children("w:tblStylePr"):
             ppr = WordFormatting.load_ppr(tblStyle)
             rpr = WordFormatting.load_rpr(tblStyle)
             tcpr, borders = WordFormatting.load_tcpr(tblStyle)
             tcpr.update(cell_margin)
+            tblpr = WordFormatting.load_tblpr(tblFormatting)
             formatting.append({
                 "rpr": rpr,
                 "ppr": ppr,
                 "tcpr": tcpr,
+                "tblpr": tblpr,
                 "borders": borders
             })
         return formatting
@@ -362,11 +388,13 @@ class WordFormatting(dict):
             base_formatting.update(self._load_or_cache(typ, inherits))
 
         # Apply formatting here!
+        tblpr = node.find_child_or_null("w:tblPr")
         base_formatting["ppr"].update(self.load_ppr(node))
         base_formatting["rpr"].update(self.load_rpr(node))
-        base_formatting["ppr"].update(self.load_cell_margin(node.find_child_or_null("w:tblPr")))
+        base_formatting["ppr"].update(self.load_cell_margin(tblpr))
         tcpr, borders = self.load_tcpr(node)
         base_formatting["tcpr"].update(tcpr)
+        base_formatting["tblpr"].update(self.load_tblpr(tblpr))
         base_formatting["borders"].update(borders)
         base_formatting["cnf"] = self.load_tblcnfpr(node)
 
@@ -466,6 +494,7 @@ class WordFormatting(dict):
             cnf['ppr'].update(cnf_format['ppr'])
             cnf['rpr'].update(cnf_format['rpr'])
             cnf['tcpr'].update(cnf_format['tcpr'])
+            cnf['tblpr'].update(cnf_format['tblpr'])
             cnf['borders'].update(cnf_format['borders'])
 
         return cnf
@@ -481,8 +510,21 @@ class WordFormatting(dict):
         return {
             'text_style': text_style,
             'cell_style': formatting['tcpr'],
-            'border_style': formatting['borders']
+            'border_style': formatting['borders'],
+            'table_style': formatting['tblpr'],
         }
+
+    def get_element_formatting(self, element):
+        tblpr = element.find_child_or_null("w:tblPr")
+        tcPr = element.find_child_or_null("w:tcPr")
+        rPr = element.find_child_or_null("w:rPr")
+        pPr = element.find_child_or_null("w:pPr")
+        base_formatting = self.get_element_base_formatting(element)
+        base_formatting.update({
+            "table_style": self.load_tblpr(tblpr)
+        })
+
+        return base_formatting
 
     def get_conditional_formatting(self, element):
         element_type = self._classify_element(element)

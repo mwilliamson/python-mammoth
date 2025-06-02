@@ -407,8 +407,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def table(element):
         properties = element.find_child_or_null("w:tblPr")
         if is_debug_mode():
-            formatting = word_formatting.get_element_base_formatting(element)
-            formatting.update(_find_table_props(properties))
+            formatting = word_formatting.get_element_formatting(element)
         else:
             formatting = _find_table_props(properties)
         return _ReadResult.map_results(
