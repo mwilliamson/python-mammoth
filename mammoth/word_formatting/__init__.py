@@ -160,8 +160,9 @@ class WordFormatting(dict):
         return formatting
 
     @staticmethod
-    def load_tblpr(tblpr):
+    def load_tblpr(element):
         formatting = {}
+        tblpr = element.find_child_or_null("w:tblPr")
         tblpPR = tblpr.find_child_or_null("w:tblpPr")
 
         indent = tblpr.find_child_or_null("w:tblInd")
@@ -337,19 +338,19 @@ class WordFormatting(dict):
     @staticmethod
     def load_tblcnfpr(element):
         formatting = []
-        tblFormatting = element.find_child_or_null("w:tblPr")
-        cell_margin = WordFormatting.load_cell_margin(tblFormatting)
+        tblPr = element.find_child_or_null("w:tblPr")
+        cell_margin = WordFormatting.load_cell_margin(tblPr)
+        tblFormatting = WordFormatting.load_tblpr(element)
         for tblStyle in element.find_children("w:tblStylePr"):
             ppr = WordFormatting.load_ppr(tblStyle)
             rpr = WordFormatting.load_rpr(tblStyle)
             tcpr, borders = WordFormatting.load_tcpr(tblStyle)
             tcpr.update(cell_margin)
-            tblpr = WordFormatting.load_tblpr(tblFormatting)
             formatting.append({
                 "rpr": rpr,
                 "ppr": ppr,
                 "tcpr": tcpr,
-                "tblpr": tblpr,
+                "tblpr": tblFormatting,
                 "borders": borders
             })
         return formatting
@@ -394,7 +395,7 @@ class WordFormatting(dict):
         base_formatting["ppr"].update(self.load_cell_margin(tblpr))
         tcpr, borders = self.load_tcpr(node)
         base_formatting["tcpr"].update(tcpr)
-        base_formatting["tblpr"].update(self.load_tblpr(tblpr))
+        base_formatting["tblpr"].update(self.load_tblpr(node))
         base_formatting["borders"].update(borders)
         base_formatting["cnf"] = self.load_tblcnfpr(node)
 
@@ -515,13 +516,17 @@ class WordFormatting(dict):
         }
 
     def get_element_formatting(self, element):
-        tblpr = element.find_child_or_null("w:tblPr")
-        tcPr = element.find_child_or_null("w:tcPr")
-        rPr = element.find_child_or_null("w:rPr")
-        pPr = element.find_child_or_null("w:pPr")
+        text_style = self.load_ppr(element)
+        text_style.update(self.load_rpr(element))
+
+        cell_style, borders = self.load_tcpr(element)
+
         base_formatting = self.get_element_base_formatting(element)
         base_formatting.update({
-            "table_style": self.load_tblpr(tblpr)
+            "table_style": self.load_tblpr(element),
+            "cell_style": cell_style,
+            "border_style": borders,
+            "text_style": text_style
         })
 
         return base_formatting
