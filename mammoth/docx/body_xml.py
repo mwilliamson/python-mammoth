@@ -406,6 +406,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table(element):
         properties = element.find_child_or_null("w:tblPr")
+        if is_debug_mode():
+            formatting = word_formatting.get_element_base_formatting(element)
+            formatting.update(_find_table_props(properties))
+        else:
+            formatting = _find_table_props(properties)
         return _ReadResult.map_results(
             read_table_style(properties),
             _read_xml_elements(element.children)
@@ -413,7 +418,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
             lambda style, children: documents.table(
                 children=children,
-                formatting=_find_table_props(properties),
+                formatting=formatting,
                 style_id=style[0],
                 style_name=style[1],
             ),
@@ -448,13 +453,18 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
         is_header = bool(properties.find_child("w:tblHeader"))
+        if is_debug_mode():
+            formatting = word_formatting.get_conditional_formatting(element)
+            formatting.update(_find_table_row_props(properties))
+        else:
+            formatting = _find_table_row_props(properties)
         return _ReadResult.map_results(
             read_table_conditional_style(properties),
             _read_xml_elements(element.children),
             lambda style, children: documents.table_row(
                 children=children,
                 is_header=is_header,
-                formatting=_find_table_row_props(properties),
+                formatting=formatting,
                 style_id=style[0],
                 style_name=style[1],
             )
@@ -490,6 +500,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
+        if is_debug_mode():
+            formatting = word_formatting.get_conditional_formatting(element)
+            formatting.update(_find_table_cell_props(properties))
+        else:
+            formatting = _find_table_cell_props(properties)
 
         return _ReadResult.map_results(
             read_table_conditional_style(properties),
@@ -497,7 +512,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             lambda style, children: _add_attrs(
                 documents.table_cell(
                     children=children,
-                    formatting=_find_table_cell_props(properties),
+                    formatting=formatting,
                     style_id=style[0],
                     style_name=style[1],
                 ),

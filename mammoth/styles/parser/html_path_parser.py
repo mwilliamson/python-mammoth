@@ -3,6 +3,7 @@ import cobble
 from ... import html_paths
 from .tokeniser import TokenType
 from .token_parser import parse_identifier, parse_string
+from ...debug import is_debug_mode
 
 
 @cobble.data
