@@ -500,8 +500,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
         if is_debug_mode():
-            formatting = word_formatting.get_conditional_formatting(element)
-            formatting.update(_find_table_cell_props(properties))
+            formatting = word_formatting.get_element_formatting(element)
+            formatting['conditional_style'] = _find_conditional_style_props(properties)
         else:
             formatting = _find_table_cell_props(properties)
 
@@ -668,11 +668,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             cell_index = 0
             for cell in row.children:
                 if cell._vmerge and cell_index in columns:
-                    columns[cell_index].formatting['rowspan'] += 1
+                    columns[cell_index].formatting['attributes']['rowspan'] += 1
                 else:
                     columns[cell_index] = cell
                     cell._vmerge = False
-                cell_index += cell.formatting['colspan']
+                cell_index += cell.formatting['attributes']['colspan']
 
         for row in rows:
             row.children = lists.filter(lambda cell: not cell._vmerge, row.children)
