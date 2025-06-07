@@ -92,6 +92,9 @@ class TableCellUnmerged:
     rowspan = cobble.field()
     vmerge = cobble.field()
 
+    def copy(self, **kwargs):
+        return cobble.copy(self, **kwargs)
+
 @cobble.data
 class Break(Element):
     break_type = cobble.field()

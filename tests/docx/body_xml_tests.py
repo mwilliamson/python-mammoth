@@ -788,6 +788,89 @@ class CheckboxTests:
 
         assert_that(result, is_checkbox(checked=True))
 
+    def test_when_structured_document_tag_checkbox_has_sdt_content_then_checkbox_replaces_single_character(self):
+        element = xml_element("w:tbl", {}, [
+            w_tr(
+                xml_element("w:sdt", {}, [
+                    xml_element("w:sdtPr", {}, [
+                        xml_element("wordml:checkbox", {}, [
+                            xml_element("wordml:checked", {"wordml:val": "1"}),
+                        ]),
+                    ]),
+                    xml_element("w:sdtContent", {}, [
+                        xml_element("w:tc", {}, [
+                            xml_element("w:p", {}, [
+                                xml_element("w:r", {}, [
+                                    xml_element("w:t", {}, [
+                                        xml_text("☐"),
+                                    ]),
+                                ]),
+                            ]),
+                        ]),
+                    ]),
+                ]),
+            ),
+        ])
+
+        result = _read_and_get_document_xml_element(element)
+
+        assert_equal(result, documents.table([
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([
+                        documents.run([
+                            documents.checkbox(checked=True),
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ]))
+
+    def test_when_structured_document_tag_checkbox_has_sdt_content_then_deleted_content_is_ignored(self):
+        element = xml_element("w:tbl", {}, [
+            w_tr(
+                xml_element("w:sdt", {}, [
+                    xml_element("w:sdtPr", {}, [
+                        xml_element("wordml:checkbox", {}, [
+                            xml_element("wordml:checked", {"wordml:val": "1"}),
+                        ]),
+                    ]),
+                    xml_element("w:sdtContent", {}, [
+                        xml_element("w:tc", {}, [
+                            xml_element("w:p", {}, [
+                                xml_element("w:r", {}, [
+                                    xml_element("w:t", {}, [
+                                        xml_text("☐"),
+                                    ]),
+                                ]),
+                                xml_element("w:del", {}, [
+                                    xml_element("w:r", {}, [
+                                        xml_element("w:t", {}, [
+                                            xml_text("☐")
+                                        ])
+                                    ])
+                                ]),
+                            ]),
+                        ]),
+                    ]),
+                ]),
+            ),
+        ])
+
+        result = _read_and_get_document_xml_element(element)
+
+        assert_equal(result, documents.table([
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([
+                        documents.run([
+                            documents.checkbox(checked=True),
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ]))
+
     def _complex_field_checkbox_paragraph(self, ff_data_children):
         return xml_element("w:p", {}, [
             xml_element("w:r", {}, [

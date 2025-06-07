@@ -5,6 +5,7 @@ import sys
 from .. import documents
 from .. import results
 from .. import lists
+from .. import transforms
 from . import complex_fields
 from .dingbats import dingbats
 from .xmlparser import node_types, XmlElement, null_xml_element
@@ -577,17 +578,49 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return read_child_elements(element.find_child_or_null("mc:Fallback"))
 
     def read_sdt(element):
-        checkbox = element.find_child_or_null("w:sdtPr").find_child("wordml:checkbox")
+        content_result = read_child_elements(element.find_child_or_null("w:sdtContent"))
 
-        if checkbox is not None:
+        def handle_content(content):
+            # From the WordML standard: https://learn.microsoft.com/en-us/openspecs/office_standards/ms-docx/3350cb64-931f-41f7-8824-f18b2568ce66
+            #
+            # > A CT_SdtCheckbox element that specifies that the parent
+            # > structured document tag is a checkbox when displayed in the
+            # > document. The parent structured document tag contents MUST
+            # > contain a single character and optionally an additional
+            # > character in a deleted run.
+            checkbox = element.find_child_or_null("w:sdtPr").find_child("wordml:checkbox")
+
+            if checkbox is None:
+                return content
+
             checked_element = checkbox.find_child("wordml:checked")
             is_checked = (
                 checked_element is not None and
                 read_boolean_attribute_value(checked_element.attributes.get("wordml:val"))
             )
-            return _success(documents.checkbox(checked=is_checked))
-        else:
-            return read_child_elements(element.find_child_or_null("w:sdtContent"))
+            document_checkbox = documents.checkbox(checked=is_checked)
+
+            has_checkbox = False
+
+            def transform_text(text):
+                nonlocal has_checkbox
+                if len(text.value) > 0 and not has_checkbox:
+                    has_checkbox = True
+                    return document_checkbox
+                else:
+                    return text
+
+            replaced_content = list(map(
+                transforms.element_of_type(documents.Text, transform_text),
+                content,
+            ))
+
+            if has_checkbox:
+                return replaced_content
+            else:
+                return document_checkbox
+
+        return content_result.map(handle_content)
 
     handlers = {
         "w:t": text,
