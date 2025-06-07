@@ -370,12 +370,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             colspan = int(gridspan)
 
         return _read_xml_elements(element.children) \
-            .map(lambda children: _add_attrs(
-                documents.table_cell(
-                    children=children,
-                    colspan=colspan
-                ),
-                _vmerge=read_vmerge(properties),
+            .map(lambda children: documents.table_cell_unmerged(
+                children=children,
+                colspan=colspan,
+                rowspan=1,
+                vmerge=read_vmerge(properties),
             ))
 
     def read_vmerge(properties):
@@ -398,7 +397,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             )])
 
         unexpected_non_cells = any(
-            not isinstance(cell, documents.TableCell)
+            not isinstance(cell, documents.TableCellUnmerged)
             for row in rows
             for cell in row.children
         )
@@ -411,17 +410,23 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         for row in rows:
             cell_index = 0
             for cell in row.children:
-                if cell._vmerge and cell_index in columns:
+                if cell.vmerge and cell_index in columns:
                     columns[cell_index].rowspan += 1
                 else:
                     columns[cell_index] = cell
-                    cell._vmerge = False
+                    cell.vmerge = False
                 cell_index += cell.colspan
 
         for row in rows:
-            row.children = lists.filter(lambda cell: not cell._vmerge, row.children)
-            for cell in row.children:
-                del cell._vmerge
+            row.children = [
+                documents.table_cell(
+                    children=cell.children,
+                    colspan=cell.colspan,
+                    rowspan=cell.rowspan,
+                )
+                for cell in row.children
+                if not cell.vmerge
+            ]
 
         return _success(rows)
 
@@ -714,13 +719,6 @@ def _concat(*values):
         for element in value:
             result.append(element)
     return result
-
-
-def _add_attrs(obj, **kwargs):
-    for key, value in kwargs.items():
-        setattr(obj, key, value)
-
-    return obj
 
 
 def _is_int(value):
