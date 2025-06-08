@@ -1079,6 +1079,44 @@ class TableTests(object):
         assert_equal(expected_result, result)
 
 
+    def test_when_row_is_marked_as_deleted_in_row_properties_then_row_is_ignored(self):
+        element = xml_element("w:tbl", {}, [
+            xml_element("w:tr", {}, [
+                xml_element("w:tc", {}, [
+                    xml_element("w:p", {}, [
+                        _run_element_with_text("Row 1"),
+                    ]),
+                ]),
+            ]),
+
+            xml_element("w:tr", {}, [
+                xml_element("w:trPr", {}, [
+                    xml_element("w:del")
+                ]),
+                xml_element("w:tc", {}, [
+                    xml_element("w:p", {}, [
+                        _run_element_with_text("Row 2"),
+                    ]),
+                ]),
+            ]),
+        ])
+
+        result = _read_and_get_document_xml_element(element)
+
+        expected_result = documents.table([
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([
+                        documents.run([
+                            documents.text("Row 1"),
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ])
+        assert_equal(expected_result, result)
+
+
     def test_warning_if_non_row_in_table(self):
         element = xml_element("w:tbl", {}, [xml_element("w:p")])
         result = _read_document_xml_element(element)

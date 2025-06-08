@@ -351,6 +351,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
+
+        # See 17.13.5.12 del (Deleted Table Row) of ECMA-376 4th edition Part 1
+        is_deleted = bool(properties.find_child("w:del"))
+        if is_deleted:
+            return _empty_result
+
         is_header = bool(properties.find_child("w:tblHeader"))
         return _read_xml_elements(element.children) \
             .map(lambda children: documents.table_row(
