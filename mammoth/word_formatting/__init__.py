@@ -76,18 +76,31 @@ class WordFormatting(dict):
             return value
 
     @staticmethod
-    def merge_formatting(base_format, new_format):
+    def merge_formatting(base_formatting, new_formatting):
         result_format = {}
-        if isinstance(base_format, dict):
-            for k in base_format:
-                lhs = base_format.get(k, "")
-                if isinstance(new_format, dict):
-                    rhs = new_format.get(k, "")
+        is_base_dict = isinstance(base_formatting, dict)
+        is_new_dict = isinstance(new_formatting, dict)
+        if is_base_dict and is_new_dict:
+            for k in new_formatting:
+                if k in base_formatting:
+                    lhs = base_formatting[k]
+                    rhs = new_formatting[k]
+                    is_base_empty = not bool(lhs)
+                    is_new_empty = not bool(rhs)
+                    result_format[k] = lhs
+                    if is_base_empty or (not is_base_empty and not is_new_empty) or not is_new_empty:
+                        result_format[k].update(rhs)
                 else:
-                    rhs = new_format
-                base_format[k] = WordFormatting.merge_formatting(lhs, rhs)
-        else:
-            result_format = new_format
+                    result_format[k] = new_formatting[k]
+        elif not is_base_dict and not is_new_dict:
+            is_base_empty = not base_formatting is None and len(str(base_formatting))
+            is_new_empty = not new_formatting is None and len(str(new_formatting))
+            if not is_base_empty and not is_new_empty:
+                return base_formatting
+            elif is_base_empty and not is_new_empty:
+                return new_formatting
+            elif not is_base_empty and is_new_empty:
+                return base_formatting
         return result_format
 
     @staticmethod
@@ -96,7 +109,7 @@ class WordFormatting(dict):
         rpr = element.find_child_or_null("w:rPr")
 
         if isinstance(rpr, NullXmlElement):
-            rpr = element.parent.find_child_or_null("w:rPr")
+            rpr = element.find_parent().find_child_or_null("w:rPr")
 
         font_props = rpr.find_child_or_null("w:rFonts")
         font_theme = font_props.attributes.get("w:asciiTheme", "")
@@ -180,7 +193,7 @@ class WordFormatting(dict):
         ppr = element.find_child_or_null("w:pPr")
 
         if isinstance(ppr, NullXmlElement):
-            ppr = element.parent.find_child_or_null("w:pPr")
+            ppr = element.find_parent().find_child_or_null("w:pPr")
 
         line_spacing = ppr.find_child_or_null("w:spacing")
         if not isinstance(line_spacing, NullXmlElement):
@@ -243,7 +256,7 @@ class WordFormatting(dict):
         trpr = element.find_child_or_null("w:trPr")
 
         trHeight = trpr.find_child_or_null("w:trHeight")
-        height = trHeight.attributes.get("w:val", 0)
+        height = trHeight.attributes.get("w:val", 1)
         formatting['height'] = WordFormatting.format_to_unit(height, 'dxa')
 
         jc = trpr.find_child_or_null("w:jc")
@@ -636,24 +649,37 @@ class WordFormatting(dict):
         cnf = self.get_conditional_formatting(element)
         # TODO: combine cnf and base formatting such that we get the definitions from the conditional styles and the element wise style.
 
-        element_formatting = self.get_element_base_formatting(element)
-        element_formatting.update({
+        element_override_formatting = {
             "table_style": self.load_tblpr(element),
             "table_row_style": self.load_trpr(element),
             "cell_style": cell_style,
             "border_style": borders,
-            "text_style": self.load_rpr(element),
+            "text_style": text_style,
             "attributes": attributes
-        })
+        }
+
+        element_base_formatting = self.get_element_base_formatting(element)
+        #print('===========')
+        #print(cnf)
+        #print(element_base_formatting)
+        element_formatting = WordFormatting.merge_formatting(element_base_formatting, element_override_formatting)
+        #print('-----------')
+        #print(element_formatting)
+        #print('===========')
+        #print('+++++++++++')
+        default_formatting = WordFormatting.merge_formatting(element_formatting, cnf)
+        #print(default_formatting)
+        #print('+++++++++++')
 
         #if is_debug_mode():
+        #    input()
         #    element_formatting = WordFormatting.merge_formatting(cnf, element_formatting)
         #    print(cnf)
         #    print('')
         #    print(element_formatting)
         #    input()
 
-        return element_formatting
+        return default_formatting
 
     def get_conditional_formatting(self, element):
         element_type = self._classify_element(element)
@@ -682,5 +708,12 @@ class WordFormatting(dict):
         """
         #input()
 
-        return cnf
+        return {
+            "table_style": {},
+            "table_row_style": {},
+            "cell_style": cell_style,
+            "border_style": border_style,
+            "text_style": text_style,
+            "attributes": {}
+        }
 
