@@ -27,6 +27,9 @@ class XmlElement(object):
             self.children
         ))
 
+    def find_parent(self):
+        return self.parent
+
 
 class XmlElementList(object):
     def __init__(self, elements):
@@ -55,6 +58,9 @@ class NullXmlElement(object):
 
     def find_children(self, name):
         return []
+
+    def find_parent(self):
+        return self
 
 
 null_xml_element = NullXmlElement()
