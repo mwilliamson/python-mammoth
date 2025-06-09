@@ -451,10 +451,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
-        is_header = bool(properties.find_child("w:tblHeader"))
+        is_header = bool(properties.find_child_or_null("w:tblHeader").attributes.get("w:val", "true") == "true")
         if is_debug_mode():
-            formatting = word_formatting.get_conditional_formatting(element)
-            formatting.update(_find_table_row_props(properties))
+            formatting = word_formatting.get_element_formatting(element)
+            formatting['conditional_style'] = _find_conditional_style_props(properties)
+            #formatting = word_formatting.get_conditional_formatting(element)
+            #formatting.update(_find_table_row_props(properties))
         else:
             formatting = _find_table_row_props(properties)
         return _ReadResult.map_results(

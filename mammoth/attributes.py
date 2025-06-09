@@ -173,7 +173,7 @@ class CSSStore(dict):
 
             if firstColumn:
                 attributes[
-                    'style'] += 'text-transform:none;font-weight:bold;background-color:white !important;font-style:italic;'
+                    'style'] += 'font-weight:bold;background-color:white !important;font-style:italic;'
         return attributes
 
     @staticmethod
@@ -281,7 +281,7 @@ def compose_conditional_styles(attributes, formatting):
         firstColumn = int(firstColumn) if firstColumn is not None else 0
 
         if firstColumn:
-            attributes['style'] += 'text-transform:none;font-weight:bold;background-color:white !important;font-style:italic;'
+            attributes['style'] += 'font-weight:bold;background-color:white !important;font-style:italic;'
     return attributes
 
 
