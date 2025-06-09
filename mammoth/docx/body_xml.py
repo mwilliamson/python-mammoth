@@ -537,8 +537,10 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         return {
             'conditional_style': _find_conditional_style_props(properties),
             'cell_style': cell_style,
-            'colspan': 1 if gridspan is None else int(gridspan),
-            'rowspan': 1,
+            'attributes': {
+                'colspan': 1 if gridspan is None else int(gridspan),
+                'rowspan': 1,
+            },
             'border_style': _find_border_style_props(properties),
 
         }

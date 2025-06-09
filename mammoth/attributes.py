@@ -204,6 +204,7 @@ class CSSStore(dict):
 def compose_attributes(element, initial_attributes={}):
     attributes = copy.deepcopy(initial_attributes)
     formatting = getattr(element, 'formatting', {})
+    attribute_formatting = formatting.get('attributes', {})
 
     if not isinstance(element, WordElement):
         return attributes
@@ -226,11 +227,11 @@ def compose_attributes(element, initial_attributes={}):
     if target_frame is not None:
         attributes["target"] = target_frame
 
-    colspan = formatting.get('colspan', 1)
+    colspan = attribute_formatting.get('colspan', 1)
     if colspan != 1:
         attributes["colspan"] = str(colspan)
 
-    rowspan = formatting.get('rowspan', 1)
+    rowspan = attribute_formatting.get('rowspan', 1)
     if rowspan != 1:
         attributes["rowspan"] = str(rowspan)
 

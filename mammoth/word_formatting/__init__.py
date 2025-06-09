@@ -20,7 +20,8 @@ class WordFormatting(dict):
         doc_default = styles_node.find_child_or_null("w:docDefaults")
         defaults['rpr'] = self.load_rpr(doc_default.find_child_or_null("w:rPrDefault"))
         defaults['ppr'] = self.load_ppr(doc_default.find_child_or_null("w:pPrDefault"))
-        tcpr, borders = self.load_tcpr(doc_default.find_child_or_null("w:tcPrDefault"))
+        tcpr, borders, attributes = self.load_tcpr(doc_default.find_child_or_null("w:tcPrDefault"))
+        defaults['attributes'] = attributes
         defaults['tcpr'] = tcpr
         defaults['tblpr'] = self.load_tblpr(doc_default.find_child_or_null("w:tblPrDefault"))
         defaults['borders'] = borders
@@ -212,7 +213,16 @@ class WordFormatting(dict):
 
         cell_style.update(WordFormatting.load_shade(tcpr))
 
-        return cell_style, WordFormatting.load_tcborders(tcpr)
+        attributes = {
+                'colspan': 1 if gridspan is None else int(gridspan),
+                'rowspan': 1,
+            }
+
+        return (
+            cell_style,
+            WordFormatting.load_tcborders(tcpr),
+            attributes
+        )
 
     @staticmethod
     def load_shade(element):
@@ -344,14 +354,15 @@ class WordFormatting(dict):
         for tblStyle in element.find_children("w:tblStylePr"):
             ppr = WordFormatting.load_ppr(tblStyle)
             rpr = WordFormatting.load_rpr(tblStyle)
-            tcpr, borders = WordFormatting.load_tcpr(tblStyle)
+            tcpr, borders, attributes = WordFormatting.load_tcpr(tblStyle)
             tcpr.update(cell_margin)
             formatting.append({
                 "rpr": rpr,
                 "ppr": ppr,
                 "tcpr": tcpr,
                 "tblpr": tblFormatting,
-                "borders": borders
+                "borders": borders,
+                "attributes": attributes
             })
         return formatting
 
@@ -393,7 +404,8 @@ class WordFormatting(dict):
         base_formatting["ppr"].update(self.load_ppr(node))
         base_formatting["rpr"].update(self.load_rpr(node))
         base_formatting["ppr"].update(self.load_cell_margin(tblpr))
-        tcpr, borders = self.load_tcpr(node)
+        tcpr, borders, attributes = self.load_tcpr(node)
+        base_formatting["attributes"].update(attributes)
         base_formatting["tcpr"].update(tcpr)
         base_formatting["tblpr"].update(self.load_tblpr(node))
         base_formatting["borders"].update(borders)
@@ -505,29 +517,34 @@ class WordFormatting(dict):
         format_id = self._find_style_id(element, element_type)
         formatting = self._get_formatting_style(format_id, element_type)
 
-        text_style = copy.deepcopy(formatting['ppr'])
-        text_style.update(formatting['rpr'])
+        text_style = copy.deepcopy(formatting.get('ppr', {}))
+        text_style.update(formatting.get('rpr', {}))
 
         return {
             'text_style': text_style,
-            'cell_style': formatting['tcpr'],
-            'border_style': formatting['borders'],
-            'table_style': formatting['tblpr'],
+            'cell_style': formatting.get('tcpr', {}),
+            'border_style': formatting.get('borders', {}),
+            'table_style': formatting.get('tblpr', {}),
         }
 
     def get_element_formatting(self, element):
         text_style = self.load_ppr(element)
         text_style.update(self.load_rpr(element))
 
-        cell_style, borders = self.load_tcpr(element)
+        cell_style, borders, attributes = self.load_tcpr(element)
+        cnf = self.get_conditional_formatting(element)
+        # TODO: combine cnf and base formatting such that we get the definitions from the conditional styles and the element wise style.
 
         base_formatting = self.get_element_base_formatting(element)
         base_formatting.update({
             "table_style": self.load_tblpr(element),
             "cell_style": cell_style,
             "border_style": borders,
-            "text_style": text_style
+            "text_style": text_style,
+            "attributes": attributes
         })
+
+        print(cnf['borders'])
 
         return base_formatting
 
@@ -538,16 +555,16 @@ class WordFormatting(dict):
         formatting = self._get_formatting_style(format_id, element_type)
         cnf = self._collapse_cnf(cnf_id, formatting)
 
-        text_style = copy.deepcopy(formatting['ppr'])
-        text_style.update(cnf['ppr'])
-        text_style.update(formatting['rpr'])
-        text_style.update(cnf['rpr'])
+        text_style = copy.deepcopy(formatting.get('ppr', {}))
+        text_style.update(cnf.get('ppr', {}))
+        text_style.update(formatting.get('rpr', {}))
+        text_style.update(cnf.get('rpr', {}))
 
-        border_style = copy.deepcopy(formatting['borders'])
-        border_style.update(cnf['borders'])
+        border_style = copy.deepcopy(formatting.get('borders', {}))
+        border_style.update(cnf.get('borders', {}))
 
-        cell_style = copy.deepcopy(formatting['tcpr'])
-        cell_style.update(cnf['tcpr'])
+        cell_style = copy.deepcopy(formatting.get('tcpr', {}))
+        cell_style.update(cnf.get('tcpr', {}))
         """
         print(element_type)
         print(format_id)
@@ -558,9 +575,5 @@ class WordFormatting(dict):
         """
         #input()
 
-        return {
-            'text_style': text_style,
-            'cell_style': cell_style,
-            'border_style': border_style
-        }
+        return cnf
 
