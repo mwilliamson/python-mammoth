@@ -58,6 +58,15 @@ class WordFormatting(dict):
             return f'auto'
 
     @staticmethod
+    def format_color(val):
+        if val is None or val == 'none':
+            return '#000000'
+        elif val == 'auto':
+            return 'auto'
+        else:
+            return f'#{val}'
+
+    @staticmethod
     def _read_boolean_element(element):
         if element is None:
             return False
@@ -152,12 +161,7 @@ class WordFormatting(dict):
                 formatting['vertical-align'] = "baseline"
 
         font_color = rpr.find_child_or_null("w:color").attributes.get("w:val")
-        if font_color is not None and font_color != 'none':
-            font_color = font_color
-        else:
-            font_color = '000000'
-        if font_color is not None:
-            formatting['color'] = f'#{font_color}'
+        formatting['color'] = WordFormatting.format_color(font_color)
 
         is_bold = WordFormatting._read_boolean_element(rpr.find_child("w:b"))
         if is_bold:
@@ -179,7 +183,7 @@ class WordFormatting(dict):
             formatting['font-variant'] = 'common-ligatures small-caps' if is_small_caps else 'normal'
         highlight = WordFormatting._read_highlight_value(rpr.find_child_or_null("w:highlight").attributes.get("w:val"))
         if highlight is not None:
-            formatting['background-color'] = highlight
+            formatting['background-color'] = WordFormatting.format_color(highlight)
         is_deleted = WordFormatting._read_boolean_element(rpr.find_child("w:del"))
 
         formatting['_props'] = {
@@ -354,8 +358,8 @@ class WordFormatting(dict):
         background_fill = shade.attributes.get("w:fill")
         background_val = shade.attributes.get("w:val")
 
-        if background_fill is not None:
-            formatting['background-color'] = f"#{background_fill}"
+        if background_color is not None:
+            formatting['background-color'] = WordFormatting.format_color(background_color)
 
         return formatting
 
@@ -408,7 +412,7 @@ class WordFormatting(dict):
             if top_width is not None:
                 formatting['border-top-width'] = WordFormatting.format_to_unit(top_width, 'eop')
             if top_color is not None and top_color != 'auto':
-                formatting['border-top-color'] = f'#{top_color}'
+                formatting['border-top-color'] = WordFormatting.format_color(top_color)
 
         bottom = tcBorders.find_child_or_null("w:bottom")
         bottom_width = bottom.attributes.get('w:sz')
@@ -422,7 +426,7 @@ class WordFormatting(dict):
             if bottom_width is not None:
                 formatting['border-bottom-width'] = WordFormatting.format_to_unit(bottom_width, 'eop')
             if bottom_color is not None and bottom_color != 'auto':
-                formatting['border-bottom-color'] = f'#{bottom_color}'
+                formatting['border-bottom-color'] = WordFormatting.format_color(bottom_color)
 
         left = tcBorders.find_child_or_null("w:left")
         left = tcBorders.find_child_or_null("w:start") if isinstance(left, NullXmlElement) else left
@@ -437,7 +441,7 @@ class WordFormatting(dict):
             if left_width is not None:
                 formatting['border-left-width'] = WordFormatting.format_to_unit(left_width, 'eop')
             if left_color is not None and left_color != 'auto':
-                formatting['border-left-color'] = f'#{left_color}'
+                formatting['border-left-color'] = WordFormatting.format_color(left_color)
 
         right = tcBorders.find_child_or_null("w:right")
         right = tcBorders.find_child_or_null("w:end") if isinstance(right, NullXmlElement) else right
@@ -452,7 +456,7 @@ class WordFormatting(dict):
             if right_width is not None:
                 formatting['border-right-width'] = WordFormatting.format_to_unit(right_width, 'eop')
             if right_color is not None and right_color != 'auto':
-                formatting['border-right-color'] = f'#{right_color}'
+                formatting['border-right-color'] = WordFormatting.format_color(right_color)
 
         spacing = [
             float(top_space) if top_space is not None else -1,
@@ -702,6 +706,7 @@ class WordFormatting(dict):
         cnf_id = self._find_cnf_id(element, element_type)
         formatting = self._get_formatting_style(format_id, element_type)
         cnf = self._collapse_cnf(cnf_id, formatting)
+        #print(cnf)
 
         text_style = copy.deepcopy(formatting.get('ppr', {}))
         text_style.update(cnf.get('ppr', {}))
