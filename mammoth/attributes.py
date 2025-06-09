@@ -270,18 +270,18 @@ def compose_conditional_styles(attributes, formatting):
     if oddHBand or oddVBand or evenHBand or evenVBand:
         attributes['style'] += f'background-color:{STYLES["root"]["ms-table-banding-gray"]};'
 
-    if is_debug_mode():
-        firstRow = conditional_formatting.get('firstRow', 0)
-        firstRow = int(firstRow) if firstRow is not None else 0
+    #if is_debug_mode():
+    #    firstRow = conditional_formatting.get('firstRow', 0)
+    #    firstRow = int(firstRow) if firstRow is not None else 0
 
-        if firstRow:
-            attributes['style'] += 'text-transform:uppercase;font-weight:bold;border-bottom:thin solid;'
+    #    if firstRow:
+    #        attributes['style'] += 'text-transform:uppercase;font-weight:bold;border-bottom:thin solid;'
 
-        firstColumn = conditional_formatting.get('firstColumn', 0)
-        firstColumn = int(firstColumn) if firstColumn is not None else 0
+    #    firstColumn = conditional_formatting.get('firstColumn', 0)
+    #    firstColumn = int(firstColumn) if firstColumn is not None else 0
 
-        if firstColumn:
-            attributes['style'] += 'font-weight:bold;background-color:white !important;font-style:italic;'
+    #    if firstColumn:
+    #        attributes['style'] += 'font-weight:bold;background-color:white !important;font-style:italic;'
     return attributes
 
 
