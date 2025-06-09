@@ -4,6 +4,8 @@ from mammoth.debug import is_debug_mode
 from mammoth.docx.xmlparser import NullXmlElement
 from mammoth.html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
 
+NULL_ELEMENT = NullXmlElement()
+
 # Conversion units
 EMU_TO_INCHES = 914400
 EMU_TO_PIXELS = 9525
@@ -74,9 +76,27 @@ class WordFormatting(dict):
             return value
 
     @staticmethod
+    def merge_formatting(base_format, new_format):
+        result_format = {}
+        if isinstance(base_format, dict):
+            for k in base_format:
+                lhs = base_format.get(k, "")
+                if isinstance(new_format, dict):
+                    rhs = new_format.get(k, "")
+                else:
+                    rhs = new_format
+                base_format[k] = WordFormatting.merge_formatting(lhs, rhs)
+        else:
+            result_format = new_format
+        return result_format
+
+    @staticmethod
     def load_rpr(element):
         formatting = {}
         rpr = element.find_child_or_null("w:rPr")
+
+        if isinstance(rpr, NullXmlElement):
+            rpr = element.parent.find_child_or_null("w:rPr")
 
         font_props = rpr.find_child_or_null("w:rFonts")
         font_theme = font_props.attributes.get("w:asciiTheme", "")
@@ -135,6 +155,22 @@ class WordFormatting(dict):
         highlight = WordFormatting._read_highlight_value(rpr.find_child_or_null("w:highlight").attributes.get("w:val"))
         if highlight is not None:
             formatting['background-color'] = highlight
+        is_deleted = WordFormatting._read_boolean_element(rpr.find_child("w:del"))
+
+        formatting['_props'] = {
+            'vertical_alignment': text_alignment,
+            'font': font,
+            'font_size': font_size,
+            'font_color': font_color,
+            'is_bold': is_bold,
+            'is_italic': is_italic,
+            'is_underline': is_underline,
+            'is_strikethrough': is_strikethrough,
+            'is_all_caps': is_all_caps,
+            'is_small_caps': is_small_caps,
+            'highlight': highlight,
+            'is_deleted': is_deleted,
+        }
 
         return formatting
 
@@ -142,6 +178,9 @@ class WordFormatting(dict):
     def load_ppr(element):
         formatting = {}
         ppr = element.find_child_or_null("w:pPr")
+
+        if isinstance(ppr, NullXmlElement):
+            ppr = element.parent.find_child_or_null("w:pPr")
 
         line_spacing = ppr.find_child_or_null("w:spacing")
         if not isinstance(line_spacing, NullXmlElement):
@@ -450,7 +489,7 @@ class WordFormatting(dict):
         return None
 
     def _load_from_nodes(self, typ, name):
-        node = self["nodes"][typ][name]
+        node = self["nodes"].get(typ, NULL_ELEMENT).get(name, NULL_ELEMENT)
 
         # Attempt to generate a merged version of the styles information
         inherits = node.find_child_or_null("w:basedOn").attributes.get("w:val")
@@ -591,25 +630,30 @@ class WordFormatting(dict):
 
     def get_element_formatting(self, element):
         text_style = self.load_ppr(element)
-        text_style.update(self.load_rpr(element))
+        text_style = WordFormatting.merge_formatting(text_style, self.load_rpr(element))
 
         cell_style, borders, attributes = self.load_tcpr(element)
         cnf = self.get_conditional_formatting(element)
         # TODO: combine cnf and base formatting such that we get the definitions from the conditional styles and the element wise style.
 
-        base_formatting = self.get_element_base_formatting(element)
-        base_formatting.update({
+        element_formatting = self.get_element_base_formatting(element)
+        element_formatting.update({
             "table_style": self.load_tblpr(element),
             "table_row_style": self.load_trpr(element),
             "cell_style": cell_style,
             "border_style": borders,
-            "text_style": text_style,
+            "text_style": self.load_rpr(element),
             "attributes": attributes
         })
 
-        print(cnf['borders'])
+        #if is_debug_mode():
+        #    element_formatting = WordFormatting.merge_formatting(cnf, element_formatting)
+        #    print(cnf)
+        #    print('')
+        #    print(element_formatting)
+        #    input()
 
-        return base_formatting
+        return element_formatting
 
     def get_conditional_formatting(self, element):
         element_type = self._classify_element(element)
