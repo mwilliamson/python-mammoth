@@ -50,6 +50,10 @@ class WordFormatting(dict):
             return f'{round(float(val) * TWIP_TO_PIXELS,1)}px'
         elif unit == 'pct':
             return f'{round(float(val) * FIFTHPERCENT_TO_PERCENT,1)}%'
+        elif unit == 'eop':
+            return f'{round(float(val) * EIGHTPOINT_TO_PIXEL, 1)}px'
+        elif unit == 'ptp':
+            return f'{round(float(val) * POINT_TO_PIXEL, 1)}px'
         else:
             return f'auto'
 
@@ -78,6 +82,7 @@ class WordFormatting(dict):
     @staticmethod
     def merge_formatting(base_formatting, new_formatting):
         result_format = {}
+        #print('{} vs. {}'.format(type(base_formatting), type(new_formatting)))
         is_base_dict = isinstance(base_formatting, dict)
         is_new_dict = isinstance(new_formatting, dict)
         if is_base_dict and is_new_dict:
@@ -87,6 +92,13 @@ class WordFormatting(dict):
                     rhs = new_formatting[k]
                     is_base_empty = not bool(lhs)
                     is_new_empty = not bool(rhs)
+                    #print('~~~~~{}~~~~~'.format(k))
+                    #print(lhs)
+                    #print(rhs)
+                    #print(is_base_empty)
+                    #print(is_new_empty)
+                    #print((not is_base_empty and not is_new_empty))
+                    #print(not is_new_empty)
                     result_format[k] = lhs
                     if is_base_empty or (not is_base_empty and not is_new_empty) or not is_new_empty:
                         result_format[k].update(rhs)
@@ -394,9 +406,9 @@ class WordFormatting(dict):
             if top_border is not None:
                 formatting['border-top-style'] = top_border
             if top_width is not None:
-                formatting['border-top-width'] = round(float(top_width) * EIGHTPOINT_TO_PIXEL, 1)
+                formatting['border-top-width'] = WordFormatting.format_to_unit(top_width, 'eop')
             if top_color is not None and top_color != 'auto':
-                formatting['border-top-color'] = top_color
+                formatting['border-top-color'] = f'#{top_color}'
 
         bottom = tcBorders.find_child_or_null("w:bottom")
         bottom_width = bottom.attributes.get('w:sz')
@@ -408,9 +420,9 @@ class WordFormatting(dict):
             if bottom_border is not None:
                 formatting['border-bottom-style'] = bottom_border
             if bottom_width is not None:
-                formatting['border-bottom-width'] = round(float(bottom_width) * EIGHTPOINT_TO_PIXEL, 1)
+                formatting['border-bottom-width'] = WordFormatting.format_to_unit(bottom_width, 'eop')
             if bottom_color is not None and bottom_color != 'auto':
-                formatting['border-bottom-color'] = bottom_color
+                formatting['border-bottom-color'] = f'#{bottom_color}'
 
         left = tcBorders.find_child_or_null("w:left")
         left = tcBorders.find_child_or_null("w:start") if isinstance(left, NullXmlElement) else left
@@ -423,9 +435,9 @@ class WordFormatting(dict):
             if left_border is not None:
                 formatting['border-left-style'] = left_border
             if left_width is not None:
-                formatting['border-left-width'] = round(float(left_width) * EIGHTPOINT_TO_PIXEL, 1)
+                formatting['border-left-width'] = WordFormatting.format_to_unit(left_width, 'eop')
             if left_color is not None and left_color != 'auto':
-                formatting['border-left-color'] = left_color
+                formatting['border-left-color'] = f'#{left_color}'
 
         right = tcBorders.find_child_or_null("w:right")
         right = tcBorders.find_child_or_null("w:end") if isinstance(right, NullXmlElement) else right
@@ -438,9 +450,9 @@ class WordFormatting(dict):
             if right_border is not None:
                 formatting['border-right-style'] = right_border
             if right_width is not None:
-                formatting['border-right-width'] = round(float(right_width) * EIGHTPOINT_TO_PIXEL, 1)
+                formatting['border-right-width'] = WordFormatting.format_to_unit(right_width, 'eop')
             if right_color is not None and right_color != 'auto':
-                formatting['border-right-color'] = right_color
+                formatting['border-right-color'] = f'#{right_color}'
 
         spacing = [
             float(top_space) if top_space is not None else -1,
@@ -450,7 +462,7 @@ class WordFormatting(dict):
         ]
         max_spacing = max(spacing)
         if max_spacing > -1:
-            formatting['border-spacing'] = round(max_spacing * POINT_TO_PIXEL, 1)
+            formatting['border-spacing'] = WordFormatting.format_to_unit(max_spacing, 'ptp')
 
         return formatting
 
@@ -642,6 +654,7 @@ class WordFormatting(dict):
         }
 
     def get_element_formatting(self, element):
+        format_id = self._find_style(element)
         text_style = self.load_ppr(element)
         text_style = WordFormatting.merge_formatting(text_style, self.load_rpr(element))
 
@@ -670,8 +683,10 @@ class WordFormatting(dict):
         default_formatting = WordFormatting.merge_formatting(element_formatting, cnf)
         #print(default_formatting)
         #print('+++++++++++')
+        #print('###########')
+        #print('###########')
 
-        #if is_debug_mode():
+        #if is_debug_mode() and format_id == "PlainTable5":
         #    input()
         #    element_formatting = WordFormatting.merge_formatting(cnf, element_formatting)
         #    print(cnf)
