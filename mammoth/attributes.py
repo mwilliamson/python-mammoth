@@ -301,6 +301,7 @@ def compose_style_category(formatting, category=''):
     css = ''
 
     for k, v in formatting.get(category, {}).items():
-        css += f"{k}:{v};"
+        if not k.startswith('_'):
+            css += f"{k}:{v};"
 
     return css

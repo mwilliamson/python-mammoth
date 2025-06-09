@@ -53,6 +53,9 @@ class NullXmlElement(object):
     def find_child(self, name):
         return None
 
+    def find_children(self, name):
+        return []
+
 
 null_xml_element = NullXmlElement()
 
