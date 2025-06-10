@@ -249,7 +249,7 @@ MS_BORDER_STYLES = {
     'double': 'double',
     'doubleWave': 'double',
     'inset': 'inset',
-    'nil': 'hidden',
+    'nil': 'none',
     'none': 'none',
     'outset': 'outset',
     'thick': 'solid',

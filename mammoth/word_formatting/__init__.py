@@ -408,7 +408,7 @@ class WordFormatting(dict):
     @staticmethod
     def load_tcborders(element):
         tcBorders = element.find_child_or_null("w:tcBorders")
-        formatting = copy.deepcopy({'border-collapse': 'collapse'})
+        formatting = {'border-collapse': 'collapse'}
 
         top = tcBorders.find_child_or_null("w:top")
         top_width = top.attributes.get('w:sz')
@@ -590,18 +590,21 @@ class WordFormatting(dict):
         #print('=====> {}'.format(formatting['cnf']))
         return formatting
 
-    def _classify_element(self, element):
-        if element.name == 'w:p':
-            return 'paragraph'
-        if element.name == 'w:r':
-            return 'character'
-        if element.name == 'w:tbl':
-            return 'table'
-        if element.name == 'w:tr':
-            return 'row'
-        if element.name == 'w:tc':
-            return 'cell'
-        return 'numbering'
+    @staticmethod
+    def _classify_element(element):
+        if not isinstance(element, NullXmlElement):
+            if element.name == 'w:p':
+                return 'paragraph'
+            if element.name == 'w:r':
+                return 'character'
+            if element.name == 'w:tbl':
+                return 'table'
+            if element.name == 'w:tr':
+                return 'row'
+            if element.name == 'w:tc':
+                return 'cell'
+            return 'numbering'
+        return 'null'
 
     def _find_style_id(self, element, element_type):
         if element_type == 'paragraph':
@@ -617,7 +620,7 @@ class WordFormatting(dict):
         return ""
 
     def _find_table_root(self, element):
-        parent_type = self._classify_element(element)
+        parent_type = WordFormatting._classify_element(element)
         if parent_type == "table":
             return element
 
@@ -625,7 +628,7 @@ class WordFormatting(dict):
         if isinstance(parent, NullXmlElement):
             return element
 
-        parent_type = self._classify_element(parent)
+        parent_type = WordFormatting._classify_element(parent)
         if parent_type == "table":
             return parent
         return self._find_table_root(parent)
@@ -679,7 +682,7 @@ class WordFormatting(dict):
         return cnf
 
     def get_element_base_formatting(self, element):
-        element_type = self._classify_element(element)
+        element_type = WordFormatting._classify_element(element)
         format_id = self._find_style_id(element, element_type)
         formatting = self._get_formatting_style(format_id, element_type)
 
@@ -740,7 +743,7 @@ class WordFormatting(dict):
 
     def get_conditional_formatting(self, element):
         #print('++++++++++++++++++++++++++++')
-        element_type = self._classify_element(element)
+        element_type = WordFormatting._classify_element(element)
         format_id = self._find_style(element)
         cnf_id = self._find_cnf_id(element, element_type)
         #print('{} => CNF ID:{}'.format(element_type, cnf_id))
