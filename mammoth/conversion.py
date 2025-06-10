@@ -9,6 +9,7 @@ import copy
 import cobble
 
 from . import documents, results, html_paths, images, writers, html
+from .debug import is_debug_mode
 from .docx.files import InvalidFileReferenceError
 from .html import ForceWrite, Element as HTMLElement
 from .attributes import compose_attributes, compose_style
@@ -300,7 +301,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("li", {"id": self._note_html_id(note)}, note_body)
         ]
 
-
     def visit_comment_reference(self, reference, context):
         def nodes():
             comment = self._comments[reference.comment_id]
@@ -343,14 +343,12 @@ class _DocumentConverter(documents.element_visitor(args=1)):
             html.element("dd", {}, body),
         ]
 
-
     def _visit_all(self, elements, context):
         return [
             html_node
             for element in elements
             for html_node in self.visit(element, context)
         ]
-
 
     def _find_html_path_for_paragraph(self, paragraph):
         default = html_paths.path([html_paths.element("p", fresh=True)])
@@ -359,7 +357,6 @@ class _DocumentConverter(documents.element_visitor(args=1)):
 
     def _find_html_path_for_run(self, run):
         return self._find_html_path(run, "run", default=html_paths.empty, warn_unrecognised=True)
-
 
     def _find_html_path(self, element, element_type, default, warn_unrecognised=False):
         style = self._find_style(element, element_type)

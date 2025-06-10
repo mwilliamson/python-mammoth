@@ -10,12 +10,26 @@ NULL_ELEMENT = NullXmlElement()
 EMU_TO_INCHES = 914400
 EMU_TO_PIXELS = 9525
 POINT_TO_PIXEL = (1 / 0.75)  # Per W3C
-TWIP_TO_PIXELS = POINT_TO_PIXEL / 20 # 20 -> 1 inch; 72pt / in per PostScript -> 72 points
+TWIP_TO_PIXELS = POINT_TO_PIXEL / 20  # 20 -> 1 inch; 72pt / in per PostScript -> 72 points
 EIGHTPOINT_TO_PIXEL = POINT_TO_PIXEL / 8
 FIFTHPERCENT_TO_PERCENT = 0.02
 
 
 class WordFormatting(dict):
+    CNF_IDS = {
+        "firstRow": 0,
+        "lastRow": 1,
+        "firstCol": 2,
+        "lastCol": 3,
+        "band1Vert": 4,
+        "band2Vert": 5,
+        "band1Horz": 6,
+        "band2Horz": 7,
+        "neCell": 8,
+        "nwCell": 9,
+        "seCell": 10,
+        "swCell": 11,
+    }
     def __init__(self, styles_node):
         super().__init__()
         defaults = {}
@@ -31,6 +45,8 @@ class WordFormatting(dict):
         defaults['cnf'] = {}
         self['defaults'] = defaults
         self['nodes'] = self.presort_nodes(styles_node)
+        self['cnf_styles'] = {}
+        self['styles_node'] = styles_node
 
     @staticmethod
     def _is_int(value):
@@ -47,9 +63,9 @@ class WordFormatting(dict):
     @staticmethod
     def format_to_unit(val, unit):
         if unit == 'dxa':
-            return f'{round(float(val) * TWIP_TO_PIXELS,1)}px'
+            return f'{round(float(val) * TWIP_TO_PIXELS, 1)}px'
         elif unit == 'pct':
-            return f'{round(float(val) * FIFTHPERCENT_TO_PERCENT,1)}%'
+            return f'{round(float(val) * FIFTHPERCENT_TO_PERCENT, 1)}%'
         elif unit == 'eop':
             return f'{round(float(val) * EIGHTPOINT_TO_PIXEL, 1)}px'
         elif unit == 'ptp':
@@ -97,36 +113,56 @@ class WordFormatting(dict):
     @staticmethod
     def merge_formatting(base_formatting, new_formatting):
         result_format = {}
-        #print('{} vs. {}'.format(type(base_formatting), type(new_formatting)))
+        # print('{} vs. {}'.format(type(base_formatting), type(new_formatting)))
         is_base_dict = isinstance(base_formatting, dict)
         is_new_dict = isinstance(new_formatting, dict)
         if is_base_dict and is_new_dict:
-            for k in new_formatting:
-                if k in base_formatting:
-                    lhs = base_formatting[k]
-                    rhs = new_formatting[k]
-                    is_base_empty = not bool(lhs)
-                    is_new_empty = not bool(rhs)
-                    #print('~~~~~{}~~~~~'.format(k))
-                    #print(lhs)
-                    #print(rhs)
-                    #print(is_base_empty)
-                    #print(is_new_empty)
-                    #print((not is_base_empty and not is_new_empty))
-                    #print(not is_new_empty)
-                    result_format[k] = lhs
-                    if is_base_empty or (not is_base_empty and not is_new_empty) or not is_new_empty:
-                        result_format[k].update(rhs)
-                else:
-                    result_format[k] = new_formatting[k]
-        elif not is_base_dict and not is_new_dict:
-            is_base_empty = not base_formatting is None and len(str(base_formatting))
-            is_new_empty = not new_formatting is None and len(str(new_formatting))
-            if not is_base_empty and not is_new_empty:
-                return base_formatting
-            elif is_base_empty and not is_new_empty:
+            is_base_empty = not len(base_formatting)
+            is_new_empty = not len(new_formatting)
+            if is_base_empty:
                 return new_formatting
-            elif not is_base_empty and is_new_empty:
+            elif is_new_empty:
+                return base_formatting
+            else:
+                for k in new_formatting:
+                    if k in base_formatting:
+                        lhs = base_formatting[k]
+                        rhs = new_formatting[k]
+                        is_base_empty = not bool(lhs)
+                        is_new_empty = not bool(rhs)
+                        # print('~~~~~{}~~~~~'.format(k))
+                        # print(lhs)
+                        # print(rhs)
+                        # print(is_base_empty)
+                        # print(is_new_empty)
+                        # print((not is_base_empty and not is_new_empty))
+                        # print(not is_new_empty)
+                        result_format[k] = lhs
+                        if is_base_empty or (not is_base_empty and not is_new_empty) or not is_new_empty:
+                            result_format[k].update(rhs)
+                    else:
+                        result_format[k] = new_formatting[k]
+        #elif not is_base_dict and not is_new_dict:
+        #    is_base_empty = base_formatting is None and not len(str(base_formatting))
+        #    is_new_empty = new_formatting is None and not len(str(new_formatting))
+        #    if not is_base_empty and not is_new_empty:
+        #        return base_formatting
+        #    elif is_base_empty and not is_new_empty:
+        #        return new_formatting
+        #    elif not is_base_empty and is_new_empty:
+        #        return base_formatting
+        elif not is_base_dict or not is_new_dict:
+            #print('???')
+            is_base_empty = base_formatting is None or not len(base_formatting)
+            is_new_empty = new_formatting is None or not len(new_formatting)
+            #print(base_formatting)
+            #print('_________________')
+            #print(new_formatting)
+            if is_new_empty:
+                return base_formatting
+            elif is_base_empty:
+                return new_formatting
+            else:
                 return base_formatting
         return result_format
 
@@ -264,7 +300,6 @@ class WordFormatting(dict):
             formatting['left'] = WordFormatting.format_to_unit(leftFromText, 'dxa')
             formatting['right'] = WordFormatting.format_to_unit(rightFromText, 'dxa')
 
-
         tblW = tblpr.find_child_or_null("w:tblW")
         if not tblW is None:
             width = tblW.attributes.get('w:w')
@@ -310,9 +345,9 @@ class WordFormatting(dict):
         cell_style.update(WordFormatting.load_margins(tcpr))
 
         attributes = {
-                'colspan': 1 if gridspan is None else int(gridspan),
-                'rowspan': 1,
-            }
+            'colspan': 1 if gridspan is None else int(gridspan),
+            'rowspan': 1,
+        }
 
         return (
             cell_style,
@@ -366,7 +401,7 @@ class WordFormatting(dict):
         background_val = shade.attributes.get("w:val")
 
         if background_color is not None:
-            formatting['background-color'] = WordFormatting.format_color(background_color)
+            formatting['background-color'] = WordFormatting.format_color(background_fill)
 
         return formatting
 
@@ -447,17 +482,18 @@ class WordFormatting(dict):
 
     @staticmethod
     def load_tblcnfpr(element):
-        formatting = []
+        formatting = [{}] * 12
         tblPr = element.find_child_or_null("w:tblPr")
         cell_margin = WordFormatting.load_margins(tblPr)
         tblFormatting = WordFormatting.load_tblpr(element)
         trFormatting = WordFormatting.load_trpr(element)
         for tblStyle in element.find_children("w:tblStylePr"):
+            style_id = WordFormatting.CNF_IDS[tblStyle.attributes.get("w:type", "")]
             ppr = WordFormatting.load_ppr(tblStyle)
             rpr = WordFormatting.load_rpr(tblStyle)
             tcpr, borders, attributes = WordFormatting.load_tcpr(tblStyle)
             tcpr.update(cell_margin)
-            formatting.append({
+            format_item = {
                 "rpr": rpr,
                 "ppr": ppr,
                 "tcpr": tcpr,
@@ -465,7 +501,8 @@ class WordFormatting(dict):
                 "trpr": trFormatting,
                 "borders": borders,
                 "attributes": attributes
-            })
+            }
+            formatting.insert(style_id, format_item)
         return formatting
 
     @staticmethod
@@ -482,7 +519,6 @@ class WordFormatting(dict):
             if default_style:
                 node_cache[style_type]["default"] = style_element
         return node_cache
-
 
     def _load_from_cache(self, typ, name):
         root = self.get(typ, None)
@@ -513,6 +549,7 @@ class WordFormatting(dict):
         base_formatting["trpr"].update(self.load_trpr(node))
         base_formatting["borders"].update(borders)
         base_formatting["cnf"] = self.load_tblcnfpr(node)
+        #print(base_formatting["cnf"])
 
         return base_formatting
 
@@ -539,6 +576,19 @@ class WordFormatting(dict):
                 return self._load_or_cache("paragraph", name)
             return self._load_or_cache("table", name)
         return {}
+
+    def _get_cnf_style(self, name, typ="table"):
+        #print(name)
+        #print(typ)
+        formatting = self._get_formatting_style(name, typ)
+        if typ == 'table' and not name in self['cnf_styles'] and len(formatting):
+            self['cnf_styles'][name] = formatting['cnf']
+        elif typ != "table":
+            #print('=====> {}'.format(self['cnf_styles'].get(name, {})))
+            formatting['cnf'] = WordFormatting.merge_formatting(formatting.get('cnf', {}), self['cnf_styles'].get(name, {}))
+
+        #print('=====> {}'.format(formatting['cnf']))
+        return formatting
 
     def _classify_element(self, element):
         if element.name == 'w:p':
@@ -567,7 +617,11 @@ class WordFormatting(dict):
         return ""
 
     def _find_table_root(self, element):
-        parent = element.parent
+        parent_type = self._classify_element(element)
+        if parent_type == "table":
+            return element
+
+        parent = element.find_parent()
         if isinstance(parent, NullXmlElement):
             return element
 
@@ -596,23 +650,31 @@ class WordFormatting(dict):
 
     def _find_cnf_index(self, cnf):
         indx = []
-        for i in range(len(cnf)):
+        for i in range(0, len(cnf), 1):
             if cnf[i] == "1":
                 indx.append(i)
         return indx
 
     def _collapse_cnf(self, cnf_id, formatting):
-        cnf_indices = self._find_cnf_index(cnf_id)
-        cnf_formattings = [formatting['cnf'][i] for i in cnf_indices]
+        #print('~~~~~~~~')
         cnf = copy.deepcopy(self['defaults'])
+        try:
+            cnf_indices = self._find_cnf_index(cnf_id)
+            cnf_formattings = [formatting['cnf'][i] for i in cnf_indices]
 
-        for cnf_format in cnf_formattings:
-            cnf['ppr'].update(cnf_format['ppr'])
-            cnf['rpr'].update(cnf_format['rpr'])
-            cnf['tcpr'].update(cnf_format['tcpr'])
-            cnf['tblpr'].update(cnf_format['tblpr'])
-            cnf['trpr'].update(cnf_format['trpr'])
-            cnf['borders'].update(cnf_format['borders'])
+            #print('{}'.format(formatting['cnf']))
+            #print('{}'.format(cnf_indices))
+            for cnf_format in cnf_formattings:
+                cnf['ppr'].update(cnf_format['ppr'])
+                cnf['rpr'].update(cnf_format['rpr'])
+                cnf['tcpr'].update(cnf_format['tcpr'])
+                cnf['tblpr'].update(cnf_format['tblpr'])
+                cnf['trpr'].update(cnf_format['trpr'])
+                cnf['borders'].update(cnf_format['borders'])
+            #print('{}'.format(cnf))
+            #print('~~~~~~~~')
+        except Exception:
+            pass
 
         return cnf
 
@@ -634,6 +696,7 @@ class WordFormatting(dict):
 
     def get_element_formatting(self, element):
         format_id = self._find_style(element)
+        #print('==========={}==========='.format(format_id))
         text_style = self.load_ppr(element)
         text_style = WordFormatting.merge_formatting(text_style, self.load_rpr(element))
 
@@ -676,13 +739,17 @@ class WordFormatting(dict):
         return default_formatting
 
     def get_conditional_formatting(self, element):
+        #print('++++++++++++++++++++++++++++')
         element_type = self._classify_element(element)
         format_id = self._find_style(element)
         cnf_id = self._find_cnf_id(element, element_type)
-        formatting = self._get_formatting_style(format_id, element_type)
+        #print('{} => CNF ID:{}'.format(element_type, cnf_id))
+        formatting = self._get_cnf_style(format_id, element_type)
         cnf = self._collapse_cnf(cnf_id, formatting)
-        #print(cnf)
-        #print('CNF ID:{}'.format(cnf_id))
+        #if is_debug_mode() and format_id == "PlainTable5":
+            #print(formatting)
+            #print(cnf)
+        #    input()
 
         text_style = copy.deepcopy(formatting.get('ppr', {}))
         text_style.update(cnf.get('ppr', {}))
@@ -702,7 +769,8 @@ class WordFormatting(dict):
         print(formatting['borders'])
         input()
         """
-        #input()
+        # input()
+        #print('++++++++++++++++++++++++++++')
 
         return {
             "table_style": {},
@@ -712,4 +780,3 @@ class WordFormatting(dict):
             "text_style": text_style,
             "attributes": {}
         }
-
