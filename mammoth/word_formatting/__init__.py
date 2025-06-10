@@ -54,6 +54,12 @@ class WordFormatting(dict):
             return f'{round(float(val) * EIGHTPOINT_TO_PIXEL, 1)}px'
         elif unit == 'ptp':
             return f'{round(float(val) * POINT_TO_PIXEL, 1)}px'
+        elif unit == 'px':
+            return f'{round(val, 1)}px'
+        elif unit == 'pt':
+            return f'{round(val, 1)}pt'
+        elif unit == 'em':
+            return f'{round(val, 1)}em'
         else:
             return f'auto'
 
@@ -219,11 +225,11 @@ class WordFormatting(dict):
             line_rule = line_spacing.attributes.get("w:lineRule", "auto")
 
             if line_rule in ("atLeast", "exactly"):
-                formatting['margin-top'] = f'{round(before / line, 1)}pt'
-                formatting['margin-bottom'] = f'{round(after / line, 1)}pt'
+                formatting['margin-top'] = WordFormatting.format_to_unit(before / line, 'pt')
+                formatting['margin-bottom'] = WordFormatting.format_to_unit(after / line, 'pt')
             else:
-                formatting['margin-top'] = f'{round(before / line, 1)}em'
-                formatting['margin-bottom'] = f'{round(after / line, 1)}em'
+                formatting['margin-top'] = WordFormatting.format_to_unit(before / line, 'em')
+                formatting['margin-bottom'] = WordFormatting.format_to_unit(before / line, 'em')
 
             formatting.update(WordFormatting.load_shade(element))
 
@@ -645,7 +651,7 @@ class WordFormatting(dict):
         }
 
         element_base_formatting = self.get_element_base_formatting(element)
-        #print('===========')
+        #print('==========={}==========='.format(format_id))
         #print(cnf)
         #print(element_base_formatting)
         element_formatting = WordFormatting.merge_formatting(element_base_formatting, element_override_formatting)
@@ -676,6 +682,7 @@ class WordFormatting(dict):
         formatting = self._get_formatting_style(format_id, element_type)
         cnf = self._collapse_cnf(cnf_id, formatting)
         #print(cnf)
+        #print('CNF ID:{}'.format(cnf_id))
 
         text_style = copy.deepcopy(formatting.get('ppr', {}))
         text_style.update(cnf.get('ppr', {}))
