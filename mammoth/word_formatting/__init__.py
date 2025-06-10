@@ -278,7 +278,7 @@ class WordFormatting(dict):
         trpr = element.find_child_or_null("w:trPr")
 
         trHeight = trpr.find_child_or_null("w:trHeight")
-        height = trHeight.attributes.get("w:val", 1)
+        height = trHeight.attributes.get("w:val", 0)
         formatting['height'] = WordFormatting.format_to_unit(height, 'dxa')
 
         jc = trpr.find_child_or_null("w:jc")
