@@ -253,10 +253,10 @@ class WordFormatting(dict):
 
             formatting['position'] = 'relative'
             formatting['left'] = WordFormatting.format_to_unit(tblpX, 'dxa')
-            formatting['margin-top'] = WordFormatting.format_to_unit(topFromText, 'dxa')
-            formatting['margin-bottom'] = WordFormatting.format_to_unit(bottomFromText, 'dxa')
-            formatting['margin-left'] = WordFormatting.format_to_unit(leftFromText, 'dxa')
-            formatting['margin-right'] = WordFormatting.format_to_unit(rightFromText, 'dxa')
+            formatting['top'] = WordFormatting.format_to_unit(topFromText, 'dxa')
+            formatting['bottom'] = WordFormatting.format_to_unit(bottomFromText, 'dxa')
+            formatting['left'] = WordFormatting.format_to_unit(leftFromText, 'dxa')
+            formatting['right'] = WordFormatting.format_to_unit(rightFromText, 'dxa')
 
 
         tblW = tblpr.find_child_or_null("w:tblW")
