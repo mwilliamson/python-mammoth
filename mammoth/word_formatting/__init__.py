@@ -322,30 +322,31 @@ class WordFormatting(dict):
         if isinstance(margin, NullXmlElement):
             margin = element.find_child_or_null("w:tblCellMar")
 
-        top = margin.find_child_or_null("w:top")
-        if not isinstance(top, NullXmlElement):
-            formatting['margin-top'] = WordFormatting.format_to_unit(
-                top.attributes.get("w:w", 0),
-                top.attributes.get("w:type", "dxa")
-            )
-        bottom = margin.find_child_or_null("w:top")
-        if not isinstance(bottom, NullXmlElement):
-            formatting['margin-bottom'] = WordFormatting.format_to_unit(
-                bottom.attributes.get("w:w", 0),
-                bottom.attributes.get("w:type", "dxa")
-            )
-        left = margin.find_child_or_null("w:top")
-        if not isinstance(left, NullXmlElement):
-            formatting['margin-left'] = WordFormatting.format_to_unit(
-                left.attributes.get("w:w", 0),
-                left.attributes.get("w:type", "dxa")
-            )
-        right = margin.find_child_or_null("w:top")
-        if not isinstance(right, NullXmlElement):
-            formatting['margin-right'] = WordFormatting.format_to_unit(
-                right.attributes.get("w:w", 0),
-                right.attributes.get("w:type", "dxa")
-            )
+        if not isinstance(margin, NullXmlElement):
+            top = margin.find_child_or_null("w:top")
+            if not isinstance(top, NullXmlElement):
+                formatting['padding-top'] = WordFormatting.format_to_unit(
+                    top.attributes.get("w:w", 0),
+                    top.attributes.get("w:type", "dxa")
+                )
+            bottom = margin.find_child_or_null("w:bottom")
+            if not isinstance(bottom, NullXmlElement):
+                formatting['padding-bottom'] = WordFormatting.format_to_unit(
+                    bottom.attributes.get("w:w", 0),
+                    bottom.attributes.get("w:type", "dxa")
+                )
+            left = margin.find_child_or_null("w:left")
+            if not isinstance(left, NullXmlElement):
+                formatting['padding-left'] = WordFormatting.format_to_unit(
+                    left.attributes.get("w:w", 0),
+                    left.attributes.get("w:type", "dxa")
+                )
+            right = margin.find_child_or_null("w:right")
+            if not isinstance(right, NullXmlElement):
+                formatting['padding-right'] = WordFormatting.format_to_unit(
+                    right.attributes.get("w:w", 0),
+                    right.attributes.get("w:type", "dxa")
+                )
 
         return formatting
 
@@ -360,38 +361,6 @@ class WordFormatting(dict):
 
         if background_color is not None:
             formatting['background-color'] = WordFormatting.format_color(background_color)
-
-        return formatting
-
-    @staticmethod
-    def load_cell_margin(element):
-        formatting = {}
-
-        cell_margin = element.find_child_or_null("w:tblCellMar")
-        if not isinstance(cell_margin, NullXmlElement):
-            top_margin = cell_margin.find_child_or_null("w:top")
-            if not isinstance(top_margin, NullXmlElement):
-                top_width = top_margin.attributes.get("w:w")
-                top_type = top_margin.attributes.get("w:type")
-                formatting['padding-top'] = WordFormatting.format_to_unit(top_width, top_type)
-
-            bottom_margin = cell_margin.find_child_or_null("w:bottom")
-            if not isinstance(bottom_margin, NullXmlElement):
-                bottom_width = bottom_margin.attributes.get("w:w")
-                bottom_type = bottom_margin.attributes.get("w:type")
-                formatting['padding-bottom'] = WordFormatting.format_to_unit(bottom_width, bottom_type)
-
-            left_margin = cell_margin.find_child_or_null("w:left")
-            if not isinstance(left_margin, NullXmlElement):
-                left_width = left_margin.attributes.get("w:w")
-                left_type = left_margin.attributes.get("w:type")
-                formatting['padding-left'] = WordFormatting.format_to_unit(left_width, left_type)
-
-            right_margin = cell_margin.find_child_or_null("w:right")
-            if not isinstance(right_margin, NullXmlElement):
-                right_width = right_margin.attributes.get("w:w")
-                right_type = right_margin.attributes.get("w:type")
-                formatting['padding-right'] = WordFormatting.format_to_unit(right_width, right_type)
 
         return formatting
 
@@ -474,7 +443,7 @@ class WordFormatting(dict):
     def load_tblcnfpr(element):
         formatting = []
         tblPr = element.find_child_or_null("w:tblPr")
-        cell_margin = WordFormatting.load_cell_margin(tblPr)
+        cell_margin = WordFormatting.load_margins(tblPr)
         tblFormatting = WordFormatting.load_tblpr(element)
         trFormatting = WordFormatting.load_trpr(element)
         for tblStyle in element.find_children("w:tblStylePr"):
@@ -530,7 +499,7 @@ class WordFormatting(dict):
         tblpr = node.find_child_or_null("w:tblPr")
         base_formatting["ppr"].update(self.load_ppr(node))
         base_formatting["rpr"].update(self.load_rpr(node))
-        base_formatting["ppr"].update(self.load_cell_margin(tblpr))
+        base_formatting["ppr"].update(self.load_margins(tblpr))
         tcpr, borders, attributes = self.load_tcpr(node)
         base_formatting["attributes"].update(attributes)
         base_formatting["tcpr"].update(tcpr)
