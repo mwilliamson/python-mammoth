@@ -419,9 +419,9 @@ class WordFormatting(dict):
         if element_type in ("row", "cell"):
             table = WordFormatting._find_table_root(element)
         tblBorders = table.find_child_or_null('w:tblPr').find_child_or_null("w:tblBorders")
-        print_debug(element_type)
-        print_debug(isinstance(table.find_child_or_null('w:tblPr'), NullXmlElement))
-        print_debug(isinstance(tblBorders, NullXmlElement))
+        #print_debug(element_type)
+        #print_debug(isinstance(table.find_child_or_null('w:tblPr'), NullXmlElement))
+        #print_debug(isinstance(tblBorders, NullXmlElement))
         if isinstance(tblBorders, NullXmlElement):
             return {}
         return WordFormatting.load_borders(tblBorders)
@@ -512,18 +512,18 @@ class WordFormatting(dict):
         cell_margin = WordFormatting.load_margins(tblPr)
         tblFormatting = WordFormatting.load_tblpr(element)
         trFormatting = WordFormatting.load_trpr(element)
-        tblBorder = WordFormatting.load_tblborders(element)
+        #tblBorder = WordFormatting.load_tblborders(element)
         for tblStyle in element.find_children("w:tblStylePr"):
             style_id = WordFormatting.CNF_IDS[tblStyle.attributes.get("w:type", "")]
             ppr = WordFormatting.load_ppr(tblStyle)
             rpr = WordFormatting.load_rpr(tblStyle)
             tcpr, borders, attributes = WordFormatting.load_tcpr(tblStyle)
             tcpr.update(cell_margin)
-            cnf_border = tblBorder.copy()
-            print_debug('~~~> {}'.format(cnf_border))
-            print_debug('<~~~> {}'.format(borders))
-            cnf_border.update(borders)
-            print_debug('<~~||~~> {}'.format(cnf_border))
+            #cnf_border = tblBorder.copy()
+            #print_debug('~~~> {}'.format(cnf_border))
+            #print_debug('<~~~> {}'.format(borders))
+            #cnf_border.update(borders)
+            #print_debug('<~~||~~> {}'.format(cnf_border))
             format_item = {
                 "rpr": rpr,
                 "ppr": ppr,
@@ -696,7 +696,7 @@ class WordFormatting(dict):
             result += str(v)
         return result
 
-    def _find_cnf_id_dev(self, element, element_type):
+    def _find_node_cnf_id(self, element, element_type):
         if element_type == 'paragraph':
             return element.find_child_or_null("w:pPr").find_child_or_null("w:cnfStyle").attributes.get("w:val", "")
         if element_type == 'character':
@@ -712,7 +712,7 @@ class WordFormatting(dict):
                                 .find_child_or_null("w:cnfStyle")
                                 .attributes.get("w:val", "")))
 
-    def _find_cnf_id(self, element, element_type):
+    def _find_inherited_cnf_id(self, element, element_type):
         if element_type == 'paragraph':
             return element.find_child_or_null("w:pPr").find_child_or_null("w:cnfStyle").attributes.get("w:val", "")
         if element_type == 'character':
@@ -722,14 +722,14 @@ class WordFormatting(dict):
             parent = element.find_parent()
             return self._merge_cnf_ids(
                 cell_cnf,
-                self._find_cnf_id(parent, self._classify_element(parent))
+                self._find_inherited_cnf_id(parent, self._classify_element(parent))
             )
         if element_type == 'row':
             row_cnf = element.find_child_or_null("w:trPr").find_child_or_null("w:cnfStyle").attributes.get("w:val", "")
             parent = element.find_parent()
             return self._merge_cnf_ids(
                 row_cnf,
-                self._find_cnf_id(parent, self._classify_element(parent))
+                self._find_inherited_cnf_id(parent, self._classify_element(parent))
             )
         return element.find_child_or_null("w:tblPr").find_child_or_null("w:cnfStyle").attributes.get("w:val", "")
 
@@ -741,14 +741,15 @@ class WordFormatting(dict):
         return indx
 
     def _collapse_cnf(self, cnf_id, formatting):
-        print_debug('~~~~~~~~')
+        #print_debug('~~~~~~~~')
         cnf = copy.deepcopy(self['defaults'])
         try:
             cnf_indices = self._find_cnf_index(cnf_id)
+            #cnf_indices.sort(reverse=True)
             cnf_formattings = [formatting['cnf'][i] for i in cnf_indices]
 
             #print_debug('{}'.format(formatting['cnf']))
-            print_debug('{}'.format(cnf_indices))
+            #print_debug('?{}'.format(cnf_indices))
             for cnf_format in cnf_formattings:
                 cnf['ppr'].update(cnf_format['ppr'])
                 cnf['rpr'].update(cnf_format['rpr'])
@@ -756,9 +757,9 @@ class WordFormatting(dict):
                 cnf['tblpr'].update(cnf_format['tblpr'])
                 cnf['trpr'].update(cnf_format['trpr'])
                 cnf['borders'].update(cnf_format['borders'])
-                print_debug('CNF: {}'.format(cnf_format['borders']))
+                #print_debug('CNF: {}'.format(cnf_format['borders']))
             #print_debug('{}'.format(cnf))
-            print_debug('~~~~~~~~')
+            #print_debug('~~~~~~~~')
         except Exception:
             pass
 
@@ -803,16 +804,17 @@ class WordFormatting(dict):
         #print_debug('==========={}==========='.format(format_id))
         #print_debug(cnf)
         #print_debug(element_base_formatting)
-        element_formatting = WordFormatting.merge_formatting(element_base_formatting, element_override_formatting)
+        default_formatting = WordFormatting.merge_formatting(element_base_formatting, cnf)
+        element_formatting = WordFormatting.merge_formatting(default_formatting, element_override_formatting)
         #print_debug('-----------')
         #print_debug(element_formatting)
         #print_debug('===========')
         #print_debug('+++++++++++')
-        default_formatting = WordFormatting.merge_formatting(element_formatting, cnf)
+        #default_formatting = WordFormatting.merge_formatting(element_formatting, cnf)
         #print_debug(cnf)
-        print_debug(default_formatting['border_style'])
-        default_formatting['border_style'].update(cnf['border_style'])
-        print_debug(default_formatting['border_style'])
+        #print_debug(default_formatting['border_style'])
+        #default_formatting['border_style'].update(cnf['border_style'])
+        #print_debug(default_formatting['border_style'])
         #print_debug('+++++++++++')
         #print_debug('###########')
         #print_debug('###########')
@@ -827,32 +829,33 @@ class WordFormatting(dict):
         #if is_debug_mode() and format_id == "GridTable3":
         #    pause_debug()
 
-        return default_formatting
+        return element_formatting
 
     def get_conditional_formatting(self, element):
-        print_debug('++++++++++++++++++++++++++++')
+        #print_debug('++++++++++++++++++++++++++++')
         element_type = WordFormatting._classify_element(element)
         format_id = self._find_style(element)
-        cnf_id = self._find_cnf_id(element, element_type)
-        print_debug('{} => CNF ID:{}'.format(element_type, cnf_id))
+        cnf_id = self._find_node_cnf_id(element, element_type)
+        global_cnf_id = self._find_inherited_cnf_id(element, element_type)
+        #print_debug('{} => CNF ID:{}'.format(element_type, cnf_id))
         formatting = self._get_cnf_style(format_id, element_type)
-        cnf = self._collapse_cnf(cnf_id, formatting)
+        cnf = self._collapse_cnf(global_cnf_id, formatting)
         #if is_debug_mode() and format_id == "GridTable3":
             #print_debug(formatting)
-        #    print_debug(cnf)
+            #print_debug(cnf)
         #    pause_debug()
 
-        text_style = copy.deepcopy(formatting.get('ppr', {}))
-        text_style.update(cnf.get('ppr', {}))
-        text_style.update(formatting.get('rpr', {}))
+        text_style = copy.deepcopy(cnf.get('ppr', {}))
         text_style.update(cnf.get('rpr', {}))
 
-        if len(cnf_id) and element_type != "row":
+        if len(cnf_id):# and element_type != "row":
             border_style = self._get_default_table_style(format_id).get('borders', {})
             border_style.update(cnf.get('borders', {}))
             border_style.update(formatting.get('borders', {}))
+        #elif element_type == "table":
+        #    border_style = self._get_default_table_style(format_id).get('borders', {})
         else:
-            border_style = {}
+            border_style = cnf.get('borders', {})
         #border_style = copy.deepcopy(formatting.get('borders', {}))
         #print_debug('???{}'.format(border_style))
         #border_style.update(cnf.get('borders', {}))
@@ -878,15 +881,13 @@ class WordFormatting(dict):
         #    print_debug(format_id)
         #    print_debug(element_type)
         #    border_style = self._get_default_table_style(format_id).get('borders', {})
-        if is_debug_mode() and format_id == "GridTable3" or len(cnf_id) == 0:
+        #if is_debug_mode() and format_id == "GridTable3":
             #print_debug(formatting.get('borders'))
         #    print_debug(cnf.get('borders'))
         #    print_debug(cnf)
-            print_debug(border_style)
+        #    print_debug(border_style)
             #pause_debug()
 
-        cell_style = copy.deepcopy(formatting.get('tcpr', {}))
-        cell_style.update(cnf.get('tcpr', {}))
         """
         print_debug(element_type)
         print_debug(format_id)
@@ -896,12 +897,12 @@ class WordFormatting(dict):
         input()
         """
         # input()
-        print_debug('++++++++++++++++++++++++++++')
+        #print_debug('++++++++++++++++++++++++++++')
 
         return {
             "table_style": {},
             "table_row_style": {},
-            "cell_style": cell_style,
+            "cell_style": cnf.get('tcpr', {}),
             "border_style": border_style,
             "text_style": text_style,
             "attributes": {}
