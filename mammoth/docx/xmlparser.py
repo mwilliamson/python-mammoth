@@ -47,6 +47,7 @@ class XmlElementList(object):
 
 
 class NullXmlElement(object):
+    name = 'NULL'
     attributes = {}
     children = []
 
