@@ -344,37 +344,35 @@ class WordFormatting(dict):
 
     @staticmethod
     def load_tcpr(element):
-        tcpr = element.find_child_or_null("w:tcPr")
-        tcW = tcpr.find_child_or_null("w:tcW")
-        gridspan = tcpr.find_child_or_null("w:gridSpan").attributes.get('w:val')
-        vAlign = tcpr.find_child_or_null("w:vAlign").attributes.get("w:val", "top")
-        width = tcW.attributes.get("w:w")
-
         cell_style = {}
-        if width is not None:
-            cell_style['width'] = f"{round(float(width) * TWIP_TO_PIXELS, 1)}px"
+        attributes = {}
+        borders = {'border-collapse': 'collapse'}
 
-        cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
+        for tcpr in element.find_children("w:tcPr"):
+            tcW = tcpr.find_child_or_null("w:tcW")
+            gridspan = tcpr.find_child_or_null("w:gridSpan").attributes.get('w:val')
+            vAlign = tcpr.find_child_or_null("w:vAlign").attributes.get("w:val", "top")
+            width = tcW.attributes.get("w:w")
 
-        cell_style.update(WordFormatting.load_shade(tcpr))
+            if width is not None:
+                cell_style['width'] = f"{round(float(width) * TWIP_TO_PIXELS, 1)}px"
 
-        cell_style.update(WordFormatting.load_margins(tcpr))
+            cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
 
-        attributes = {
-            'colspan': 1 if gridspan is None else int(gridspan),
-            'rowspan': 1,
-        }
+            cell_style.update(WordFormatting.load_shade(tcpr))
 
-        #cell_borders = WordFormatting.load_tblborders(element)
-        #cell_borders = WordFormatting.merge_formatting(cell_borders, WordFormatting.load_tcborders(tcpr))
-        #if is_debug_mode() and len(cell_borders):
-        #    print_debug(cell_borders)
-        #    print_debug(WordFormatting.load_tcborders(tcpr))
-        #    input()
+            cell_style.update(WordFormatting.load_margins(tcpr))
+
+            attributes.update({
+                'colspan': 1 if gridspan is None else int(gridspan),
+                'rowspan': 1,
+            })
+
+            borders.update(WordFormatting.load_tcborders(tcpr))
 
         return (
             cell_style,
-            WordFormatting.load_tcborders(tcpr),
+            borders,
             attributes
         )
 
