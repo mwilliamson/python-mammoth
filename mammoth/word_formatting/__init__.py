@@ -334,12 +334,7 @@ class WordFormatting(dict):
 
         jc = trpr.find_child_or_null("w:jc")
         text_alignment = jc.attributes.get("w:val", "start")
-        if text_alignment == "left":
-            formatting['text-align'] = "start"
-        elif text_alignment == "right":
-            formatting['text-align'] = "end"
-        else:
-            formatting['text-align'] = text_alignment
+        formatting['text-align'] = text_alignment
         return formatting
 
     @staticmethod
