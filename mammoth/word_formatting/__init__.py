@@ -1,4 +1,5 @@
 import copy
+import itertools
 
 from mammoth.debug import is_debug_mode, print_debug, pause_debug
 from mammoth.docx.xmlparser import NullXmlElement
@@ -14,6 +15,22 @@ TWIP_TO_PIXELS = POINT_TO_PIXEL / 20  # 20 -> 1 inch; 72pt / in per PostScript -
 EIGHTPOINT_TO_PIXEL = POINT_TO_PIXEL / 8
 FIFTHPERCENT_TO_PERCENT = 0.02
 
+
+def is_odd(ls, itm):
+    try:
+        indx = ls.index(itm)
+        return bool(indx % 2)
+    except:
+        return False
+
+def get_odd_items(ls):
+    odd = True
+    odd_ls = []
+    for itm in ls:
+        if odd:
+            odd_ls.append(itm)
+        odd = not odd
+    return odd_ls
 
 class WordFormatting(dict):
     CNF_IDS = {
@@ -508,7 +525,7 @@ class WordFormatting(dict):
         return copy.deepcopy(self['defaults'])
 
     def load_node_conditional_styles(self, name):
-        formatting = [{}] * 12
+        formatting = [self.load_blank_style()] * 12
         style_node = self.load_style_node(name)
         for tblStyle in style_node.find_children("w:tblStylePr"):
             style_id = WordFormatting.CNF_IDS[tblStyle.attributes.get("w:type", "")]
@@ -517,8 +534,17 @@ class WordFormatting(dict):
         return formatting
 
     def load_node_default_style(self, name):
+        if len(name) == 0:
+            return self.load_blank_style()
+        # Find inheritance node name
         style_node = self.load_style_node(name)
-        return WordFormatting.load_style(style_node)
+        target = style_node.find_child_or_null("w:basedOn").attributes.get("w:val", "")
+        inherited_node = self.load_style_node(target)
+
+        # Find inheritance recursively and return the merged formatting of inheritance and current
+        inherited_style = WordFormatting.load_style(inherited_node)
+        style_style = WordFormatting.load_style(style_node)
+        return self.merge_formatting(inherited_style, style_style)
 
     @staticmethod
     def load_style(element):
@@ -706,6 +732,52 @@ class WordFormatting(dict):
             result += str(v)
         return result
 
+    def _find_table_cnf_id(self, element):
+        table = self._find_table_root(element)
+
+        tblLook = table.find_child_or_null("w:tblPr").find_child_or_null("w:tblLook")
+        if not isinstance(tblLook, NullXmlElement):
+            look = {
+                "firstRow": int(tblLook.attributes.get("w:firstRow", '0')),
+                "lastRow": int(tblLook.attributes.get("w:lastRow", '0')),
+                "firstColumn": int(tblLook.attributes.get("w:firstColumn", '0')),
+                "lastColumn": int(tblLook.attributes.get("w:lastColumn", '0')),
+                "noHBand": int(tblLook.attributes.get("w:noHBand", '0')),
+                "noVBand": int(tblLook.attributes.get("w:noVBand", '0')),
+            }
+            #print_debug(look)
+            look = self._adjust_element_look(table, element, look)
+            #print_debug(look)
+            return '{firstRow}{lastRow}{firstColumn}{lastColumn}{noHBand}{noHBand}{noVBand}{noVBand}0000'.format(**look)
+        return ''
+
+    def _adjust_element_look(self, table, element, default_look={}):
+        default_look = copy.deepcopy(default_look)
+        element_id = id(element)
+
+        table_children = [r for r in table.find_children('w:tr')]
+        rows = [[c for c in r.find_children('w:tc')] for r in table_children]
+
+        first_row = [id(c) for c in rows[0]]
+        last_row = [id(c) for c in rows[-1]]
+
+        default_look['firstRow'] = int(element_id in first_row) & default_look['firstRow']
+        default_look['lastRow'] = int(element_id in last_row) & default_look['lastRow']
+
+        first_column = [id(r[0]) for r in rows[1:]]
+        last_column = [id(r[-1]) for r in rows[1:]]
+
+        default_look['firstColumn'] = int(element_id in first_column) & default_look['firstColumn']
+        default_look['lastColumn'] = int(element_id in last_column) & default_look['lastColumn']
+        default_look['noVBand'] = 0
+
+        odd_rows = get_odd_items(table_children[1:])
+        odd_rows = [id(r) for r in odd_rows]
+        default_look['noHBand'] = int(element_id in odd_rows) & int(not default_look['noHBand'])
+
+
+        return default_look
+
     def _find_node_cnf_id(self, element, element_type):
         if element_type == 'paragraph':
             return element.find_child_or_null("w:pPr").find_child_or_null("w:cnfStyle").attributes.get("w:val", "")
@@ -752,15 +824,16 @@ class WordFormatting(dict):
 
     def _collapse_cnf(self, cnf_id, formatting):
         #print_debug('~~~~~~~~')
-        cnf = copy.deepcopy(self['defaults'])
+        cnf = self.load_blank_style()
         try:
             cnf_indices = self._find_cnf_index(cnf_id)
-            #cnf_indices.sort(reverse=True)
+            cnf_indices.sort(reverse=True)
             cnf_formattings = [formatting[i] for i in cnf_indices]
 
             #print_debug('{}'.format(formatting['cnf']))
             #print_debug('?{}'.format(cnf_indices))
             for cnf_format in cnf_formattings:
+                #print_debug(cnf_format)
                 cnf['ppr'].update(cnf_format['ppr'])
                 cnf['rpr'].update(cnf_format['rpr'])
                 cnf['tcpr'].update(cnf_format['tcpr'])
@@ -770,7 +843,8 @@ class WordFormatting(dict):
                 #print_debug('CNF: {}'.format(cnf_format['borders']))
             #print_debug('{}'.format(cnf))
             #print_debug('~~~~~~~~')
-        except Exception:
+        except Exception as e:
+            print_debug(e)
             pass
 
         return cnf
@@ -833,7 +907,7 @@ class WordFormatting(dict):
         #print_debug('###########')
         #print_debug('###########')
 
-        #if is_debug_mode() and format_id == "PlainTable5":
+        #if is_debug_mode() and format_id == "PlainTable3":
         #    input()
         #    element_formatting = WordFormatting.merge_formatting(cnf, element_formatting)
         #    print_debug(cnf)
@@ -847,16 +921,19 @@ class WordFormatting(dict):
 
     def get_conditional_style(self, element):
         #print_debug('++++++++++++++++++++++++++++')
-        parent = element.find_parent()
         element_type = WordFormatting._classify_element(element)
         format_id = self._find_style(element)
         cnf_id = self._find_node_cnf_id(element, element_type)
-        parent_cnf_id = self._find_node_cnf_id(parent, self._classify_element(parent))
+        if len(cnf_id) == 0:
+            cnf_id = self._find_table_cnf_id(element)
 
         formatting = self.load_node_conditional_styles(format_id)
-        parent_conditional_style = self._collapse_cnf(parent_cnf_id, formatting)
-        #print_debug('Name: {} | {} => CNF ID:{} Parent ID: {}'.format(element.name, element_type, cnf_id, parent_cnf_id))
-        #print_debug(formatting)
+        #table_conditional_style = self._collapse_cnf(table_cnf_id, formatting)
+        #print_debug('Name: {} | {} => CNF ID:{} Parent ID: {}'.format(element.name, element_type, cnf_id, table_cnf_id))
+        #print_debug(table_conditional_style)
 
         node_conditional_style = self._collapse_cnf(cnf_id, formatting)
-        return self.merge_formatting(parent_conditional_style, node_conditional_style)
+        #print_debug(node_conditional_style)
+        #merged_style = self.merge_formatting(table_conditional_style, node_conditional_style)
+        #print_debug(merged_style)
+        return node_conditional_style
