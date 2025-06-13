@@ -93,7 +93,7 @@ class WordFormatting(dict):
         elif unit == 'em':
             return f'{round(val, 1)}em'
         else:
-            return f'auto'
+            return f''
 
     @staticmethod
     def format_color(val):
@@ -106,14 +106,14 @@ class WordFormatting(dict):
 
     @staticmethod
     def _read_boolean_element(element):
-        if element is None:
+        if isinstance(element, NullXmlElement) or element is None:
             return False
         else:
-            return WordFormatting._read_boolean_attribute_value(element.attributes.get("w:val"))
+            return WordFormatting._read_boolean_attribute_value(element.attributes.get("w:val", "0"))
 
     @staticmethod
     def _read_boolean_attribute_value(value):
-        return value not in ["false", "0"]
+        return value not in ("false", "0")
 
     @staticmethod
     def _read_underline_element(element):
@@ -127,7 +127,41 @@ class WordFormatting(dict):
             return value
 
     @staticmethod
+    def is_formatting_empty(v):
+        try:
+            return not bool(v)
+        except:
+            try:
+                return not len(v)
+            except:
+                return False
+
+    @staticmethod
     def merge_formatting(base_formatting, new_formatting):
+        is_base_dict = isinstance(base_formatting, dict)
+        is_new_dict = isinstance(new_formatting, dict)
+        if is_base_dict and is_new_dict:
+            result_format = {}
+            for k, v in base_formatting.items():
+                if k in new_formatting:
+                    result_format[k] = WordFormatting.merge_formatting(v, new_formatting[k])
+                else:
+                    result_format[k] = v
+            for k in new_formatting:
+                if not k in result_format:
+                    result_format[k] = new_formatting[k]
+            return result_format
+        elif not is_base_dict:
+            return new_formatting
+        elif WordFormatting.is_formatting_empty(base_formatting):
+            return new_formatting
+        elif WordFormatting.is_formatting_empty(new_formatting):
+            return base_formatting
+        else:
+            return base_formatting
+
+    @staticmethod
+    def merge_formatting_(base_formatting, new_formatting):
         result_format = {}
         # print_debug('{} vs. {}'.format(type(base_formatting), type(new_formatting)))
         is_base_dict = isinstance(base_formatting, dict)
@@ -155,7 +189,10 @@ class WordFormatting(dict):
                         # print_debug(not is_new_empty)
                         result_format[k] = lhs
                         if is_base_empty or (not is_base_empty and not is_new_empty) or not is_new_empty:
-                            result_format[k].update(rhs)
+                            if isinstance(result_format[k], dict):
+                                result_format[k].update(rhs)
+                            else:
+                                result_format[k] = rhs
                     else:
                         result_format[k] = new_formatting[k]
         #elif not is_base_dict and not is_new_dict:
@@ -184,30 +221,39 @@ class WordFormatting(dict):
 
     @staticmethod
     def load_rpr(element):
-        formatting = {}
         rpr = element.find_child_or_null("w:rPr")
 
         if isinstance(rpr, NullXmlElement):
             rpr = element.find_parent().find_child_or_null("w:rPr")
 
-        font_props = rpr.find_child_or_null("w:rFonts")
+        return WordFormatting.load_text_style(rpr)
+
+    @staticmethod
+    def load_text_style(pr):
+        formatting = {}
+
+        font_props = pr.find_child_or_null("w:rFonts")
         font_theme = font_props.attributes.get("w:asciiTheme", "")
         font = font_props.attributes.get("w:ascii", "")
         if len(font_theme) and font_theme == "minorHAnsi":
             formatting['font-family'] = "Calibri, Candara, Segoe, \"Segoe UI\", Optima, Arial, sans-serif"
 
-        font_kerning = int(rpr.find_child_or_null('w:kern').attributes.get("w:val", 0))
+        font_kerning = int(pr.find_child_or_null('w:kern').attributes.get("w:val", 0))
         if font_kerning:
             formatting['font-kerning'] = 'normal'
 
-        font_size = int(rpr.find_child_or_null('w:sz').attributes.get("w:val", 22))
-        formatting['font-size'] = f'{str(font_size / 2)}pt'
+        rpr_font_size = pr.find_child_or_null('w:sz')
+        if not isinstance(rpr_font_size, NullXmlElement):
+            font_size = int(rpr_font_size.attributes.get("w:val", 22)) / 2
+            formatting['font-size'] = WordFormatting.format_to_unit(font_size, 'pt')
+        else:
+            font_size = 22
 
-        ligatures = rpr.find_child_or_null('w14:ligatures').attributes.get("w14:val", "normal")
+        ligatures = pr.find_child_or_null('w14:ligatures').attributes.get("w14:val", "normal")
         if ligatures == "standardContextual":
             formatting['font-variant'] = 'contextual'
 
-        text_alignment = rpr \
+        text_alignment = pr \
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
         if text_alignment is not None:
@@ -218,31 +264,31 @@ class WordFormatting(dict):
             else:
                 formatting['vertical-align'] = "baseline"
 
-        font_color = rpr.find_child_or_null("w:color").attributes.get("w:val")
+        font_color = pr.find_child_or_null("w:color").attributes.get("w:val")
         formatting['color'] = WordFormatting.format_color(font_color)
 
-        is_bold = WordFormatting._read_boolean_element(rpr.find_child("w:b"))
+        is_bold = WordFormatting._read_boolean_element(pr.find_child_or_null("w:b"))
         if is_bold:
             formatting['font-weight'] = 'bold'
-        is_italic = WordFormatting._read_boolean_element(rpr.find_child("w:i"))
+        is_italic = WordFormatting._read_boolean_element(pr.find_child_or_null("w:i"))
         if is_italic:
             formatting['font-style'] = 'italic'
-        is_underline = WordFormatting._read_underline_element(rpr.find_child("w:u"))
+        is_underline = WordFormatting._read_underline_element(pr.find_child_or_null("w:u"))
         if is_underline:
             formatting['text-decoration'] = 'underline'
-        is_strikethrough = WordFormatting._read_boolean_element(rpr.find_child("w:strike"))
+        is_strikethrough = WordFormatting._read_boolean_element(pr.find_child_or_null("w:strike"))
         if is_strikethrough:
             formatting['text-decoration'] = 'line-through'
-        is_all_caps = WordFormatting._read_boolean_element(rpr.find_child("w:caps"))
+        is_all_caps = WordFormatting._read_boolean_element(pr.find_child_or_null("w:caps"))
         if is_all_caps:
             formatting['text-transform'] = 'uppercase'
-        is_small_caps = WordFormatting._read_boolean_element(rpr.find_child("w:smallCaps"))
+        is_small_caps = WordFormatting._read_boolean_element(pr.find_child_or_null("w:smallCaps"))
         if is_small_caps:
             formatting['font-variant'] = 'common-ligatures small-caps' if is_small_caps else 'normal'
-        highlight = WordFormatting._read_highlight_value(rpr.find_child_or_null("w:highlight").attributes.get("w:val"))
+        highlight = WordFormatting._read_highlight_value(pr.find_child_or_null("w:highlight").attributes.get("w:val"))
         if highlight is not None:
             formatting['background-color'] = WordFormatting.format_color(highlight)
-        is_deleted = WordFormatting._read_boolean_element(rpr.find_child("w:del"))
+        is_deleted = WordFormatting._read_boolean_element(pr.find_child_or_null("w:del"))
 
         formatting['_props'] = {
             'vertical_alignment': text_alignment,
@@ -263,11 +309,12 @@ class WordFormatting(dict):
 
     @staticmethod
     def load_ppr(element):
-        formatting = {}
         ppr = element.find_child_or_null("w:pPr")
 
         if isinstance(ppr, NullXmlElement):
             ppr = element.find_parent().find_child_or_null("w:pPr")
+
+        formatting = WordFormatting.load_text_style(ppr)
 
         line_spacing = ppr.find_child_or_null("w:spacing")
         if not isinstance(line_spacing, NullXmlElement):
@@ -283,7 +330,15 @@ class WordFormatting(dict):
                 formatting['margin-top'] = WordFormatting.format_to_unit(before / line, 'em')
                 formatting['margin-bottom'] = WordFormatting.format_to_unit(before / line, 'em')
 
-            formatting.update(WordFormatting.load_shade(element))
+        jc = ppr.find_child_or_null("w:jc")
+        text_alignment = jc.attributes.get("w:val", "")
+        if len(text_alignment):
+            formatting['text-align'] = text_alignment
+
+        formatting.update(WordFormatting.load_shade(element))
+        # Some ppr nodes might have their own rpr node and we should amend our settings to create a more
+        # complete picture.
+        formatting.update(WordFormatting.load_rpr(ppr))
 
         return formatting
 
@@ -333,8 +388,9 @@ class WordFormatting(dict):
         formatting['height'] = WordFormatting.format_to_unit(height, 'dxa')
 
         jc = trpr.find_child_or_null("w:jc")
-        text_alignment = jc.attributes.get("w:val", "start")
-        formatting['text-align'] = text_alignment
+        text_alignment = jc.attributes.get("w:val", "")
+        if len(text_alignment):
+            formatting['text-align'] = text_alignment
         return formatting
 
     @staticmethod
@@ -348,11 +404,16 @@ class WordFormatting(dict):
             gridspan = tcpr.find_child_or_null("w:gridSpan").attributes.get('w:val')
             vAlign = tcpr.find_child_or_null("w:vAlign").attributes.get("w:val", "top")
             width = tcW.attributes.get("w:w")
+            jc = tcpr.find_child_or_null("w:jc")
 
             if width is not None:
                 cell_style['width'] = f"{round(float(width) * TWIP_TO_PIXELS, 1)}px"
 
             cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
+
+            text_alignment = jc.attributes.get("w:val", "")
+            if len(text_alignment):
+                cell_style['text-align'] = text_alignment
 
             cell_style.update(WordFormatting.load_shade(tcpr))
 
@@ -417,7 +478,13 @@ class WordFormatting(dict):
         background_val = shade.attributes.get("w:val")
 
         if background_color is not None:
-            formatting['background-color'] = WordFormatting.format_color(background_fill)
+            formatting['color'] = WordFormatting.format_color(background_color)
+        if background_fill is not None:
+            color = WordFormatting.format_color(background_fill)
+            if color == 'auto':
+                formatting['background-color'] = WordFormatting.format_color('FFFFFF')
+            else:
+                formatting['background-color'] = color
 
         return formatting
 
@@ -883,9 +950,12 @@ class WordFormatting(dict):
         style = self.merge_formatting(global_default_style, default_style)
         style = self.merge_formatting(style, conditional_style)
         style = self.merge_formatting(style, node_style)
+        #print_debug('#####Merged results######')
+        #print_debug(style)
+        #print_debug('###########')
 
         text_style = copy.deepcopy(style.get('ppr', {}))
-        text_style.update(style.get('rpr', {}))
+        text_style = self.merge_formatting(text_style, style.get('rpr', {}))
 
         format_item = {
             'text_style': text_style,
@@ -895,12 +965,12 @@ class WordFormatting(dict):
             'table_row_style': style.get('trpr', {}),
             "attributes": style.get('attributes', {})
         }
-        #print_debug('#####Merged results######')
+        #print_debug('#####Formatting results######')
         #print_debug(format_item)
         #print_debug('###########')
         #print_debug('###########')
 
-        #if is_debug_mode() and format_id == "PlainTable3":
+        #if is_debug_mode() and format_id == "PlainTable5":
         #    input()
         #    element_formatting = WordFormatting.merge_formatting(cnf, element_formatting)
         #    print_debug(cnf)
@@ -922,7 +992,7 @@ class WordFormatting(dict):
 
         formatting = self.load_node_conditional_styles(format_id)
         #table_conditional_style = self._collapse_cnf(table_cnf_id, formatting)
-        #print_debug('Name: {} | {} => CNF ID:{} Parent ID: {}'.format(element.name, element_type, cnf_id, table_cnf_id))
+        #print_debug('Name: {} | {} => CNF ID:{}'.format(element.name, element_type, cnf_id))
         #print_debug(table_conditional_style)
 
         node_conditional_style = self._collapse_cnf(cnf_id, formatting)
