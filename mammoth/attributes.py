@@ -252,7 +252,10 @@ def compose_attributes(element, initial_attributes={}):
 
 
 def compose_conditional_styles(attributes, formatting):
-    conditional_formatting = formatting.get('conditional_style', {})
+    conditional_formatting = formatting.get('_conditional_style', {})
+
+    if conditional_formatting is None:
+        return attributes
 
     if not ('style' in attributes and len(attributes['style'])):
         attributes['style'] = ''
@@ -301,7 +304,7 @@ def compose_style_category(formatting, category=''):
     css = ''
 
     for k, v in formatting.get(category, {}).items():
-        if not (k.startswith('_') or (isinstance(v, str) and ('0.0' in v or 'auto' in v))):
+        if not (k.startswith('_') or (isinstance(v, str) and ('0.0' in v or 'auto' in v)) or (isinstance(v, str) and len(v) == 0)):
             css += f"{k}:{v};"
 
     return css

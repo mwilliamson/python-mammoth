@@ -47,6 +47,8 @@ class WordFormatting(dict):
         "seCell": 10,
         "swCell": 11,
     }
+    NONE_VALUES = (None, "false", "0", "none")
+
     def __init__(self, styles_node):
         super().__init__()
         defaults = {}
@@ -109,7 +111,7 @@ class WordFormatting(dict):
         if isinstance(element, NullXmlElement) or element is None:
             return False
         else:
-            return WordFormatting._read_boolean_attribute_value(element.attributes.get("w:val", "0"))
+            return WordFormatting._read_boolean_attribute_value(element.attributes.get("w:val"))
 
     @staticmethod
     def _read_boolean_attribute_value(value):
@@ -117,7 +119,7 @@ class WordFormatting(dict):
 
     @staticmethod
     def _read_underline_element(element):
-        return element and element.attributes.get("w:val") not in [None, "false", "0", "none"]
+        return element and element.attributes.get("w:val") not in WordFormatting.NONE_VALUES
 
     @staticmethod
     def _read_highlight_value(value):
@@ -253,45 +255,65 @@ class WordFormatting(dict):
         if ligatures == "standardContextual":
             formatting['font-variant'] = 'contextual'
 
-        text_alignment = pr \
+        vert_alignment = pr \
             .find_child_or_null("w:vertAlign") \
             .attributes.get("w:val")
-        if text_alignment is not None:
-            if text_alignment == "superscript":
+        if vert_alignment is not None:
+            if vert_alignment == "superscript":
                 formatting['vertical-align'] = "super"
-            elif text_alignment == "subscript":
+            elif vert_alignment == "subscript":
                 formatting['vertical-align'] = "sub"
             else:
                 formatting['vertical-align'] = "baseline"
 
+        jc = pr.find_child_or_null("w:jc")
+        text_alignment = jc.attributes.get("w:val", "")
+        if not isinstance(text_alignment, NullXmlElement):
+            formatting['text-justify'] = text_alignment
+
+        ind = pr.find_child_or_null("w:ind")
+        if not isinstance(ind, NullXmlElement):
+            leftInd = ind.attributes.get("w:start", ind.attributes.get("w:left"))
+            formatting['margin-left'] = WordFormatting.format_to_unit(leftInd, 'dxa')
+            rightInd = ind.attributes.get("w:end", ind.attributes.get("w:right"))
+            formatting['margin-right'] = WordFormatting.format_to_unit(rightInd, 'dxa')
+            firstLine = int(ind.attributes.get("w:firstLine", 0))
+            hangingLines = int(ind.attributes.get("w:hanging", 0))
+            if hangingLines:
+                formatting['text-indent'] = WordFormatting.format_to_unit(hangingLines * -1, "dxa")
+            else:
+                formatting['text-indent'] = WordFormatting.format_to_unit(firstLine, "dxa")
+
         font_color = pr.find_child_or_null("w:color").attributes.get("w:val")
         formatting['color'] = WordFormatting.format_color(font_color)
 
-        is_bold = WordFormatting._read_boolean_element(pr.find_child_or_null("w:b"))
+        is_bold = WordFormatting._read_boolean_element(pr.find_child("w:b"))
         if is_bold:
             formatting['font-weight'] = 'bold'
-        is_italic = WordFormatting._read_boolean_element(pr.find_child_or_null("w:i"))
+        is_italic = WordFormatting._read_boolean_element(pr.find_child("w:i"))
         if is_italic:
             formatting['font-style'] = 'italic'
-        is_underline = WordFormatting._read_underline_element(pr.find_child_or_null("w:u"))
+        is_underline = WordFormatting._read_underline_element(pr.find_child("w:u"))
         if is_underline:
             formatting['text-decoration'] = 'underline'
-        is_strikethrough = WordFormatting._read_boolean_element(pr.find_child_or_null("w:strike"))
+        is_strikethrough = WordFormatting._read_boolean_element(pr.find_child("w:strike"))
         if is_strikethrough:
             formatting['text-decoration'] = 'line-through'
-        is_all_caps = WordFormatting._read_boolean_element(pr.find_child_or_null("w:caps"))
+        is_all_caps = WordFormatting._read_boolean_element(pr.find_child("w:caps"))
         if is_all_caps:
             formatting['text-transform'] = 'uppercase'
-        is_small_caps = WordFormatting._read_boolean_element(pr.find_child_or_null("w:smallCaps"))
+        is_small_caps = WordFormatting._read_boolean_element(pr.find_child("w:smallCaps"))
         if is_small_caps:
             formatting['font-variant'] = 'common-ligatures small-caps' if is_small_caps else 'normal'
         highlight = WordFormatting._read_highlight_value(pr.find_child_or_null("w:highlight").attributes.get("w:val"))
         if highlight is not None:
             formatting['background-color'] = WordFormatting.format_color(highlight)
-        is_deleted = WordFormatting._read_boolean_element(pr.find_child_or_null("w:del"))
+        is_deleted = WordFormatting._read_boolean_element(pr.find_child("w:del"))
 
         formatting['_props'] = {
-            'vertical_alignment': text_alignment,
+            'indent': ind,
+            'alignment': text_alignment,
+            'vertical_alignment': vert_alignment,
             'font': font,
             'font_size': font_size,
             'font_color': font_color,
@@ -928,7 +950,8 @@ class WordFormatting(dict):
     def get_element_formatting(self, element):
         format_id = self._find_style(element)
         #print_debug('==========={}==========='.format(format_id))
-        # TODO: combine cnf and base formatting such that we get the definitions from the conditional styles and the element wise style.
+        # TODO: Break down text vs. table formatting such that we do not passthrough information to elements that can
+        #   yield defects.
 
         global_default_style = self.load_global_default_style()
         #print_debug('-----Global Default------')
