@@ -1,6 +1,7 @@
 import copy
 import itertools
 
+from mammoth import documents
 from mammoth.debug import is_debug_mode, print_debug, pause_debug
 from mammoth.docx.xmlparser import NullXmlElement
 from mammoth.html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
@@ -65,6 +66,7 @@ class WordFormatting(dict):
         self['style_nodes'] = self.presort_nodes(styles_node)
         self['cnf_styles'] = {}
         self['styles_node'] = styles_node
+        self['look_nodes'] = {}
 
     @staticmethod
     def _is_int(value):
@@ -160,66 +162,7 @@ class WordFormatting(dict):
         elif WordFormatting.is_formatting_empty(new_formatting):
             return base_formatting
         else:
-            return base_formatting
-
-    @staticmethod
-    def merge_formatting_(base_formatting, new_formatting):
-        result_format = {}
-        # print_debug('{} vs. {}'.format(type(base_formatting), type(new_formatting)))
-        is_base_dict = isinstance(base_formatting, dict)
-        is_new_dict = isinstance(new_formatting, dict)
-        if is_base_dict and is_new_dict:
-            is_base_empty = not len(base_formatting)
-            is_new_empty = not len(new_formatting)
-            if is_base_empty:
-                return new_formatting
-            elif is_new_empty:
-                return base_formatting
-            else:
-                for k in new_formatting:
-                    if k in base_formatting:
-                        lhs = base_formatting[k]
-                        rhs = new_formatting[k]
-                        is_base_empty = not bool(lhs)
-                        is_new_empty = not bool(rhs)
-                        # print_debug('~~~~~{}~~~~~'.format(k))
-                        # print_debug(lhs)
-                        # print_debug(rhs)
-                        # print_debug(is_base_empty)
-                        # print_debug(is_new_empty)
-                        # print_debug((not is_base_empty and not is_new_empty))
-                        # print_debug(not is_new_empty)
-                        result_format[k] = lhs
-                        if is_base_empty or (not is_base_empty and not is_new_empty) or not is_new_empty:
-                            if isinstance(result_format[k], dict):
-                                result_format[k].update(rhs)
-                            else:
-                                result_format[k] = rhs
-                    else:
-                        result_format[k] = new_formatting[k]
-        #elif not is_base_dict and not is_new_dict:
-        #    is_base_empty = base_formatting is None and not len(str(base_formatting))
-        #    is_new_empty = new_formatting is None and not len(str(new_formatting))
-        #    if not is_base_empty and not is_new_empty:
-        #        return base_formatting
-        #    elif is_base_empty and not is_new_empty:
-        #        return new_formatting
-        #    elif not is_base_empty and is_new_empty:
-        #        return base_formatting
-        elif not is_base_dict or not is_new_dict:
-            #print_debug('???')
-            is_base_empty = base_formatting is None or not len(base_formatting)
-            is_new_empty = new_formatting is None or not len(new_formatting)
-            #print_debug(base_formatting)
-            #print_debug('_________________')
-            #print_debug(new_formatting)
-            if is_new_empty:
-                return base_formatting
-            elif is_base_empty:
-                return new_formatting
-            else:
-                return base_formatting
-        return result_format
+            return new_formatting
 
     @staticmethod
     def load_rpr(element):
@@ -272,6 +215,7 @@ class WordFormatting(dict):
             formatting['text-justify'] = text_alignment
 
         ind = pr.find_child_or_null("w:ind")
+        p_indent = None
         if not isinstance(ind, NullXmlElement):
             leftInd = ind.attributes.get("w:start", ind.attributes.get("w:left"))
             formatting['margin-left'] = WordFormatting.format_to_unit(leftInd, 'dxa')
@@ -284,12 +228,22 @@ class WordFormatting(dict):
             else:
                 formatting['text-indent'] = WordFormatting.format_to_unit(firstLine, "dxa")
 
+            p_indent = documents.paragraph_indent(
+                start=leftInd,
+                end=rightInd,
+                first_line=firstLine,
+                hanging=hangingLines,
+            )
+
         font_color = pr.find_child_or_null("w:color").attributes.get("w:val")
         formatting['color'] = WordFormatting.format_color(font_color)
 
-        is_bold = WordFormatting._read_boolean_element(pr.find_child("w:b"))
+        bold_item = pr.find_child("w:b")
+        is_bold = WordFormatting._read_boolean_element(bold_item)
         if is_bold:
             formatting['font-weight'] = 'bold'
+        elif not bold_item is None:
+            formatting['font-weight'] = 'normal'
         is_italic = WordFormatting._read_boolean_element(pr.find_child("w:i"))
         if is_italic:
             formatting['font-style'] = 'italic'
@@ -308,10 +262,10 @@ class WordFormatting(dict):
         highlight = WordFormatting._read_highlight_value(pr.find_child_or_null("w:highlight").attributes.get("w:val"))
         if highlight is not None:
             formatting['background-color'] = WordFormatting.format_color(highlight)
-        is_deleted = WordFormatting._read_boolean_element(pr.find_child("w:del"))
+        is_deleted = pr.find_child("w:del")
 
         formatting['_props'] = {
-            'indent': ind,
+            'indent': p_indent,
             'alignment': text_alignment,
             'vertical_alignment': vert_alignment,
             'font': font,
@@ -528,6 +482,30 @@ class WordFormatting(dict):
     def load_tcborders(element):
         tcBorders = element.find_child_or_null("w:tcBorders")
         return WordFormatting.load_borders(tcBorders)
+
+    @staticmethod
+    def load_table_look(element):
+        table = WordFormatting._find_table_root(element)
+
+        tblLook = table.find_child_or_null("w:tblPr").find_child_or_null("w:tblLook")
+        if not isinstance(tblLook, NullXmlElement):
+            look = {
+                "firstRow": int(tblLook.attributes.get("w:firstRow", '0')),
+                "lastRow": int(tblLook.attributes.get("w:lastRow", '0')),
+                "firstColumn": int(tblLook.attributes.get("w:firstColumn", '0')),
+                "lastColumn": int(tblLook.attributes.get("w:lastColumn", '0')),
+                "noHBand": int(tblLook.attributes.get("w:noHBand", '0')),
+                "noVBand": int(tblLook.attributes.get("w:noVBand", '0')),
+            }
+            return WordFormatting._adjust_element_look(table, element, look)
+        return {
+            "firstRow": 0,
+            "lastRow": 0,
+            "firstColumn": 0,
+            "lastColumn": 0,
+            "noHBand": 0,
+            "noVBand": 0,
+        }
 
     @staticmethod
     def load_borders(borders_element):
@@ -814,26 +792,25 @@ class WordFormatting(dict):
             result += str(v)
         return result
 
+    def _find_table_look(self, element):
+        element_id = id(element)
+        if element_id in self['look_nodes']:
+            return self['look_nodes'][element_id]
+
+        table_look = WordFormatting.load_table_look(element)
+        self['look_nodes'][element_id] = table_look
+        return table_look
+
     def _find_table_cnf_id(self, element):
-        table = self._find_table_root(element)
+        table_look = self._find_table_look(element)
+        return self._find_table_look_id(table_look)
 
-        tblLook = table.find_child_or_null("w:tblPr").find_child_or_null("w:tblLook")
-        if not isinstance(tblLook, NullXmlElement):
-            look = {
-                "firstRow": int(tblLook.attributes.get("w:firstRow", '0')),
-                "lastRow": int(tblLook.attributes.get("w:lastRow", '0')),
-                "firstColumn": int(tblLook.attributes.get("w:firstColumn", '0')),
-                "lastColumn": int(tblLook.attributes.get("w:lastColumn", '0')),
-                "noHBand": int(tblLook.attributes.get("w:noHBand", '0')),
-                "noVBand": int(tblLook.attributes.get("w:noVBand", '0')),
-            }
-            #print_debug(look)
-            look = self._adjust_element_look(table, element, look)
-            #print_debug(look)
-            return '{firstRow}{lastRow}{firstColumn}{lastColumn}{noHBand}{noHBand}{noVBand}{noVBand}0000'.format(**look)
-        return ''
+    def _find_table_look_id(self, table_look):
+        return '{firstRow}{lastRow}{firstColumn}{lastColumn}{noHBand}{noHBand}{noVBand}{noVBand}0000'.format(
+            **table_look)
 
-    def _adjust_element_look(self, table, element, default_look={}):
+    @staticmethod
+    def _adjust_element_look(table, element, default_look={}):
         default_look = copy.deepcopy(default_look)
         element_id = id(element)
 
@@ -905,26 +882,19 @@ class WordFormatting(dict):
         return indx
 
     def _collapse_cnf(self, cnf_id, formatting):
-        #print_debug('~~~~~~~~')
         cnf = self.load_blank_style()
         try:
             cnf_indices = self._find_cnf_index(cnf_id)
             cnf_indices.sort(reverse=True)
             cnf_formattings = [formatting[i] for i in cnf_indices]
 
-            #print_debug('{}'.format(formatting['cnf']))
-            #print_debug('?{}'.format(cnf_indices))
             for cnf_format in cnf_formattings:
-                #print_debug(cnf_format)
                 cnf['ppr'].update(cnf_format['ppr'])
                 cnf['rpr'].update(cnf_format['rpr'])
                 cnf['tcpr'].update(cnf_format['tcpr'])
                 cnf['tblpr'].update(cnf_format['tblpr'])
                 cnf['trpr'].update(cnf_format['trpr'])
                 cnf['borders'].update(cnf_format['borders'])
-                #print_debug('CNF: {}'.format(cnf_format['borders']))
-            #print_debug('{}'.format(cnf))
-            #print_debug('~~~~~~~~')
         except Exception as e:
             print_debug(e)
             pass
@@ -949,59 +919,40 @@ class WordFormatting(dict):
 
     def get_element_formatting(self, element):
         format_id = self._find_style(element)
-        #print_debug('==========={}==========='.format(format_id))
-        # TODO: Break down text vs. table formatting such that we do not passthrough information to elements that can
-        #   yield defects.
+        element_type = WordFormatting._classify_element(element)
 
         global_default_style = self.load_global_default_style()
-        #print_debug('-----Global Default------')
-        #print_debug(global_default_style)
-        #print_debug('-------------------------')
         default_style = self.load_node_default_style(format_id)
-        #print_debug('=====Style Default======')
-        #print_debug(default_style)
-        #print_debug('========================')
         conditional_style = self.get_conditional_style(element)
-        #print_debug('++++++Conditional Style+++++')
-        #print_debug(conditional_style)
-        #print_debug('++++++++++++++++++++++++++++')
         node_style = self.load_style(element)
-        #print_debug('~~~~~Node Style~~~~~~')
-        #print_debug(node_style)
-        #print_debug('~~~~~~~~~~~~~~~~~~~~~')
 
         style = self.merge_formatting(global_default_style, default_style)
         style = self.merge_formatting(style, conditional_style)
         style = self.merge_formatting(style, node_style)
-        #print_debug('#####Merged results######')
-        #print_debug(style)
-        #print_debug('###########')
 
+        #override_style = self.get_style_overrides(element)
         text_style = copy.deepcopy(style.get('ppr', {}))
+        #print_debug(text_style)
+        #text_style = self.merge_formatting(text_style, style.get('ppr', {}))
         text_style = self.merge_formatting(text_style, style.get('rpr', {}))
+        #text_style = self.merge_formatting(text_style, override_style.get('ppr', {}))
+        #text_style = self.merge_formatting(text_style, override_style.get('rpr', {}))
+        #print_debug(element.name)
 
-        format_item = {
-            'text_style': text_style,
-            'cell_style': style.get('tcpr', {}),
-            'border_style': style.get('borders', {}),
-            'table_style': style.get('tblpr', {}),
-            'table_row_style': style.get('trpr', {}),
-            "attributes": style.get('attributes', {})
-        }
-        #print_debug('#####Formatting results######')
-        #print_debug(format_item)
-        #print_debug('###########')
-        #print_debug('###########')
-
-        #if is_debug_mode() and format_id == "PlainTable5":
-        #    input()
-        #    element_formatting = WordFormatting.merge_formatting(cnf, element_formatting)
-        #    print_debug(cnf)
-        #    print_debug('')
-        #    print_debug(element_formatting)
-        #    input()
-        #if is_debug_mode() and format_id == "GridTable3":
-        #    pause_debug()
+        if element_type in ('table', 'row', 'cell'):
+            format_item = {
+                'text_style': text_style,
+                'cell_style': style.get('tcpr', {}),
+                'border_style': style.get('borders', {}),
+                'table_style': style.get('tblpr', {}),
+                'table_row_style': style.get('trpr', {}),
+                "attributes": style.get('attributes', {})
+            }
+        else:
+            format_item = {
+                'text_style': text_style,
+                "attributes": style.get('attributes', {})
+            }
 
         return format_item
 
@@ -1023,3 +974,12 @@ class WordFormatting(dict):
         #merged_style = self.merge_formatting(table_conditional_style, node_conditional_style)
         #print_debug(merged_style)
         return node_conditional_style
+
+    def get_style_overrides(self, element):
+        format_id = self._find_style(element)
+        cnf_id = self._find_table_cnf_id(element)
+
+        formatting = self.load_node_conditional_styles(format_id)
+
+        override_style = self._collapse_cnf(cnf_id, formatting)
+        return override_style
