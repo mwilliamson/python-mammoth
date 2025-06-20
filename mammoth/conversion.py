@@ -25,7 +25,8 @@ def convert_document_element_to_html(element,
         convert_image=None,
         id_prefix=None,
         output_format=None,
-        ignore_empty_paragraphs=True):
+        ignore_empty_paragraphs=True
+        ):
 
     if style_map is None:
         style_map = []
@@ -52,7 +53,7 @@ def convert_document_element_to_html(element,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
         note_references=[],
-        comments=comments,
+        comments=comments
     )
     context = _ConversionContext(is_table_header=False)
     nodes = converter.visit(element, context)
@@ -71,7 +72,8 @@ class _ConversionContext(object):
 
 
 class _DocumentConverter(documents.element_visitor(args=1)):
-    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
+    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references,
+                 comments):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix

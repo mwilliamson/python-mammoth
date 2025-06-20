@@ -98,11 +98,6 @@ def _parse_args():
         required=False,
         choices=writers.formats(),
         help="Output format.")
-    output_group.add_argument(
-        "--embed-css",
-        help="CSS file containing extra CSS styles to embed in the appropriate elements. The main use case for this option is to define styles that "
-             "simulate the general look and feel of Microsoft's Word styles. For example, you can define a CSS rule for PlainTable5 that mimics how "
-             "such tables are supposed to look. Another use case is to override the styling of select elements.")
     parser.add_argument(
         "--style-map",
         required=False,
@@ -112,6 +107,13 @@ def _parse_args():
         required=False,
         action='store_true',
         help="Keep all paragraphs from the input document. Useful if spacing is important for proper layout of output document.")
+    output_group.add_argument(
+        "--embed-css",
+        required=False,
+        action='store_true',
+        help="Requests that the application generates CSS off the Word document styles and embed theem at the node "
+             "level. Beware that this will make the file larger, but it will improve document fidelity when copying "
+             "and pasting contents in the generated HTML page to other programs.")
     parser.add_argument(
         "--debug",
         required=False,

@@ -16,7 +16,7 @@ def convert_to_markdown(*args, **kwargs):
     return convert(*args, output_format="markdown", **kwargs)
 
 
-def convert(fileobj, transform_document=None, id_prefix=None, include_embedded_style_map=_undefined, **kwargs):
+def convert(fileobj, transform_document=None, id_prefix=None, include_embedded_style_map=_undefined, embed_css=False, **kwargs):
     if include_embedded_style_map is _undefined:
         include_embedded_style_map = True
     if transform_document is None:
@@ -24,7 +24,7 @@ def convert(fileobj, transform_document=None, id_prefix=None, include_embedded_s
     if include_embedded_style_map:
         kwargs["embedded_style_map"] = read_style_map(fileobj)
     return options.read_options(kwargs).bind(lambda convert_options:
-        docx.read(fileobj).map(transform_document).bind(lambda document:
+        docx.read(fileobj, embed_css=embed_css).map(transform_document).bind(lambda document:
             conversion.convert_document_element_to_html(
                 document,
                 id_prefix=id_prefix,
