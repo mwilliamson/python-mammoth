@@ -11,7 +11,7 @@ from .dingbats import dingbats
 from .xmlparser import node_types, XmlElement, null_xml_element
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
-from ..debug import is_debug_mode, print_and_pause
+from ..debug import is_debug_mode, print_and_pause, print_debug, pause_debug
 from ..html import MS_BORDER_STYLES, MS_CELL_ALIGNMENT_STYLES
 from ..word_formatting import WordFormatting
 
@@ -33,7 +33,8 @@ def reader(
         relationships=None,
         styles=None,
         docx_file=None,
-        files=None
+        files=None,
+        embed_css=False
 ):
     if styles is None:
         styles = Styles.EMPTY
@@ -45,6 +46,7 @@ def reader(
         styles=styles,
         docx_file=docx_file,
         files=files,
+        embed_css=embed_css,
     )
     return _BodyReader(read_all)
 
@@ -58,11 +60,11 @@ class _BodyReader(object):
         return results.Result(result.elements, result.messages)
 
 
-def _create_reader(numbering, content_types, relationships, styles, docx_file, files):
+def _create_reader(numbering, content_types, relationships, styles, docx_file, files, embed_css=False):
     current_instr_text = []
     complex_field_stack = []
 
-    if is_debug_mode():
+    if embed_css:
         word_formatting = WordFormatting(styles._styles_node)
 
     # When a paragraph is marked as deleted, its contents should be combined
@@ -100,7 +102,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         # Meaning, the rPr element will only appear inside a run if that run has special formatting.
         # If the run follows the parent's formatting, the rPr element will be in the parent's *Pr element.
         properties = element.find_child_or_null("w:rPr")
-        props, formatting = _find_run_properties(properties)
+        if embed_css:
+            formatting = word_formatting.get_element_formatting(element)
+            props = formatting['text_style']['_props']
+        else:
+            props, formatting = _find_run_properties(properties)
 
         def add_complex_field_hyperlink(children):
             hyperlink_kwargs = current_hyperlink_kwargs()
@@ -217,7 +223,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def paragraph(element):
         properties = element.find_child_or_null("w:pPr")
-        props, formatting = _find_paragraph_props(properties)
+        if embed_css:
+            formatting = word_formatting.get_element_formatting(element)
+            props = formatting['text_style']['_props']
+        else:
+            props, formatting = _find_paragraph_props(properties)
 
         if props['is_deleted'] is not None:
             for child in element.children:
@@ -258,7 +268,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         indent = _read_paragraph_indent(properties.find_child_or_null("w:ind"))
         props['indent'] = indent
 
-        formatting['conditional_style']: _find_conditional_style_props(properties)
+        formatting['_conditional_style']: _find_conditional_style_props(properties)
         return props, formatting
 
     def _read_paragraph_style(properties):
@@ -406,7 +416,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table(element):
         properties = element.find_child_or_null("w:tblPr")
-        if is_debug_mode():
+        if embed_css:
             formatting = word_formatting.get_element_formatting(element)
         else:
             formatting = _find_table_props(properties)
@@ -451,12 +461,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table_row(element):
         properties = element.find_child_or_null("w:trPr")
-        is_header = bool(properties.find_child_or_null("w:tblHeader").attributes.get("w:val", "true") == "true")
-        if is_debug_mode():
+        is_header = bool(properties.find_child_or_null("w:tblHeader").attributes.get("w:val", "false") == "true")
+        if embed_css:
             formatting = word_formatting.get_element_formatting(element)
-            formatting['conditional_style'] = _find_conditional_style_props(properties)
-            #formatting = word_formatting.get_conditional_formatting(element)
-            #formatting.update(_find_table_row_props(properties))
         else:
             formatting = _find_table_row_props(properties)
         return _ReadResult.map_results(
@@ -485,7 +492,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             table_row_style['height'] = f"{round(float(height) * TWIP_TO_PIXELS,1)}px"
 
         return {
-            'conditional_style': _find_conditional_style_props(properties),
+            '_conditional_style': _find_conditional_style_props(properties),
             'table_row_style': table_row_style
         }
 
@@ -501,9 +508,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def table_cell(element):
         properties = element.find_child_or_null("w:tcPr")
-        if is_debug_mode():
+        if embed_css:
             formatting = word_formatting.get_element_formatting(element)
-            formatting['conditional_style'] = _find_conditional_style_props(properties)
+            formatting['_conditional_style'] = _find_conditional_style_props(properties)
         else:
             formatting = _find_table_cell_props(properties)
 
@@ -537,7 +544,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             cell_style['vertical-align'] = MS_CELL_ALIGNMENT_STYLES[vAlign]
 
         return {
-            'conditional_style': _find_conditional_style_props(properties),
+            '_conditional_style': _find_conditional_style_props(properties),
             'cell_style': cell_style,
             'attributes': {
                 'colspan': 1 if gridspan is None else int(gridspan),

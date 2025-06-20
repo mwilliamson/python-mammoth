@@ -136,9 +136,6 @@ class CSSStore(dict):
             style = attributes.get('style', '')
             attributes['style'] = style + f"{MS_SHAPES.get(shape.get('_ms_shape', ''), '')}"
 
-        if is_debug_mode():
-            attributes = CSSStore._compose_conditional_styles(attributes, formatting)
-
         return attributes
 
     @staticmethod
@@ -244,9 +241,6 @@ def compose_attributes(element, initial_attributes={}):
         attributes.update(shape)
         style = attributes.get('style', '')
         attributes['style'] = style + f"{MS_SHAPES.get(shape.get('_ms_shape', ''), '')}"
-
-    if is_debug_mode():
-        attributes = compose_conditional_styles(attributes, formatting)
 
     return attributes
 

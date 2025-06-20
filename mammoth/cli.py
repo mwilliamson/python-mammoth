@@ -37,7 +37,8 @@ def main():
             style_map=style_map,
             convert_image=convert_image,
             output_format=args.output_format,
-            ignore_empty_paragraphs=not args.preserve_layout
+            ignore_empty_paragraphs=not args.preserve_layout,
+            embed_css=args.embed_css
         )
         for message in result.messages:
             sys.stderr.write(message.message)

@@ -105,12 +105,12 @@ def _read_notes(read_part_with_body, part_paths):
     footnotes = read_part_with_body(
         part_paths.footnotes,
         lambda root, body_reader: read_footnotes_xml_element(root, body_reader=body_reader),
-        default=_empty_result,
+        default=_empty_result
     )
     endnotes = read_part_with_body(
         part_paths.endnotes,
         lambda root, body_reader: read_endnotes_xml_element(root, body_reader=body_reader),
-        default=_empty_result,
+        default=_empty_result
     )
 
     return results.combine([footnotes, endnotes]).map(lists.flatten)
@@ -120,7 +120,7 @@ def _read_comments(read_part_with_body, part_paths):
     return read_part_with_body(
         part_paths.comments,
         lambda root, body_reader: read_comments_xml_element(root, body_reader=body_reader),
-        default=_empty_result,
+        default=_empty_result
     )
 
 
@@ -130,7 +130,7 @@ def _read_document(zip_file, read_part_with_body, notes, comments, part_paths):
         partial(
             read_document_xml_element,
             notes=notes,
-            comments=comments,
+            comments=comments
         ),
     )
 

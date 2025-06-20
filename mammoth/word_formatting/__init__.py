@@ -471,9 +471,6 @@ class WordFormatting(dict):
         if element_type in ("row", "cell"):
             table = WordFormatting._find_table_root(element)
         tblBorders = table.find_child_or_null('w:tblPr').find_child_or_null("w:tblBorders")
-        #print_debug(element_type)
-        #print_debug(isinstance(table.find_child_or_null('w:tblPr'), NullXmlElement))
-        #print_debug(isinstance(tblBorders, NullXmlElement))
         if isinstance(tblBorders, NullXmlElement):
             return {}
         return WordFormatting.load_borders(tblBorders)
@@ -679,7 +676,6 @@ class WordFormatting(dict):
         base_formatting["tblpr"].update(self.load_tblpr(node))
         base_formatting["trpr"].update(self.load_trpr(node))
         base_formatting["borders"].update(borders)
-        #print_debug(base_formatting["cnf"])
 
         return base_formatting
 
@@ -699,13 +695,11 @@ class WordFormatting(dict):
         return formatting
 
     def _get_formatting_style(self, name, typ="ppr"):
-        if is_debug_mode():
-            if name is None or len(name) == 0:
-                return {}
-            if typ in ("ppr", "rpr"):
-                return self._load_or_cache("paragraph", name)
-            return self._load_or_cache("table", name)
-        return {}
+        if name is None or len(name) == 0:
+            return {}
+        if typ in ("ppr", "rpr"):
+            return self._load_or_cache("paragraph", name)
+        return self._load_or_cache("table", name)
 
     def _get_default_table_style(self, name):
         node = self.load_style_node('table', name)
@@ -721,16 +715,12 @@ class WordFormatting(dict):
         }
 
     def _get_cnf_style(self, name, typ="table"):
-        #print_debug(name)
-        #print_debug(typ)
         formatting = self._get_formatting_style(name, typ)
         if typ == 'table' and not name in self['cnf_styles'] and len(formatting):
             self['cnf_styles'][name] = formatting['cnf']
         elif typ != "table":
-            #print_debug('=====> {}'.format(self['cnf_styles'].get(name, {})))
             formatting['cnf'] = WordFormatting.merge_formatting(formatting.get('cnf', {}), self['cnf_styles'].get(name, {}))
 
-        #print_debug('=====> {}'.format(formatting['cnf']))
         return formatting
 
     @staticmethod
@@ -930,14 +920,8 @@ class WordFormatting(dict):
         style = self.merge_formatting(style, conditional_style)
         style = self.merge_formatting(style, node_style)
 
-        #override_style = self.get_style_overrides(element)
         text_style = copy.deepcopy(style.get('ppr', {}))
-        #print_debug(text_style)
-        #text_style = self.merge_formatting(text_style, style.get('ppr', {}))
         text_style = self.merge_formatting(text_style, style.get('rpr', {}))
-        #text_style = self.merge_formatting(text_style, override_style.get('ppr', {}))
-        #text_style = self.merge_formatting(text_style, override_style.get('rpr', {}))
-        #print_debug(element.name)
 
         if element_type in ('table', 'row', 'cell'):
             format_item = {
@@ -957,7 +941,6 @@ class WordFormatting(dict):
         return format_item
 
     def get_conditional_style(self, element):
-        #print_debug('++++++++++++++++++++++++++++')
         element_type = WordFormatting._classify_element(element)
         format_id = self._find_style(element)
         cnf_id = self._find_node_cnf_id(element, element_type)
@@ -965,14 +948,8 @@ class WordFormatting(dict):
             cnf_id = self._find_table_cnf_id(element)
 
         formatting = self.load_node_conditional_styles(format_id)
-        #table_conditional_style = self._collapse_cnf(table_cnf_id, formatting)
-        #print_debug('Name: {} | {} => CNF ID:{}'.format(element.name, element_type, cnf_id))
-        #print_debug(table_conditional_style)
 
         node_conditional_style = self._collapse_cnf(cnf_id, formatting)
-        #print_debug(node_conditional_style)
-        #merged_style = self.merge_formatting(table_conditional_style, node_conditional_style)
-        #print_debug(merged_style)
         return node_conditional_style
 
     def get_style_overrides(self, element):
