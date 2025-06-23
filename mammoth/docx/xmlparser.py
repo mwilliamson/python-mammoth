@@ -70,8 +70,7 @@ null_xml_element = NullXmlElement()
 @cobble.data
 class XmlText(object):
     value = cobble.field()
-    attributes = cobble.field()
-    children = cobble.field()
+    children = []
     parent = cobble.field()
 
 
@@ -107,28 +106,9 @@ def parse_xml(fileobj, namespace_mapping=None):
                               parent=parent)
         elif node.nodeType == xml.dom.Node.TEXT_NODE:
             return XmlText(value=node.nodeValue,
-                           attributes=convert_attributes(node),
-                           children=convert_children(node),
                            parent=parent)
         else:
             return None
-
-    def convert_element_(element, parent=NullXmlElement()):
-        converted_name = convert_name(element)
-
-        converted_attributes = dict(
-            (convert_name(attribute), attribute.value)
-            for attribute in element.attributes.values()
-            if attribute.namespaceURI != "http://www.w3.org/2000/xmlns/"
-        )
-
-        converted_children = []
-        for child_node in element.childNodes:
-            converted_child_node = convert_node(child_node)
-            if converted_child_node is not None:
-                converted_children.append(converted_child_node)
-
-        return XmlElement(converted_name, converted_attributes, converted_children, parent)
 
     def convert_attributes(element):
         if not element.attributes is None:
