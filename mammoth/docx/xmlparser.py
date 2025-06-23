@@ -70,8 +70,9 @@ null_xml_element = NullXmlElement()
 @cobble.data
 class XmlText(object):
     value = cobble.field()
+    attributes = cobble.field()
+    children = cobble.field()
     parent = cobble.field()
-    children = []
 
 
 def element(name, attributes=None, children=None, parent=None):
@@ -100,13 +101,19 @@ def parse_xml(fileobj, namespace_mapping=None):
 
     def convert_node(node, parent=NullXmlElement()):
         if node.nodeType == xml.dom.Node.ELEMENT_NODE:
-            return convert_element(node, parent)
+            return XmlElement(name=convert_name(node),
+                              attributes=convert_attributes(node),
+                              children=convert_children(node),
+                              parent=parent)
         elif node.nodeType == xml.dom.Node.TEXT_NODE:
-            return XmlText(node.nodeValue, parent)
+            return XmlText(value=node.nodeValue,
+                           attributes=convert_attributes(node),
+                           children=convert_children(node),
+                           parent=parent)
         else:
             return None
 
-    def convert_element(element, parent=NullXmlElement()):
+    def convert_element_(element, parent=NullXmlElement()):
         converted_name = convert_name(element)
 
         converted_attributes = dict(
@@ -122,6 +129,24 @@ def parse_xml(fileobj, namespace_mapping=None):
                 converted_children.append(converted_child_node)
 
         return XmlElement(converted_name, converted_attributes, converted_children, parent)
+
+    def convert_attributes(element):
+        if not element.attributes is None:
+            return dict(
+                (convert_name(attribute), attribute.value)
+                for attribute in element.attributes.values()
+                if attribute.namespaceURI != "http://www.w3.org/2000/xmlns/"
+            )
+        else:
+            return {}
+
+    def convert_children(element):
+        converted_children = []
+        for child_node in element.childNodes:
+            converted_child_node = convert_node(child_node)
+            if converted_child_node is not None:
+                converted_children.append(converted_child_node)
+        return converted_children
 
     def convert_name(node):
         if node.namespaceURI is None:
