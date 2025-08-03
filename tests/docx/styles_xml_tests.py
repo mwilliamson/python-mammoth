@@ -101,6 +101,18 @@ def test_numbering_style_has_num_id_read_from_paragraph_properties():
     assert_equal("42", styles.find_numbering_style_by_id("List1").num_id)
 
 
+def test_when_multiple_style_elements_have_same_style_id_then_only_first_element_is_used():
+    element = xml_element("w:styles", {}, [
+        _table_style_element("TableNormal", "Normal Table"),
+        _table_style_element("TableNormal", "Table Normal"),
+    ])
+    styles = read_styles_xml_element(element)
+    assert_equal(
+        "Normal Table",
+        styles.find_table_style_by_id("TableNormal").name
+    )
+
+
 def _paragraph_style_element(style_id, name):
     return _style_element("paragraph", style_id, name)
 

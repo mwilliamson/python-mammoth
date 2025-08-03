@@ -67,7 +67,18 @@ def read_styles_xml_element(element):
             style = _read_style_element(style_element)
 
         style_set = styles.get(element_type)
-        if style_set is not None:
+
+        # Per 17.7.4.17 style (Style Definition) of ECMA-376 4th edition Part 1:
+        #
+        # > If multiple style definitions each declare the same value for their
+        # > styleId, then the first such instance shall keep its current
+        # > identifier with all other instances being reassigned in any manner
+        # > desired.
+        #
+        # For the purpose of conversion, there's no point holding onto styles
+        # with reassigned style IDs, so we ignore such style definitions.
+
+        if style_set is not None and style.style_id not in style_set:
             style_set[style.style_id] = style
 
     return Styles(
