@@ -90,7 +90,9 @@ def test_when_abstract_num_has_num_style_link_then_style_is_used_to_find_num():
                 xml_element("w:abstractNumId", {"w:val": "101"}),
             ])
         ]),
-        styles=Styles.create(numbering_styles={"List1": NumberingStyle(num_id="200")}),
+        styles=Styles.create(numbering_styles={
+            "List1": NumberingStyle(style_id="List1", num_id="200"),
+        }),
     )
     assert_equal(True, numbering.find_level("201", "0").is_ordered)
 
