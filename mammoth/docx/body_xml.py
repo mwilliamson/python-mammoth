@@ -410,6 +410,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             for cell in row.children
         )
         if unexpected_non_cells:
+            remove_unmerged_table_cells(rows)
             return _elements_result_with_messages(rows, [results.warning(
                 "unexpected non-cell element in table row, cell merging may be incorrect"
             )])
