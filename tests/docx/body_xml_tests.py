@@ -1118,8 +1118,49 @@ class TableTests(object):
 
 
     def test_warning_if_non_row_in_table(self):
-        element = xml_element("w:tbl", {}, [xml_element("w:p")])
+        # Include normal rows to ensure they're still read correctly.
+        element = xml_element("w:tbl", {}, [
+            xml_element("w:tr", {}, [
+                xml_element("w:tc", {}, [
+                    xml_element("w:p", {}, [
+                        _run_element_with_text("Row 1"),
+                    ]),
+                ]),
+            ]),
+            xml_element("w:p"),
+            xml_element("w:tr", {}, [
+                xml_element("w:tc", {}, [
+                    xml_element("w:p", {}, [
+                        _run_element_with_text("Row 2"),
+                    ]),
+                ]),
+            ]),
+        ])
+
         result = _read_document_xml_element(element)
+
+        expected_value = documents.table([
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([
+                        documents.run([
+                            documents.text("Row 1"),
+                        ]),
+                    ]),
+                ]),
+            ]),
+            documents.paragraph([]),
+            documents.table_row([
+                documents.table_cell([
+                    documents.paragraph([
+                        documents.run([
+                            documents.text("Row 2"),
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ])
+        assert_equal(expected_value, result.value)
         expected_warning = results.warning("unexpected non-row element in table, cell merging may be incorrect")
         assert_equal([expected_warning], result.messages)
 
