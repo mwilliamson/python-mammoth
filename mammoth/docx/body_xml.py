@@ -399,7 +399,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             for row in rows
         )
         if unexpected_non_rows:
-            remove_unmerged_table_cells(rows)
+            rows = remove_unmerged_table_cells(rows)
             return _elements_result_with_messages(rows, [results.warning(
                 "unexpected non-row element in table, cell merging may be incorrect"
             )])
@@ -410,7 +410,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             for cell in row.children
         )
         if unexpected_non_cells:
-            remove_unmerged_table_cells(rows)
+            rows = remove_unmerged_table_cells(rows)
             return _elements_result_with_messages(rows, [results.warning(
                 "unexpected non-cell element in table row, cell merging may be incorrect"
             )])
@@ -441,14 +441,17 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
 
     def remove_unmerged_table_cells(rows):
-        for row in rows:
-            for cell_index, cell in enumerate(row.children):
-                if isinstance(cell, documents.TableCellUnmerged):
-                    row.children[cell_index] = documents.table_cell(
-                        children=cell.children,
-                        colspan=cell.colspan,
-                        rowspan=cell.rowspan,
-                    )
+        return list(map(
+            transforms.element_of_type(
+                documents.TableCellUnmerged,
+                lambda cell: documents.table_cell(
+                    children=cell.children,
+                    colspan=cell.colspan,
+                    rowspan=cell.rowspan,
+                ),
+            ),
+            rows,
+        ))
 
 
     def read_child_elements(element):
