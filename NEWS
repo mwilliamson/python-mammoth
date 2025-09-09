@@ -2,6 +2,8 @@
 
 * Ignore style definitions using a style ID that has already been used.
 
+* Fix conversion of unmerged table cells.
+
 # 1.10.0
 
 * Add "Heading" and "Body" styles, as found in documents created by Apple Pages,

@@ -386,6 +386,25 @@ def test_docx_table_is_converted_to_table_in_html():
     assert_equal(expected_html, result.value)
 
 
+def test_unmerged_table_cell_is_treated_as_table_cell():
+    table = documents.table([
+        documents.table_row([
+            documents.table_cell_unmerged(
+                [_paragraph_with_text("Cell")],
+                colspan=1,
+                rowspan=1,
+                vmerge=False,
+            ),
+        ]),
+    ])
+    result = convert_document_element_to_html(table)
+    expected_html = (
+        "<table>" +
+        "<tr><td><p>Cell</p></td></tr>" +
+        "</table>")
+    assert_equal(expected_html, result.value)
+
+
 def test_table_style_mappings_can_be_used_to_map_tables():
     table = documents.table([], style_name="Normal Table")
     result = convert_document_element_to_html(

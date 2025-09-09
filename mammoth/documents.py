@@ -92,6 +92,9 @@ class TableCellUnmerged:
     rowspan = cobble.field()
     vmerge = cobble.field()
 
+    def _accept1(self, visitor, arg0):
+        return visitor.visit_table_cell(self, arg0)
+
     def copy(self, **kwargs):
         return cobble.copy(self, **kwargs)
 
