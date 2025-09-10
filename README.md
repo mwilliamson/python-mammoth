@@ -178,16 +178,6 @@ pass `include_default_style_map=False`:
 result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
 ```
 
-#### External file access
-
-Source documents may reference files outside of the source document.
-To disable access to any such external files during the conversion process,
-pass `external_file_access=False`:
-
-```javascript
-result = mammoth.convert_to_html(docx_file, external_file_access=False)
-```
-
 #### Custom image handlers
 
 By default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
@@ -299,6 +289,10 @@ Converts the source document to HTML.
 * `include_default_style_map`: by default, the style map passed in `style_map` is combined with the default style map.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
+
+* Source documents may reference files outside of the source document.
+  To disable access to any such external files during the conversion process,
+  pass `external_file_access=False`.
 
 * `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
   Set this argument to an [image converter](#image-converters) to override the default behaviour.
