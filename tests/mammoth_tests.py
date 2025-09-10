@@ -127,6 +127,14 @@ def test_warn_if_images_stored_outside_of_document_are_specified_when_passing_fi
     assert_equal([results.warning("could not find external image 'tiny-picture.png', fileobj has no name")], result.messages)
 
 
+def test_warn_if_images_stored_outside_of_document_are_specified_when_external_file_access_is_disabled():
+    with open(generate_test_path("external-picture.docx"), "rb") as fileobj:
+        result = mammoth.convert_to_html(fileobj=fileobj, external_file_access=False)
+
+    assert_equal("", result.value)
+    assert_equal([results.warning("could not open external image 'tiny-picture.png', external file access is disabled")], result.messages)
+
+
 def test_warn_if_images_stored_outside_of_document_are_not_found():
     with tempman.create_temp_dir() as temp_dir:
         document_path = os.path.join(temp_dir.path, "document.docx")

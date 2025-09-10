@@ -11,10 +11,16 @@ except ImportError:
 
 
 class Files(object):
-    def __init__(self, base):
+    def __init__(self, base, external_file_access):
         self._base = base
-    
+        self._external_file_access = external_file_access
+
     def open(self, uri):
+        if not self._external_file_access:
+            raise ExternalFileAccessIsDisabledError(
+                "could not open external image '{0}', external file access is disabled".format(uri)
+            )
+
         try:
             if _is_absolute(uri):
                 return contextlib.closing(urlopen(uri))
@@ -33,4 +39,8 @@ def _is_absolute(url):
 
 
 class InvalidFileReferenceError(ValueError):
+    pass
+
+
+class ExternalFileAccessIsDisabledError(InvalidFileReferenceError):
     pass

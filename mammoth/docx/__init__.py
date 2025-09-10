@@ -19,13 +19,14 @@ from ..zips import open_zip
 _empty_result = results.success([])
 
 
-def read(fileobj):
+def read(fileobj, external_file_access=False):
     zip_file = open_zip(fileobj, "r")
     part_paths = _find_part_paths(zip_file)
     read_part_with_body = _part_with_body_reader(
         getattr(fileobj, "name", None),
         zip_file,
         part_paths=part_paths,
+        external_file_access=external_file_access,
     )
 
     return results.combine([
@@ -134,7 +135,7 @@ def _read_document(zip_file, read_part_with_body, notes, comments, part_paths):
     )
 
 
-def _part_with_body_reader(document_path, zip_file, part_paths):
+def _part_with_body_reader(document_path, zip_file, part_paths, external_file_access):
     content_types = _try_read_entry_or_default(
         zip_file,
         "[Content_Types].xml",
@@ -156,7 +157,10 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
         default=Numbering.EMPTY,
     )
 
-    files = Files(None if document_path is None else os.path.dirname(document_path))
+    files = Files(
+        None if document_path is None else os.path.dirname(document_path),
+        external_file_access=external_file_access,
+    )
 
     def read_part(name, reader, default=_undefined):
         relationships = _read_relationships(zip_file, _find_relationships_path_for(name))

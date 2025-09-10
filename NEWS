@@ -4,6 +4,8 @@
 
 * Fix conversion of unmerged table cells.
 
+* Support disabling external file accesses using the external_file_access argument.
+
 # 1.10.0
 
 * Add "Heading" and "Body" styles, as found in documents created by Apple Pages,

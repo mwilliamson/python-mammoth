@@ -178,6 +178,16 @@ pass `include_default_style_map=False`:
 result = mammoth.convert_to_html(docx_file, style_map=style_map, include_default_style_map=False)
 ```
 
+#### External file access
+
+Source documents may reference files outside of the source document.
+To disable access to any such external files during the conversion process,
+pass `external_file_access=False`:
+
+```javascript
+result = mammoth.convert_to_html(docx_file, external_file_access=False)
+```
+
 #### Custom image handlers
 
 By default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
@@ -414,6 +424,9 @@ For instance:
   automatically convert the document into HTML on the server,
   and embed the HTML into your website,
   this may allow arbitrary files on the server to be read and exfiltrated.
+
+  To disable access to any such external files during the conversion process,
+  pass `external_file_access=False`.
 
 ### Document transforms
 
