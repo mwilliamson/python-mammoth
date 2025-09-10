@@ -156,6 +156,8 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
         default=Numbering.EMPTY,
     )
 
+    files = Files(None if document_path is None else os.path.dirname(document_path))
+
     def read_part(name, reader, default=_undefined):
         relationships = _read_relationships(zip_file, _find_relationships_path_for(name))
 
@@ -165,7 +167,7 @@ def _part_with_body_reader(document_path, zip_file, part_paths):
             relationships=relationships,
             styles=styles,
             docx_file=zip_file,
-            files=Files(None if document_path is None else os.path.dirname(document_path)),
+            files=files,
         )
 
         if default is _undefined:
