@@ -293,6 +293,7 @@ Converts the source document to HTML.
 * Source documents may reference files outside of the source document.
   To disable access to any such external files during the conversion process,
   pass `external_file_access=False`.
+  This is highly recommended when converting untrusted user input.
 
 * `convert_image`: by default, images are converted to `<img>` elements with the source included inline in the `src` attribute.
   Set this argument to an [image converter](#image-converters) to override the default behaviour.
