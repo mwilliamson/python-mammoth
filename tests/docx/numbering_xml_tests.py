@@ -72,6 +72,63 @@ def test_num_referencing_non_existent_abstract_num_is_ignored():
     assert_equal(None, numbering.find_level("47", "0"))
 
 
+def test_given_no_other_levels_with_index_of_0_when_level_is_missing_ilvl_then_level_index_is_0():
+    element = xml_element("w:numbering", {}, [
+        xml_element("w:abstractNum", {"w:abstractNumId": "42"}, [
+            xml_element("w:lvl", {}, [
+                xml_element("w:numFmt", {"w:val": "decimal"}),
+            ]),
+        ]),
+        xml_element("w:num", {"w:numId": "47"}, [
+            xml_element("w:abstractNumId", {"w:val": "42"})
+        ])
+    ])
+
+    numbering = _read_numbering_xml_element(element)
+
+    assert_equal(True, numbering.find_level("47", "0").is_ordered)
+
+
+def test_given_previous_other_level_with_index_of_0_when_level_is_missing_ilvl_then_level_is_ignored():
+    element = xml_element("w:numbering", {}, [
+        xml_element("w:abstractNum", {"w:abstractNumId": "42"}, [
+            xml_element("w:lvl", {"w:ilvl": "0"}, [
+                xml_element("w:numFmt", {"w:val": "bullet"}),
+            ]),
+            xml_element("w:lvl", {}, [
+                xml_element("w:numFmt", {"w:val": "decimal"}),
+            ]),
+        ]),
+        xml_element("w:num", {"w:numId": "47"}, [
+            xml_element("w:abstractNumId", {"w:val": "42"})
+        ])
+    ])
+
+    numbering = _read_numbering_xml_element(element)
+
+    assert_equal(False, numbering.find_level("47", "0").is_ordered)
+
+
+def test_given_subsequent_other_level_with_index_of_0_when_level_is_missing_ilvl_then_level_is_ignored():
+    element = xml_element("w:numbering", {}, [
+        xml_element("w:abstractNum", {"w:abstractNumId": "42"}, [
+            xml_element("w:lvl", {}, [
+                xml_element("w:numFmt", {"w:val": "decimal"}),
+            ]),
+            xml_element("w:lvl", {"w:ilvl": "0"}, [
+                xml_element("w:numFmt", {"w:val": "bullet"}),
+            ]),
+        ]),
+        xml_element("w:num", {"w:numId": "47"}, [
+            xml_element("w:abstractNumId", {"w:val": "42"})
+        ])
+    ])
+
+    numbering = _read_numbering_xml_element(element)
+
+    assert_equal(False, numbering.find_level("47", "0").is_ordered)
+
+
 def test_when_abstract_num_has_num_style_link_then_style_is_used_to_find_num():
     numbering = _read_numbering_xml_element(
         xml_element("w:numbering", {}, [

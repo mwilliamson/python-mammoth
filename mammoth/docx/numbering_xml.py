@@ -36,15 +36,29 @@ class _AbstractNumLevel(object):
 
 
 def _read_abstract_num_levels(element):
-    levels = map(_read_abstract_num_level, element.find_children("w:lvl"))
-    return dict(
-        (level.level_index, level)
-        for level in levels
-    )
+    levels = {}
+
+    # Some malformed documents define numbering levels without an index, and
+    # reference the numbering using a w:numPr element without a w:ilvl child.
+    # To handle such cases, we assume a level of 0 as a fallback.
+    level_without_index = None
+
+    for level_element in element.find_children("w:lvl"):
+        level = _read_abstract_num_level(level_element)
+        if level.level_index is None:
+            level.level_index = "0"
+            level_without_index = level
+        else:
+            levels[level.level_index] = level
+
+    if "0" not in levels and level_without_index is not None:
+        levels[level_without_index.level_index] = level_without_index
+
+    return levels
 
 
 def _read_abstract_num_level(element):
-    level_index = element.attributes["w:ilvl"]
+    level_index = element.attributes.get("w:ilvl")
     num_fmt = element.find_child_or_null("w:numFmt").attributes.get("w:val")
     is_ordered = num_fmt != "bullet"
     paragraph_style_id = element.find_child_or_null("w:pStyle").attributes.get("w:val")

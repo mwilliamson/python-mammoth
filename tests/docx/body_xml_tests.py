@@ -138,15 +138,15 @@ class ParagraphTests(object):
 
         assert_equal("1", paragraph.numbering.level_index)
 
-    def test_numbering_properties_are_ignored_if_lvl_is_missing(self):
+    def test_when_numbering_properties_are_missing_level_then_level_of_0_is_assumed(self):
         paragraph_xml = self._paragraph_with_numbering_properties([
             xml_element("w:numId", {"w:val": "42"}),
         ])
 
-        numbering = _NumberingMap({"42": {"1": documents.numbering_level("1", True)}})
+        numbering = _NumberingMap({"42": {"0": documents.numbering_level("0", True)}})
         paragraph = _read_and_get_document_xml_element(paragraph_xml, numbering=numbering)
 
-        assert_equal(None, paragraph.numbering)
+        assert_equal(documents.numbering_level("0", True), paragraph.numbering)
 
     def test_numbering_properties_are_ignored_if_num_id_is_missing(self):
         paragraph_xml = self._paragraph_with_numbering_properties([
