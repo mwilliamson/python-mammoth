@@ -51,7 +51,7 @@ def _read_abstract_num_levels(element):
         else:
             levels[level.level_index] = level
 
-    if "0" not in levels and level_without_index is not None:
+    if level_without_index is not None and level_without_index.level_index not in levels:
         levels[level_without_index.level_index] = level_without_index
 
     return levels
