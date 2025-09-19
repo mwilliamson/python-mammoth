@@ -290,7 +290,7 @@ Converts the source document to HTML.
   To stop using the default style map altogether,
   pass `include_default_style_map=False`.
 
-* Source documents may reference files outside of the source document.
+* `external_file_access`: source documents may reference files outside of the source document.
   Access to any such external files is disabled by default.
   To enable access when converting trusted source documents,
   pass `external_file_access=True`.
