@@ -34,7 +34,7 @@ def convert(
         kwargs["embedded_style_map"] = read_style_map(fileobj)
 
     if external_file_access is _undefined:
-        external_file_access = True
+        external_file_access = False
 
     return options.read_options(kwargs).bind(lambda convert_options:
         docx.read(fileobj, external_file_access=external_file_access).map(transform_document).bind(lambda document:

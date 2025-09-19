@@ -110,32 +110,32 @@ def test_inline_images_referenced_by_path_relative_to_base_are_included_in_outpu
         assert_equal([], result.messages)
 
 
-def test_images_stored_outside_of_document_are_included_in_output():
+def test_when_external_file_access_is_enabled_images_stored_outside_of_document_are_included_in_output():
     with open(generate_test_path("external-picture.docx"), "rb") as fileobj:
-        result = mammoth.convert_to_html(fileobj=fileobj)
+        result = mammoth.convert_to_html(fileobj=fileobj, external_file_access=True)
         assert_equal("""<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOvgAADr4B6kKxwAAAABNJREFUKFNj/M+ADzDhlWUYqdIAQSwBE8U+X40AAAAASUVORK5CYII=" /></p>""", result.value)
         assert_equal([], result.messages)
 
 
-def test_warn_if_images_stored_outside_of_document_are_specified_when_passing_fileobj_without_name():
+def test_when_external_file_access_is_enabled_warn_if_images_stored_outside_of_document_are_specified_when_passing_fileobj_without_name():
     fileobj = io.BytesIO()
     with open(generate_test_path("external-picture.docx"), "rb") as source_fileobj:
         shutil.copyfileobj(source_fileobj, fileobj)
 
-    result = mammoth.convert_to_html(fileobj=fileobj)
+    result = mammoth.convert_to_html(fileobj=fileobj, external_file_access=True)
     assert_equal("", result.value)
     assert_equal([results.warning("could not find external image 'tiny-picture.png', fileobj has no name")], result.messages)
 
 
-def test_warn_if_images_stored_outside_of_document_are_specified_when_external_file_access_is_disabled():
+def test_given_external_file_access_is_disabled_by_default_then_warn_if_images_stored_outside_of_document_are_specified():
     with open(generate_test_path("external-picture.docx"), "rb") as fileobj:
-        result = mammoth.convert_to_html(fileobj=fileobj, external_file_access=False)
+        result = mammoth.convert_to_html(fileobj=fileobj)
 
     assert_equal("", result.value)
     assert_equal([results.warning("could not open external image 'tiny-picture.png', external file access is disabled")], result.messages)
 
 
-def test_warn_if_images_stored_outside_of_document_are_not_found():
+def test_when_external_file_access_is_enabled_warn_if_images_stored_outside_of_document_are_not_found():
     with tempman.create_temp_dir() as temp_dir:
         document_path = os.path.join(temp_dir.path, "document.docx")
         with open(document_path, "wb") as fileobj:
@@ -143,7 +143,7 @@ def test_warn_if_images_stored_outside_of_document_are_not_found():
                 shutil.copyfileobj(source_fileobj, fileobj)
 
         with open(document_path, "rb") as fileobj:
-            result = mammoth.convert_to_html(fileobj=fileobj)
+            result = mammoth.convert_to_html(fileobj=fileobj, external_file_access=True)
             assert_equal("", result.value)
             expected_warning = "could not open external image: 'tiny-picture.png'"
             assert_equal("warning", result.messages[0].type)
