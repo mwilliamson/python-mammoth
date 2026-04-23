@@ -12,7 +12,7 @@ from .xmlparser import node_types, XmlElement, null_xml_element
 from .styles_xml import Styles
 from .uris import replace_fragment, uri_to_zip_entry_name
 
-if sys.version_info >= (3, ):
+if sys.version_info >= (3,):
     unichr = chr
 
 
@@ -469,10 +469,8 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def read_child_elements(element):
         return _read_xml_elements(element.children)
 
-
     def pict(element):
         return read_child_elements(element).to_extra()
-
 
     def hyperlink(element):
         relationship_id = element.attributes.get("r:id")
@@ -481,11 +479,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         children_result = _read_xml_elements(element.children)
 
         def create(**kwargs):
-            return children_result.map(lambda children: documents.hyperlink(
-                children=children,
-                target_frame=target_frame,
-                **kwargs
-            ))
+            return children_result.map(
+                lambda children: documents.hyperlink(
+                    children=children, target_frame=target_frame, **kwargs
+                )
+            )
 
         if relationship_id is not None:
             href = relationships.find_target_by_relationship_id(relationship_id)
@@ -498,14 +496,12 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             return children_result
 
-
     def bookmark_start(element):
         name = element.attributes.get("w:name")
         if name == "_GoBack":
             return _empty_result
         else:
             return _success(documents.bookmark(name))
-
 
     def break_(element):
         break_type = element.attributes.get("w:type")
@@ -519,7 +515,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             warning = results.warning("Unsupported break type: {0}".format(break_type))
             return _empty_result_with_message(warning)
-
 
     def inline(element):
         properties_element = element.find_child_or_null("wp:docPr")
@@ -537,36 +532,55 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         else:
             href = None
 
-        blips = element.find_children("a:graphic") \
-            .find_children("a:graphicData") \
-            .find_children("pic:pic") \
-            .find_children("pic:blipFill") \
-            .find_children("a:blip")
-        return _read_blips(blips, alt_text=alt_text, href=href)
+        pics = (
+            element.find_children("a:graphic")
+            .find_children("a:graphicData")
+            .find_children("pic:pic")
+        )
 
-    def _read_blips(blips, alt_text, href):
-        return _ReadResult.concat(lists.map(lambda blip: _read_blip(blip, alt_text=alt_text, href=href), blips))
+        blips_and_crops = []
+        for pic in pics:
+            blip_fill = pic.find_child_or_null("pic:blipFill")
+            blips = blip_fill.find_children("a:blip")
+            src_rect = blip_fill.find_child_or_null("a:srcRect")
+            crop = _read_crop(src_rect)
+            for blip in blips:
+                blips_and_crops.append((blip, crop))
 
-    def _read_blip(element, alt_text, href):
+        return _read_blips(blips_and_crops, alt_text=alt_text, href=href)
+
+    def _read_blips(blips_and_crops, alt_text, href):
+        return _ReadResult.concat(
+            [
+                _read_blip(blip, alt_text=alt_text, href=href, crop=crop)
+                for blip, crop in blips_and_crops
+            ]
+        )
+
+    def _read_blip(element, alt_text, href, crop=None):
         blip_image = _find_blip_image(element)
 
         if blip_image is None:
             warning = results.warning("Could not find image file for a:blip element")
             return _empty_result_with_message(warning)
 
-        result = _read_image(blip_image, alt_text)
+        result = _read_image(blip_image, alt_text, crop=crop)
         if href is None:
             return result
         else:
-            return result.map(lambda image_elements: documents.hyperlink(
-                image_elements,
-                href=href,
-            ))
+            return result.map(
+                lambda image_elements: documents.hyperlink(
+                    image_elements,
+                    href=href,
+                )
+            )
 
-    def _read_image(image_file, alt_text):
+    def _read_image(image_file, alt_text, crop=None):
         image_path, open_image = image_file
         content_type = content_types.find_content_type(image_path)
-        image = documents.image(alt_text=alt_text, content_type=content_type, open=open_image)
+        image = documents.image(
+            alt_text=alt_text, content_type=content_type, open=open_image, crop=crop
+        )
 
         if content_type in ["image/png", "image/gif", "image/jpeg", "image/svg+xml", "image/tiff"]:
             messages = []
@@ -598,6 +612,25 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
         return image_path, open_image
 
+    def _read_crop(src_rect):
+        if src_rect is None or src_rect == null_xml_element:
+            return None
+
+        try:
+            left = _parse_percentage(src_rect.attributes.get("l", "0"))
+            top = _parse_percentage(src_rect.attributes.get("t", "0"))
+            right = _parse_percentage(src_rect.attributes.get("r", "0"))
+            bottom = _parse_percentage(src_rect.attributes.get("b", "0"))
+            if left == 0 and top == 0 and right == 0 and bottom == 0:
+                return None
+            return documents.Crop(left=left, top=top, right=right, bottom=bottom)
+        except (ValueError, TypeError):
+            return None
+
+    def _parse_percentage(value):
+        if value is None or value == "":
+            return 0.0
+        return int(value) / 100000.0
 
     def _find_linked_image(relationship_id):
         image_path = relationships.find_target_by_relationship_id(relationship_id)
@@ -707,7 +740,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         "w:endnoteReference": note_reference_reader("endnote"),
         "w:commentReference": read_comment_reference,
         "mc:AlternateContent": alternate_content,
-        "w:sdt": read_sdt
+        "w:sdt": read_sdt,
     }
 
     def read(element):
@@ -720,7 +753,6 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 return _empty_result
         else:
             return handler(element)
-
 
     def _read_xml_elements(nodes):
         elements = filter(lambda node: isinstance(node, XmlElement), nodes)
@@ -736,22 +768,22 @@ def _inner_text(node):
         return "".join(_inner_text(child) for child in node.children)
 
 
-
 class _ReadResult(object):
     @staticmethod
     def concat(results):
         return _ReadResult(
             lists.flat_map(lambda result: result.elements, results),
             lists.flat_map(lambda result: result.extra, results),
-            lists.flat_map(lambda result: result.messages, results))
-
+            lists.flat_map(lambda result: result.messages, results),
+        )
 
     @staticmethod
     def map_results(first, second, func):
         return _ReadResult(
             [func(first.elements, second.elements)],
             first.extra + second.extra,
-            first.messages + second.messages)
+            first.messages + second.messages,
+        )
 
     def __init__(self, elements, extra, messages):
         self.elements = elements
@@ -762,18 +794,13 @@ class _ReadResult(object):
         elements = func(self.elements)
         if not isinstance(elements, list):
             elements = [elements]
-        return _ReadResult(
-            elements,
-            self.extra,
-            self.messages)
+        return _ReadResult(elements, self.extra, self.messages)
 
     def flat_map(self, func):
         result = func(self.elements)
         return _ReadResult(
-            result.elements,
-            self.extra + result.extra,
-            self.messages + result.messages)
-
+            result.elements, self.extra + result.extra, self.messages + result.messages
+        )
 
     def to_extra(self):
         return _ReadResult([], _concat(self.extra, self.elements), self.messages)
@@ -781,21 +808,27 @@ class _ReadResult(object):
     def append_extra(self):
         return _ReadResult(_concat(self.elements, self.extra), [], self.messages)
 
+
 def _success(elements):
     if not isinstance(elements, list):
         elements = [elements]
     return _ReadResult(elements, [], [])
 
+
 def _element_result_with_messages(element, messages):
     return _elements_result_with_messages([element], messages)
+
 
 def _elements_result_with_messages(elements, messages):
     return _ReadResult(elements, [], messages)
 
+
 _empty_result = _ReadResult([], [], [])
+
 
 def _empty_result_with_message(message):
     return _ReadResult([], [], [message])
+
 
 def _concat(*values):
     result = []

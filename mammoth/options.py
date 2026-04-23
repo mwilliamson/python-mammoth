@@ -7,10 +7,12 @@ def read_options(options):
     embedded_style_map_text = options.pop("embedded_style_map", "") or ""
     include_default_style_map = options.pop("include_default_style_map", True)
 
-    read_style_map_result = results.combine([
-        _read_style_map(custom_style_map_text),
-        _read_style_map(embedded_style_map_text),
-    ])
+    read_style_map_result = results.combine(
+        [
+            _read_style_map(custom_style_map_text),
+            _read_style_map(embedded_style_map_text),
+        ]
+    )
 
     custom_style_map, embedded_style_map = read_style_map_result.value
     style_map = custom_style_map + embedded_style_map
@@ -19,14 +21,16 @@ def read_options(options):
         style_map += _default_style_map
 
     options["ignore_empty_paragraphs"] = options.get("ignore_empty_paragraphs", True)
+    options["keep_origin_image"] = options.get("keep_origin_image", False)
     options["style_map"] = style_map
     return read_style_map_result.map(lambda _: options)
 
 
 def _read_style_map(style_text):
     lines = filter(None, map(_get_line, style_text.split("\n")))
-    return results.combine(lists.map(read_style_mapping, lines)) \
-        .map(lambda style_mappings: lists.filter(None, style_mappings))
+    return results.combine(lists.map(read_style_mapping, lines)).map(
+        lambda style_mappings: lists.filter(None, style_mappings)
+    )
 
 
 def _get_line(line):

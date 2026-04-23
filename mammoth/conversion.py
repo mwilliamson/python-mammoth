@@ -11,12 +11,15 @@ from .docx.files import InvalidFileReferenceError
 from .lists import find_index
 
 
-def convert_document_element_to_html(element,
+def convert_document_element_to_html(
+        element,
         style_map=None,
         convert_image=None,
         id_prefix=None,
         output_format=None,
-        ignore_empty_paragraphs=True):
+        ignore_empty_paragraphs=True,
+        keep_origin_image=False,
+):
 
     if style_map is None:
         style_map = []
@@ -42,6 +45,7 @@ def convert_document_element_to_html(element,
         convert_image=convert_image,
         id_prefix=id_prefix,
         ignore_empty_paragraphs=ignore_empty_paragraphs,
+        keep_origin_image=keep_origin_image,
         note_references=[],
         comments=comments,
     )
@@ -62,22 +66,64 @@ class _ConversionContext(object):
 
 
 class _DocumentConverter(documents.element_visitor(args=1)):
-    def __init__(self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs, note_references, comments):
+    def __init__(
+            self, messages, style_map, convert_image, id_prefix, ignore_empty_paragraphs,
+            keep_origin_image, note_references, comments
+    ):
         self._messages = messages
         self._style_map = style_map
         self._id_prefix = id_prefix
         self._ignore_empty_paragraphs = ignore_empty_paragraphs
+        self._keep_origin_image = keep_origin_image
         self._note_references = note_references
         self._referenced_comments = []
         self._convert_image = convert_image
         self._comments = comments
 
     def visit_image(self, image, context):
+        if not self._keep_origin_image and image.crop is not None:
+            image = self._crop_image(image)
         try:
             return self._convert_image(image)
         except InvalidFileReferenceError as error:
             self._messages.append(results.warning(str(error)))
             return []
+
+    def _crop_image(self, image):
+        try:
+            from PIL import Image as PILImage
+            import io
+
+            with image.open() as image_file:
+                pil_image = PILImage.open(image_file)
+                width, height = pil_image.size
+                crop_box = (
+                    int(image.crop.left * width),
+                    int(image.crop.top * height),
+                    int(width - image.crop.right * width),
+                    int(height - image.crop.bottom * height),
+                )
+                if crop_box[0] >= crop_box[2] or crop_box[1] >= crop_box[3]:
+                    self._messages.append(results.warning(
+                        "Image crop resulted in empty dimensions, returning original image."
+                    ))
+                    return image
+                cropped = pil_image.crop(crop_box)
+                output = io.BytesIO()
+                original_format = pil_image.format
+                if original_format:
+                    cropped.save(output, format=original_format)
+                else:
+                    cropped.save(output, format="PNG")
+                output_bytes = output.getvalue()
+                return image.copy(open=lambda: io.BytesIO(output_bytes), crop=None)
+        except InvalidFileReferenceError:
+            raise
+        except Exception as error:
+            self._messages.append(results.warning(
+                "Could not apply image cropping: {0}".format(error)
+            ))
+            return image
 
     def visit_document(self, document, context):
         nodes = self._visit_all(document.children, context)

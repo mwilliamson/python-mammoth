@@ -22,7 +22,8 @@ def convert(
     id_prefix=None,
     include_embedded_style_map=_undefined,
     external_file_access=_undefined,
-    **kwargs
+    keep_origin_image=_undefined,
+    **kwargs,
 ):
     if include_embedded_style_map is _undefined:
         include_embedded_style_map = True
@@ -36,12 +37,19 @@ def convert(
     if external_file_access is _undefined:
         external_file_access = False
 
-    return options.read_options(kwargs).bind(lambda convert_options:
-        docx.read(fileobj, external_file_access=external_file_access).map(transform_document).bind(lambda document:
-            conversion.convert_document_element_to_html(
-                document,
-                id_prefix=id_prefix,
-                **convert_options
+    if keep_origin_image is _undefined:
+        keep_origin_image = False
+
+    kwargs["keep_origin_image"] = keep_origin_image
+
+    return options.read_options(kwargs).bind(
+        lambda convert_options: (
+            docx.read(fileobj, external_file_access=external_file_access)
+            .map(transform_document)
+            .bind(
+                lambda document: conversion.convert_document_element_to_html(
+                    document, id_prefix=id_prefix, **convert_options
+                )
             )
         )
     )
@@ -53,6 +61,7 @@ def extract_raw_text(fileobj):
 
 def embed_style_map(fileobj, style_map):
     write_style_map(fileobj, style_map)
+
 
 def read_embedded_style_map(fileobj):
     return read_style_map(fileobj)

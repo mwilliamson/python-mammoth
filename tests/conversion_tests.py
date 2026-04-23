@@ -559,6 +559,78 @@ def test_can_define_custom_conversion_for_images():
     assert_equal('<img alt="abc" />', result.value)
 
 
+def test_image_cropping_is_applied_when_keep_origin_image_is_false():
+    from PIL import Image as PILImage
+    import base64
+
+    original = PILImage.new("RGB", (100, 100), color=(255, 0, 0))
+    output = io.BytesIO()
+    original.save(output, format="PNG")
+    png_bytes = output.getvalue()
+
+    image = documents.image(
+        alt_text=None,
+        content_type="image/png",
+        open=lambda: io.BytesIO(png_bytes),
+        crop=documents.Crop(left=0.1, top=0.1, right=0.1, bottom=0.1),
+    )
+
+    result = convert_document_element_to_html(image, keep_origin_image=False)
+    src_match = __import__("re").search(r'src="([^"]+)"', result.value)
+    src = src_match.group(1)
+    cropped_bytes = base64.b64decode(src.split(",")[1])
+    cropped = PILImage.open(io.BytesIO(cropped_bytes))
+    assert_equal((80, 80), cropped.size)
+    assert_equal([], result.messages)
+
+
+def test_image_cropping_is_skipped_when_keep_origin_image_is_true():
+    from PIL import Image as PILImage
+    import base64
+
+    original = PILImage.new("RGB", (100, 100), color=(255, 0, 0))
+    output = io.BytesIO()
+    original.save(output, format="PNG")
+    png_bytes = output.getvalue()
+
+    image = documents.image(
+        alt_text=None,
+        content_type="image/png",
+        open=lambda: io.BytesIO(png_bytes),
+        crop=documents.Crop(left=0.1, top=0.1, right=0.1, bottom=0.1),
+    )
+
+    result = convert_document_element_to_html(image, keep_origin_image=True)
+    src_match = __import__("re").search(r'src="([^"]+)"', result.value)
+    src = src_match.group(1)
+    uncropped_bytes = base64.b64decode(src.split(",")[1])
+    uncropped = PILImage.open(io.BytesIO(uncropped_bytes))
+    assert_equal((100, 100), uncropped.size)
+    assert_equal([], result.messages)
+
+
+def test_empty_image_crop_results_in_warning():
+    from PIL import Image as PILImage
+
+    original = PILImage.new("RGB", (100, 100), color=(255, 0, 0))
+    output = io.BytesIO()
+    original.save(output, format="PNG")
+    png_bytes = output.getvalue()
+
+    image = documents.image(
+        alt_text=None,
+        content_type="image/png",
+        open=lambda: io.BytesIO(png_bytes),
+        crop=documents.Crop(left=0.5, top=0.5, right=0.5, bottom=0.5),
+    )
+
+    result = convert_document_element_to_html(image, keep_origin_image=False)
+    assert_equal('<img src="data:image/png;base64,' + __import__("base64").b64encode(png_bytes).decode("ascii") + '" />', result.value)
+    assert_equal(1, len(result.messages))
+    assert_equal("warning", result.messages[0].type)
+    assert result.messages[0].message.startswith("Image crop resulted in empty dimensions")
+
+
 def test_footnote_reference_is_converted_to_superscript_intra_page_link():
     footnote_reference = documents.note_reference("footnote", "4")
     result = convert_document_element_to_html(

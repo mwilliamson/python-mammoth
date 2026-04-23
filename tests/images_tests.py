@@ -15,13 +15,17 @@ def test_data_uri_encodes_images_in_base64():
         alt_text=None,
         content_type="image/jpeg",
         open=lambda: io.BytesIO(image_bytes),
+        crop=None,
     )
 
     result = mammoth.images.data_uri(image)
 
-    assert_that(result, is_sequence(
-        has_attrs(attributes={"src": "data:image/jpeg;base64,YWJj"}),
-    ))
+    assert_that(
+        result,
+        is_sequence(
+            has_attrs(attributes={"src": "data:image/jpeg;base64,YWJj"}),
+        ),
+    )
 
 
 class ImgElementTests:
@@ -31,6 +35,7 @@ class ImgElementTests:
             alt_text=None,
             content_type="image/jpeg",
             open=lambda: io.BytesIO(image_bytes),
+            crop=None,
         )
 
         @mammoth.images.img_element
@@ -49,6 +54,7 @@ class ImgElementTests:
             alt_text="<alt>",
             content_type="image/jpeg",
             open=lambda: io.BytesIO(image_bytes),
+            crop=None,
         )
 
         @mammoth.images.img_element
@@ -67,6 +73,7 @@ class ImgElementTests:
             alt_text="<alt>",
             content_type="image/jpeg",
             open=lambda: io.BytesIO(image_bytes),
+            crop=None,
         )
 
         @mammoth.images.img_element
@@ -75,6 +82,9 @@ class ImgElementTests:
 
         result = convert_image(image)
 
-        assert_that(result, is_sequence(
-            has_attrs(attributes={"alt": "<alt override>", "src": "<src>"}),
-        ))
+        assert_that(
+            result,
+            is_sequence(
+                has_attrs(attributes={"alt": "<alt override>", "src": "<src>"}),
+            ),
+        )
