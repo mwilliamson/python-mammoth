@@ -424,6 +424,13 @@ For instance:
   To enable access when converting trusted source documents,
   pass `external_file_access=True`.
 
+* The conversion may exhibit pathological performance on certain documents:
+  it's likely possible to craft a source document that causes high CPU or memory usage.
+  Depending on the performance constraints of your application and the likelihood of receiving untrusted input,
+  you may wish to consider isolating any calls to Mammoth,
+  such as running Mammoth in a separate thread with a timeout,
+  to prevent denial-of-service attacks.
+
 ### Document transforms
 
 **The API for document transforms should be considered unstable,
