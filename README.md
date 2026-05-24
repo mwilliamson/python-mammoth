@@ -45,6 +45,10 @@ The following features are currently supported:
 
     pip install mammoth
 
+Alternatively, using conda:
+
+    conda install mammoth
+
 ## Other supported platforms
 
 * [JavaScript](https://github.com/mwilliamson/mammoth.js), both the browser and node.js.
