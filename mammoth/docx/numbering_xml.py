@@ -101,6 +101,17 @@ class Numbering(object):
         self._styles = styles
 
     def find_level(self, num_id, level):
+        return self._find_level(num_id, level, visited=set())
+
+    def _find_level(self, num_id, level, visited):
+        # A w:numStyleLink can point (directly or transitively) back to a
+        # numbering definition that has already been visited, forming a cycle.
+        # Track the num IDs seen while resolving this chain so a malformed
+        # document cannot cause unbounded recursion.
+        if num_id in visited:
+            return None
+        visited.add(num_id)
+
         num = self._nums.get(num_id)
         if num is None:
             return None
@@ -112,7 +123,7 @@ class Numbering(object):
                 return self._to_numbering_level(abstract_num.levels.get(level))
             else:
                 style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)
-                return self.find_level(style.num_id, level)
+                return self._find_level(style.num_id, level, visited)
 
     def find_level_by_paragraph_style_id(self, style_id):
         return self._levels_by_paragraph_style_id.get(style_id)

@@ -176,6 +176,26 @@ def test_numbering_level_can_be_found_by_paragraph_style_id():
     assert_equal(None, numbering.find_level_by_paragraph_style_id("Paragraph"))
 
 
+
+def test_find_level_returns_none_when_num_style_link_forms_a_cycle():
+    # num 201 -> abstractNum 101 -> numStyleLink "List1" -> num 201 -> ...
+    # Without cycle detection this recurses until the interpreter stack is
+    # exhausted; find_level should instead return None.
+    numbering = _read_numbering_xml_element(
+        xml_element("w:numbering", {}, [
+            xml_element("w:abstractNum", {"w:abstractNumId": "101"}, [
+                xml_element("w:numStyleLink", {"w:val": "List1"}),
+            ]),
+            xml_element("w:num", {"w:numId": "201"}, [
+                xml_element("w:abstractNumId", {"w:val": "101"}),
+            ]),
+        ]),
+        styles=Styles.create(numbering_styles={
+            "List1": NumberingStyle(style_id="List1", num_id="201"),
+        }),
+    )
+    assert_equal(None, numbering.find_level("201", "0"))
+
 def _read_numbering_xml_element(element, styles=None):
     if styles is None:
         styles = Styles.EMPTY
