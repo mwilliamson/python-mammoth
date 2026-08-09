@@ -1,6 +1,6 @@
 import io
 
-from precisely import assert_that, has_attrs, is_sequence
+from precisely import assert_that, equal_to, has_attrs, is_sequence
 
 import mammoth
 
@@ -78,3 +78,36 @@ class ImgElementTests:
         assert_that(result, is_sequence(
             has_attrs(attributes={"alt": "<alt override>", "src": "<src>"}),
         ))
+
+
+class ImageFilenameExtensionTests:
+    def test_extension_is_derived_from_subtype_of_content_type(self):
+        image = self._image_with_content_type("image/gif")
+
+        result = mammoth.images.image_filename_extension(image)
+
+        assert_that(result, equal_to("gif"))
+
+    def test_data_after_second_slash_is_ignored(self):
+        image = self._image_with_content_type("image/gif/jpeg")
+
+        result = mammoth.images.image_filename_extension(image)
+
+        assert_that(result, equal_to("gif"))
+
+    def test_backslashes_are_treated_as_forward_slashes(self):
+        image = self._image_with_content_type("image\\gif\\..\\")
+
+        result = mammoth.images.image_filename_extension(image)
+
+        assert_that(result, equal_to("gif"))
+
+    def test_when_there_is_no_subtype_then_none_is_returned(self):
+        image = self._image_with_content_type("image")
+
+        result = mammoth.images.image_filename_extension(image)
+
+        assert_that(result, equal_to(None))
+
+    def _image_with_content_type(self, content_type):
+        return mammoth.documents.Image(alt_text="", content_type=content_type, open=None)

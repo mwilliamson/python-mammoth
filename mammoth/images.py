@@ -1,4 +1,5 @@
 import base64
+import re
 
 from . import html
 
@@ -26,3 +27,11 @@ def data_uri(image):
     return {
         "src": "data:{0};base64,{1}".format(image.content_type, encoded_src)
     }
+
+
+def image_filename_extension(image):
+    result = re.split(r"/|\\", image.content_type)
+    if len(result) < 2:
+        return None
+    else:
+        return result[1]
