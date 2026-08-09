@@ -101,18 +101,25 @@ class Numbering(object):
         self._styles = styles
 
     def find_level(self, num_id, level):
+        return self._find_level_with_seen_num_ids(num_id, level, seen_num_ids=set())
+
+    def _find_level_with_seen_num_ids(self, num_id, level, seen_num_ids):
+        if num_id in seen_num_ids:
+            return None
+        seen_num_ids.add(num_id)
+
         num = self._nums.get(num_id)
         if num is None:
             return None
+
+        abstract_num = self._abstract_nums.get(num.abstract_num_id)
+        if abstract_num is None:
+            return None
+        elif abstract_num.num_style_link is None:
+            return self._to_numbering_level(abstract_num.levels.get(level))
         else:
-            abstract_num = self._abstract_nums.get(num.abstract_num_id)
-            if abstract_num is None:
-                return None
-            elif abstract_num.num_style_link is None:
-                return self._to_numbering_level(abstract_num.levels.get(level))
-            else:
-                style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)
-                return self.find_level(style.num_id, level)
+            style = self._styles.find_numbering_style_by_id(abstract_num.num_style_link)
+            return self._find_level_with_seen_num_ids(style.num_id, level, seen_num_ids=seen_num_ids)
 
     def find_level_by_paragraph_style_id(self, style_id):
         return self._levels_by_paragraph_style_id.get(style_id)

@@ -154,6 +154,23 @@ def test_when_abstract_num_has_num_style_link_then_style_is_used_to_find_num():
     assert_equal(True, numbering.find_level("201", "0").is_ordered)
 
 
+def test_when_abstract_num_has_self_recursive_num_style_link_then_level_is_not_found():
+    numbering = _read_numbering_xml_element(
+        xml_element("w:numbering", {}, [
+            xml_element("w:abstractNum", {"w:abstractNumId": "100"}, [
+                xml_element("w:numStyleLink", {"w:val": "List1"}),
+            ]),
+            xml_element("w:num", {"w:numId": "200"}, [
+                xml_element("w:abstractNumId", {"w:val": "100"}),
+            ]),
+        ]),
+        styles=Styles.create(numbering_styles={
+            "List1": NumberingStyle(style_id="List1", num_id="200"),
+        }),
+    )
+    assert_equal(None, numbering.find_level("200", "0"))
+
+
 # See: 17.9.23 pStyle (Paragraph Style's Associated Numbering Level) in ECMA-376, 4th Edition
 def test_numbering_level_can_be_found_by_paragraph_style_id():
     numbering = _read_numbering_xml_element(
