@@ -487,7 +487,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 **kwargs
             ))
 
-        if relationship_id is not None:
+        if relationship_id is not None and relationships.find_target_by_relationship_id(relationship_id) is not None:
             href = relationships.find_target_by_relationship_id(relationship_id)
             if anchor is not None:
                 href = replace_fragment(href, anchor)
@@ -578,9 +578,9 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
     def _find_blip_image(element):
         embed_relationship_id = element.attributes.get("r:embed")
         link_relationship_id = element.attributes.get("r:link")
-        if embed_relationship_id is not None:
+        if embed_relationship_id is not None and relationships.find_target_by_relationship_id(embed_relationship_id) is not None:
             return _find_embedded_image(embed_relationship_id)
-        elif link_relationship_id is not None:
+        elif link_relationship_id is not None and relationships.find_target_by_relationship_id(link_relationship_id) is not None:
             return _find_linked_image(link_relationship_id)
         else:
             return None
@@ -609,7 +609,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
 
     def read_imagedata(element):
         relationship_id = element.attributes.get("r:id")
-        if relationship_id is None:
+        if relationship_id is None or relationships.find_target_by_relationship_id(relationship_id) is None:
             warning = results.warning("A v:imagedata element without a relationship ID was ignored")
             return _empty_result_with_message(warning)
         else:

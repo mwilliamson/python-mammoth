@@ -12,10 +12,10 @@ class Relationships(object):
             self._targets_by_type[relationship.type].append(relationship.target)
     
     def find_target_by_relationship_id(self, key):
-        return self._targets_by_id[key]
+        return self._targets_by_id.get(key, None)
     
     def find_targets_by_type(self, relationship_type):
-        return self._targets_by_type[relationship_type]
+        return self._targets_by_type.get(relationship_type, [])
 
 
 Relationships.EMPTY = Relationships([])
@@ -26,7 +26,7 @@ Relationship = collections.namedtuple("Relationship", ["relationship_id", "targe
 
 def read_relationships_xml_element(element):
     children = element.find_children("relationships:Relationship")
-    return Relationships(list(map(_read_relationship, children)))
+    return Relationships(list(filter(lambda x: x.target not in ('../NULL', 'NULL', 'word/../NULL'), map(_read_relationship, children))))
 
 
 def _read_relationship(element):
