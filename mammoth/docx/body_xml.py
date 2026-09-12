@@ -205,7 +205,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         elif fld_char_type == "end":
             if len(complex_field_stack) == 0:
                 return _empty_result_with_message(results.warning(
-                    "ignoring complex field end character without corresponding start character",
+                    "Ignoring complex field end character without corresponding start character",
                 ))
 
             complex_field = complex_field_stack.pop()
@@ -218,7 +218,7 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
         elif fld_char_type == "separate":
             if len(complex_field_stack) == 0:
                 return _empty_result_with_message(results.warning(
-                    "ignoring complex field separator character without corresponding start character",
+                    "Ignoring complex field separator character without corresponding start character",
                 ))
 
             complex_field_separate = complex_field_stack.pop()

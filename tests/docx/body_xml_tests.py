@@ -691,7 +691,7 @@ class ComplexFieldTests(object):
         assert_that(result.value, is_paragraph(children=is_sequence(
             is_empty_run,
         )))
-        expected_warning = results.warning("ignoring complex field separator character without corresponding start character")
+        expected_warning = results.warning("Ignoring complex field separator character without corresponding start character")
         assert_equal([expected_warning], result.messages)
 
     def test_end_character_without_corresponding_start_character_is_ignored(self):
@@ -704,7 +704,7 @@ class ComplexFieldTests(object):
         assert_that(result.value, is_paragraph(children=is_sequence(
             is_empty_run,
         )))
-        expected_warning = results.warning("ignoring complex field end character without corresponding start character")
+        expected_warning = results.warning("Ignoring complex field end character without corresponding start character")
         assert_equal([expected_warning], result.messages)
 
 
