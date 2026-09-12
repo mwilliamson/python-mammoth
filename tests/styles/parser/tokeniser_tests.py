@@ -43,6 +43,10 @@ def test_unterminated_strings_are_tokenised():
     assert_tokens("'Tristan", is_token("unterminated string", "'Tristan"))
 
 
+def test_unterminated_strings_ending_with_escaped_string_terminator_are_tokenised():
+    assert_tokens("'Tristan\\'", is_token("unterminated string", "'Tristan\\'"))
+
+
 def test_unterminated_strings_with_unterminated_escape_are_tokenised():
     assert_tokens("'Tristan\\", is_token("unterminated string", "'Tristan\\"))
 
