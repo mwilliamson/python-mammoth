@@ -681,6 +681,32 @@ class ComplexFieldTests(object):
             is_empty_run,
         )))
 
+    def test_separator_character_without_corresponding_start_character_is_ignored(self):
+        element = xml_element("w:p", {}, [
+            self._SEPARATE_COMPLEX_FIELD,
+        ])
+
+        result = _read_document_xml_element(element)
+
+        assert_that(result.value, is_paragraph(children=is_sequence(
+            is_empty_run,
+        )))
+        expected_warning = results.warning("ignoring complex field separator character without corresponding start character")
+        assert_equal([expected_warning], result.messages)
+
+    def test_end_character_without_corresponding_start_character_is_ignored(self):
+        element = xml_element("w:p", {}, [
+            self._END_COMPLEX_FIELD,
+        ])
+
+        result = _read_document_xml_element(element)
+
+        assert_that(result.value, is_paragraph(children=is_sequence(
+            is_empty_run,
+        )))
+        expected_warning = results.warning("ignoring complex field end character without corresponding start character")
+        assert_equal([expected_warning], result.messages)
+
 
 class CheckboxTests:
     def test_complex_field_checkbox_without_separate_is_read(self):

@@ -203,6 +203,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
             del current_instr_text[:]
 
         elif fld_char_type == "end":
+            if len(complex_field_stack) == 0:
+                return _empty_result_with_message(results.warning(
+                    "ignoring complex field end character without corresponding start character",
+                ))
+
             complex_field = complex_field_stack.pop()
             if isinstance(complex_field, complex_fields.Begin):
                 complex_field = parse_current_instr_text(complex_field)
@@ -211,6 +216,11 @@ def _create_reader(numbering, content_types, relationships, styles, docx_file, f
                 return _success(documents.checkbox(checked=complex_field.checked))
 
         elif fld_char_type == "separate":
+            if len(complex_field_stack) == 0:
+                return _empty_result_with_message(results.warning(
+                    "ignoring complex field separator character without corresponding start character",
+                ))
+
             complex_field_separate = complex_field_stack.pop()
             complex_field = parse_current_instr_text(complex_field_separate)
             complex_field_stack.append(complex_field)
