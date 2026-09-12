@@ -1,3 +1,12 @@
+# 1.12.2
+
+* Avoid excessive backtracking when parsing an unterminated string with many
+  escape sequences. The previous behaviour would allow maliciously crafted
+  documents to cause a denial of service.
+
+  Note that it is still strongly recommended to process untrusted documents in
+  a separate thread with a timeout to avoid potential similar issues.
+
 # 1.12.1
 
 * Fix: on Windows, when an image's content type includes a backslash in the

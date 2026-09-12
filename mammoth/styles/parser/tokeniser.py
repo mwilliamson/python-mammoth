@@ -13,13 +13,13 @@ class TokenType(object):
     UNTERMINATED_STRING = "unterminated string"
     INTEGER = "integer"
     END = "end"
-    
+
 
 
 def regex_tokeniser(rules):
     rules = [(token_type, _to_regex(regex)) for token_type, regex in rules]
     rules.append(("unknown", re.compile(".")))
-    
+
     def tokenise(value):
         tokens = []
         index = 0
@@ -39,7 +39,7 @@ def regex_tokeniser(rules):
         return tokens
 
     return tokenise
-    
+
 
 def _to_regex(value):
     if hasattr(value, "match"):
@@ -48,7 +48,7 @@ def _to_regex(value):
         return re.compile(value)
 
 
-_string_prefix = r"'(?:\\.|[^'])*"
+_string_prefix = r"'(?:\\(?:.|$)|[^'\\])*"
 _identifier_character = r"(?:[a-zA-Z\-_]|\\.)"
 
 tokenise = regex_tokeniser([

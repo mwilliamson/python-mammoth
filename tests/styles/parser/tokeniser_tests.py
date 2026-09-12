@@ -31,12 +31,24 @@ def test_strings_are_tokenised():
     assert_tokens("'Tristan'", is_token("string", "'Tristan'"))
 
 
-def test_escape_sequences_in_strings_are_tokenised():
+def test_escaped_string_terminators_in_strings_are_tokenised():
     assert_tokens(r"'Tristan\''", is_token("string", r"'Tristan\''"))
+
+
+def test_escape_sequences_in_strings_are_tokenised():
+    assert_tokens(r"'Tristan\\'", is_token("string", r"'Tristan\\'"))
 
 
 def test_unterminated_strings_are_tokenised():
     assert_tokens("'Tristan", is_token("unterminated string", "'Tristan"))
+
+
+def test_unterminated_strings_with_unterminated_escape_are_tokenised():
+    assert_tokens("'Tristan\\", is_token("unterminated string", "'Tristan\\"))
+
+
+def test_unterminated_strings_with_many_escape_sequences_do_not_cause_excessive_backtracking():
+    assert_tokens("'" + "\\a" * 50, is_token("unterminated string", "'" + "\\a" * 50))
 
 
 def test_arrows_are_tokenised():
