@@ -61,7 +61,7 @@ def _hyperlink(attributes, markdown_state):
     href = attributes.get("href", "")
     if href:
         return _WriterOutput(
-            "[", "]({0})".format(href),
+            "[", "]({0})".format(_escape_markdown(href)),
             anchor_position="before",
         )
     else:

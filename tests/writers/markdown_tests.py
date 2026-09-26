@@ -4,7 +4,7 @@ from mammoth.writers.markdown import MarkdownWriter
 from ..testing import assert_equal
 
 
-def test_special_markdown_characters_are_escaped():
+def test_special_markdown_characters_in_text_are_escaped():
     writer = _create_writer()
     writer.text(r"\*")
     assert_equal(r"\\\*", writer.as_string())
@@ -72,7 +72,15 @@ def test_anchor_tags_are_written_as_hyperlinks():
     writer.start("a", {"href": "http://example.com"});
     writer.text("Hello");
     writer.end("a");
-    assert_equal("[Hello](http://example.com)", writer.as_string())
+    assert_equal("[Hello](http://example\\.com)", writer.as_string())
+
+
+def test_special_markdown_characters_in_anchor_href_are_escaped():
+    writer = _create_writer()
+    writer.start("a", {"href": "http://example.com)Oops"})
+    writer.text("Hello")
+    writer.end("a")
+    assert_equal("[Hello](http://example\\.com\\)Oops)", writer.as_string())
 
 
 def test_anchor_tags_without_href_attribute_are_treated_as_ordinary_text():
@@ -104,7 +112,7 @@ def test_links_have_anchors_before_opening_square_bracket():
     writer.start("a", {"href": "http://example.com", "id": "start"})
     writer.text("Hello")
     writer.end("a")
-    assert_equal('<a id="start"></a>[Hello](http://example.com)', writer.as_string())
+    assert_equal('<a id="start"></a>[Hello](http://example\\.com)', writer.as_string())
 
 
 def test_image_elements_are_written_as_markdown_images():
