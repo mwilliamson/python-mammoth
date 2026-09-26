@@ -1286,6 +1286,9 @@ class TableTests(object):
         assert_equal([expected_warning], result.messages)
 
 
+def test_children_of_w_custom_xml_are_converted_normally():
+    _assert_children_are_converted_normally("w:customXml")
+
 def test_children_of_w_ins_are_converted_normally():
     _assert_children_are_converted_normally("w:ins")
 

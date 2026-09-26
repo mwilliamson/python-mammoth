@@ -1,3 +1,7 @@
+# 1.13.0
+
+* Read the children of w:customXml elements.
+
 # 1.12.2
 
 * Avoid excessive backtracking when parsing an unterminated string with many
