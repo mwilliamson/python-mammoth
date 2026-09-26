@@ -72,7 +72,7 @@ def _image(attributes, markdown_state):
     src = attributes.get("src", "")
     alt_text = attributes.get("alt", "")
     if src or alt_text:
-        return _WriterOutput("![{0}]({1})".format(alt_text, src), "")
+        return _WriterOutput("![{0}]({1})".format(_escape_markdown(alt_text), _escape_markdown(src)), "")
     else:
         return _default_output
 

@@ -118,13 +118,25 @@ def test_links_have_anchors_before_opening_square_bracket():
 def test_image_elements_are_written_as_markdown_images():
     writer = _create_writer()
     writer.self_closing("img", {"src": "http://example.com/image.jpg", "alt": "Alt Text"})
-    assert_equal("![Alt Text](http://example.com/image.jpg)", writer.as_string())
+    assert_equal("![Alt Text](http://example\\.com/image\\.jpg)", writer.as_string())
+
+
+def test_image_alt_text_is_escaped():
+    writer = _create_writer()
+    writer.self_closing("img", {"src": "http://example.com/image.jpg", "alt": "Alt Text]Oops"})
+    assert_equal("![Alt Text\\]Oops](http://example\\.com/image\\.jpg)", writer.as_string())
+
+
+def test_image_src_is_escaped():
+    writer = _create_writer()
+    writer.self_closing("img", {"src": "http://example.com/image.jpg)Oops", "alt": "Alt Text"})
+    assert_equal("![Alt Text](http://example\\.com/image\\.jpg\\)Oops)", writer.as_string())
 
 
 def test_images_are_written_even_if_they_dont_have_alt_text():
     writer = _create_writer()
     writer.self_closing("img", {"src": "http://example.com/image.jpg"})
-    assert_equal("![](http://example.com/image.jpg)", writer.as_string())
+    assert_equal("![](http://example\\.com/image\\.jpg)", writer.as_string())
 
 
 def test_images_are_written_even_if_they_dont_have_a_src_attribute():
