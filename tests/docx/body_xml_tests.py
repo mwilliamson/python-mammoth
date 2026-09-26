@@ -1292,6 +1292,21 @@ def test_children_of_w_custom_xml_are_converted_normally():
 def test_children_of_w_ins_are_converted_normally():
     _assert_children_are_converted_normally("w:ins")
 
+def test_children_of_w_move_from_range_end_are_converted_normally():
+    _assert_children_are_converted_normally("w:moveFromRangeEnd")
+
+def test_children_of_w_move_from_range_start_are_converted_normally():
+    _assert_children_are_converted_normally("w:moveFromRangeStart")
+
+def test_children_of_w_move_to_are_converted_normally():
+    _assert_children_are_converted_normally("w:moveTo")
+
+def test_children_of_w_move_to_range_end_are_converted_normally():
+    _assert_children_are_converted_normally("w:moveToRangeEnd")
+
+def test_children_of_w_move_to_range_start_are_converted_normally():
+    _assert_children_are_converted_normally("w:moveToRangeStart")
+
 def test_children_of_w_object_are_converted_normally():
     _assert_children_are_converted_normally("w:object")
 
@@ -1750,6 +1765,24 @@ def test_text_nodes_are_ignored_when_reading_children():
         documents.run([]),
         _read_and_get_document_xml_element(element)
     )
+
+
+def test_w_move_from_elements_are_ignored():
+    _assert_element_is_ignored("w:moveFrom")
+
+
+def _assert_element_is_ignored(tag_name):
+    element = xml_element(tag_name, {}, [
+        xml_element("w:r", {}, [
+            xml_element("w:t", {}, [xml_text("Blackdown")])
+        ])
+    ])
+
+    assert_equal(
+        [],
+        _read_and_get_document_xml_elements(element)
+    )
+
 
 def _read_and_get_document_xml_element(element, **kwargs):
     elements = _read_and_get_document_xml_elements(element, **kwargs)
