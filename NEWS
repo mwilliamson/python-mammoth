@@ -4,6 +4,8 @@
 
 * Handle paragraphs and runs that have been moved and tracked as a revision.
 
+* Improve escaping in Markdown writer.
+
 # 1.12.2
 
 * Avoid excessive backtracking when parsing an unterminated string with many

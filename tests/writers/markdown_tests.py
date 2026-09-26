@@ -91,6 +91,14 @@ def test_elements_with_ids_have_anchor_tags_with_ids_appended_to_start_of_markdo
     assert_equal('# <a id="start"></a>Hello\n\n', writer.as_string())
 
 
+def test_anchor_tag_ids_are_escaped():
+    writer = _create_writer()
+    writer.start("h1", {"id": "\"start\""})
+    writer.text("Hello")
+    writer.end("h1")
+    assert_equal('# <a id="&quot;start&quot;"></a>Hello\n\n', writer.as_string())
+
+
 def test_links_have_anchors_before_opening_square_bracket():
     writer = _create_writer()
     writer.start("a", {"href": "http://example.com", "id": "start"})
